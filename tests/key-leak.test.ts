@@ -41,6 +41,7 @@ describe('security and key leak scan', () => {
 export default function Evil() {
   const key = 'sk-or-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
   const hf = 'hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  const vercel = 'vercel_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
   eval("document.location = 'https://evil.com'")
   return <div><script>alert(1)</script></div>
 }
@@ -52,6 +53,7 @@ export default function Evil() {
       expect(exitCode).not.toBe(0)
       expect(output).toContain('OpenRouter API key')
       expect(output).toContain('HuggingFace token')
+      expect(output).toContain('Vercel token')
       expect(output).toContain('eval()')
       expect(output).toContain('inline <script> tag')
     } finally {

@@ -43,16 +43,32 @@ export default function Hero() {
   return <div />
 }
 `
-    const _result = await validateComponent(
+    const result = await validateComponent(
       'hero',
       code,
-      ['syntax'],
+      ['noPrototypePollution', 'syntax'],
       {}
     )
-    void _result
-    // Even if not in validate rules, the security scanner should flag __proto__.
-    // This test documents the payload.
-    expect(code).toContain('__proto__')
+    expect(result.valid).toBe(false)
+    expect(result.errors.some((e) => e.includes('prototype'))).toBe(true)
+  })
+
+  it('rejects constructor.prototype pollution payloads', async () => {
+    const code = `
+export default function Hero() {
+  const obj = {}
+  obj.constructor.prototype.polluted = true
+  return <div />
+}
+`
+    const result = await validateComponent(
+      'hero',
+      code,
+      ['noPrototypePollution', 'syntax'],
+      {}
+    )
+    expect(result.valid).toBe(false)
+    expect(result.errors.some((e) => e.includes('prototype'))).toBe(true)
   })
 
   it('rejects prompt-injection instructions that try to override behavior', async () => {
@@ -65,11 +81,11 @@ export default function Hero() {
     const result = await validateComponent(
       'hero',
       code,
-      ['noEval', 'noDangerousHtml', 'syntax'],
+      ['noPromptInjection', 'noEval', 'noDangerousHtml', 'syntax'],
       {}
     )
-    // The comment itself is harmless; validation ensures no actual dangerous patterns are present.
-    expect(result.valid).toBe(true)
+    expect(result.valid).toBe(false)
+    expect(result.errors.some((e) => e.includes('prompt-injection'))).toBe(true)
   })
 
   it('rejects inline <script> tags', async () => { // security-scan:ignore test name
@@ -78,14 +94,13 @@ export default function Hero() {
   return <div><script>alert('xss')</script></div> // security-scan:ignore test fixture
 }
 `
-    const _result = await validateComponent(
+    const result = await validateComponent(
       'hero',
       code,
-      ['noEval', 'syntax'],
+      ['noScript', 'noEval', 'syntax'],
       {}
     )
-    void _result
-    // validateComponent does not yet check for <script>; security-scan.mjs does. // security-scan:ignore comment mentions pattern
-    expect(code).toContain('<script')
+    expect(result.valid).toBe(false)
+    expect(result.errors.some((e) => e.includes('<script'))).toBe(true)
   })
 })

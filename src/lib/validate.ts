@@ -81,6 +81,27 @@ export async function validateComponent(
     }
   }
 
+  if (rules.includes('noScript')) {
+    if (/<script\b/i.test(code)) { // security-scan:ignore detection regex
+      errors.push('inline <script> tags are forbidden') // security-scan:ignore error message text
+    }
+  }
+
+  if (rules.includes('noPrototypePollution')) {
+    if (/\b__proto__\b/.test(code) || /constructor\.prototype/.test(code)) {
+      errors.push('prototype pollution patterns are forbidden')
+    }
+  }
+
+  if (rules.includes('noPromptInjection')) {
+    if (
+      /ignore\s+(all\s+)?previous\s+instructions/i.test(code) ||
+      /disregard\s+(all\s+)?previous\s+instructions/i.test(code)
+    ) {
+      errors.push('prompt-injection instructions are forbidden')
+    }
+  }
+
   if (rules.includes('noEval')) {
     if (
       /\beval\s*\(/.test(code) ||
