@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { TemplateRating } from './TemplateRating'
 
 export interface TemplateSummary {
   id: string
@@ -13,9 +14,13 @@ export interface TemplateSummary {
 export function TemplateCard({
   template,
   onSelect,
+  rating,
+  onRate,
 }: {
   template: TemplateSummary
   onSelect: (id: string) => void
+  rating?: number
+  onRate?: (rating: number) => void
 }) {
   return (
     <div className="flex flex-col rounded border bg-background p-3 shadow-sm transition-shadow hover:shadow-md">
@@ -33,6 +38,7 @@ export function TemplateCard({
       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
         {template.description}
       </p>
+      {onRate && <TemplateRating initialRating={rating} onRate={onRate} />}
       <Button size="sm" className="mt-3" onClick={() => onSelect(template.id)}>
         Customize
       </Button>
