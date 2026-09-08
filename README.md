@@ -5,7 +5,7 @@
 Turn a single sentence into a deployed, working website with database, forms, and custom domain — in ~15 seconds. You bring your own API keys, you own the code, you pay fractions of a cent per generation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/forgeai/forgeai/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ezpectus/forgeai/pulls)
 [![Made with Next.js](https://img.shields.io/badge/Made%20with-Next.js-black)](https://nextjs.org/)
 [![Powered by OpenRouter](https://img.shields.io/badge/Powered%20by-OpenRouter-purple)](https://openrouter.ai/)
 
@@ -259,7 +259,7 @@ For now, self-host or ask a developer friend to run it for you.
 ### Install & Run — For Developers
 
 ```bash
-git clone https://github.com/forgeai/forgeai.git
+git clone https://github.com/ezpectus/forgeai.git
 cd forgeai
 npm install
 ```
@@ -430,7 +430,7 @@ forgeai/
 ### Release
 
 - v1.0.0 is released. See [CHANGELOG.md](CHANGELOG.md) for the full feature list.
-- Roadmap and open tasks are tracked in [GitHub issues](https://github.com/forgeai/forgeai/issues).
+- Roadmap and open tasks are tracked in [GitHub issues](https://github.com/ezpectus/forgeai/issues).
 
 ---
 
@@ -503,7 +503,7 @@ template-engine, config-driven, plugin-architecture, vercel, e2b, typescript
 ## Star History
 
 <!-- uncomment after first star
-[![Star History Chart](https://api.star-history.com/svg?repos=forgeai/forgeai&type=Date)](https://star-history.com/#forgeai/forgeai&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ezpectus/forgeai&type=Date)](https://star-history.com/#ezpectus/forgeai&Date)
 -->
 
 ---

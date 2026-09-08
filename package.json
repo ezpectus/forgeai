@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/forgeai/forgeai.git"
+    "url": "https://github.com/ezpectus/forgeai.git"
   },
   "keywords": [
     "ai",
@@ -37,9 +37,9 @@
   ],
   "author": "ForgeAI Contributors",
   "bugs": {
-    "url": "https://github.com/forgeai/forgeai/issues"
+    "url": "https://github.com/ezpectus/forgeai/issues"
   },
-  "homepage": "https://forgeai.dev",
+  "homepage": "https://github.com/ezpectus/forgeai",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
