@@ -12,7 +12,7 @@ test.describe('ForgeAI home', () => {
     await page.goto('/')
     await expect(page).toHaveTitle(/ForgeAI/)
     await expect(page.getByPlaceholder('Describe the website you want...')).toBeVisible()
-    await expect(page.getByText('Open-source prompt-to-live-URL generator')).toBeVisible()
+    await expect(page.getByText('Build a website from one sentence.')).toBeVisible()
   })
 
   test('prompt input accepts text and shows model selector', async ({ page }) => {

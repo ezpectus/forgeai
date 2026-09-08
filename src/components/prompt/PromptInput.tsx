@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Globe, Loader2, Rocket, Shield, Sparkles } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useHistory } from '@/stores/history'
@@ -132,11 +132,16 @@ export function PromptInput() {
   }
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-bold tracking-tight">ForgeAI</h1>
-      <p className="text-muted-foreground">
-        Open-source prompt-to-live-URL generator
-      </p>
+    <div className="flex w-full max-w-2xl flex-col gap-6">
+      <div className="space-y-2 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+          Build a website from one sentence.
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Prompt → design → live URL. Open source, BYOK, and deployable in
+          seconds.
+        </p>
+      </div>
 
       <Textarea
         placeholder="Describe the website you want..."
@@ -188,6 +193,21 @@ export function PromptInput() {
           Add an OpenRouter, HuggingFace, or Gemini key in Settings to generate.
         </p>
       )}
+
+      <div className="grid grid-cols-1 gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+        <div className="flex items-center gap-2 rounded border p-3">
+          <Rocket className="h-4 w-4 text-primary" />
+          <span>Prompt to live URL</span>
+        </div>
+        <div className="flex items-center gap-2 rounded border p-3">
+          <Globe className="h-4 w-4 text-primary" />
+          <span>Websites, slides, reports, images</span>
+        </div>
+        <div className="flex items-center gap-2 rounded border p-3">
+          <Shield className="h-4 w-4 text-primary" />
+          <span>Your API keys, your machine</span>
+        </div>
+      </div>
 
       <FaqSection />
     </div>
