@@ -1,0 +1,112 @@
+{
+  "id": "spreadsheets",
+  "name": "AI Spreadsheets",
+  "description": "Generate spreadsheets with formulas, charts, and XLSX/CSV import-export.",
+  "version": "1.0.0",
+  "category": "create",
+  "icon": "Sheet",
+  "order": 10,
+
+  "scope": {
+    "allowed": ["cash-flow", "budget", "tracker", "formulas", "charts", "xlsx-export", "csv-export"],
+    "forbidden": ["sql-queries", "macros", "vba", "real-time-collab"]
+  },
+
+  "stack": {
+    "framework": "nextjs-14",
+    "styling": "tailwind",
+    "components": "shadcn",
+    "state": "zustand",
+    "spreadsheet": "xlsx",
+    "charts": "recharts",
+    "icons": "lucide-react"
+  },
+
+  "constraints": {
+    "maxRows": 1000,
+    "maxCols": 50,
+    "allowedFormulas": ["SUM", "AVERAGE", "IF", "VLOOKUP", "COUNT", "MAX", "MIN", "ROUND", "TODAY"],
+    "allowedChartTypes": ["line", "bar", "pie", "doughnut"],
+    "noCircularReferences": true,
+    "allowInlineStyles": false,
+    "allowClientEnv": false,
+    "componentStyle": "functional",
+    "typescriptStrict": true,
+    "allowedDependencies": [
+      "react",
+      "react-dom",
+      "next",
+      "lucide-react",
+      "xlsx",
+      "recharts",
+      "zustand",
+      "tailwindcss"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment"
+    ]
+  },
+
+  "components": [
+    "SpreadsheetGrid",
+    "FormulaBar",
+    "ChartPanel",
+    "ImportExport",
+    "CellEditor"
+  ],
+
+  "formConstraints": {},
+
+  "generation": {
+    "stages": ["intent", "plan", "component"],
+    "planModeRequiredFor": ["cash-flow", "budget"],
+    "askClarifyingQuestions": true,
+    "showPlanBeforeBuild": true,
+    "parallelComponentGeneration": false,
+    "maxRetriesPerComponent": 2
+  },
+
+  "validation": {
+    "autoTest": ["typecheck", "eslint", "ast-scan"],
+    "staticAnalysisRules": [
+      "maxRows",
+      "maxCols",
+      "noCircularReferences",
+      "validFormulaNames",
+      "noForbiddenImports",
+      "noUnusedImports"
+    ],
+    "buildCommands": [
+      "tsc --noEmit"
+    ]
+  },
+
+  "model": {
+    "intentModel": "openrouter:deepseek/deepseek-chat",
+    "codeModel": "huggingface:deepseek-coder-7b",
+    "fallback": [
+      "openrouter:deepseek/deepseek-chat",
+      "openrouter:Qwen/Qwen2.5-Coder"
+    ]
+  },
+
+  "export": {
+    "formats": ["zip", "xlsx", "csv"],
+    "includeDatabaseSchema": false,
+    "includeReadme": true,
+    "includeEnvExample": false
+  },
+
+  "ui": {
+    "defaultPrompt": "Create a cash-flow model for a cafe doing $40k/month",
+    "examplePrompts": [
+      "Budget tracker for a 6-month project",
+      "Sales tracker with monthly charts",
+      "Inventory spreadsheet with formulas",
+      "Personal finance tracker with pie chart"
+    ]
+  }
+}

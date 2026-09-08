@@ -1,0 +1,128 @@
+{
+  "id": "slides",
+  "name": "AI Slides",
+  "description": "Generate professional presentations with inline editing and PDF/PPTX export.",
+  "version": "1.0.0",
+  "category": "build",
+  "icon": "Presentation",
+  "order": 2,
+
+  "scope": {
+    "allowed": ["pitch-deck", "sales-presentation", "educational", "report-slides", "charts"],
+    "forbidden": ["games", "interactive-apps", "video", "real-time-collab", "websites"]
+  },
+
+  "stack": {
+    "framework": "nextjs-14",
+    "styling": "tailwind",
+    "components": "shadcn",
+    "state": "zustand",
+    "charts": "recharts",
+    "export": ["html2canvas", "jsPDF", "pptxgenjs"],
+    "icons": "lucide-react",
+    "animation": "css"
+  },
+
+  "constraints": {
+    "maxSlides": 15,
+    "maxElementsPerSlide": 6,
+    "maxPages": 1,
+    "maxSectionsPerPage": 1,
+    "allowInlineStyles": false,
+    "allowClientEnv": false,
+    "componentStyle": "functional",
+    "typescriptStrict": true,
+    "font": "Inter",
+    "maxColorsInPalette": 4,
+    "allowedDependencies": [
+      "react",
+      "react-dom",
+      "next",
+      "lucide-react",
+      "recharts",
+      "html2canvas",
+      "jspdf",
+      "pptxgenjs",
+      "zustand",
+      "tailwindcss",
+      "class-variance-authority",
+      "clsx",
+      "tailwind-merge"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment",
+      "styled-components",
+      "@emotion/react",
+      "gsap",
+      "framer-motion"
+    ]
+  },
+
+  "components": [
+    "TitleSlide",
+    "ContentSlide",
+    "TwoColumnSlide",
+    "ImageSlide",
+    "ChartSlide",
+    "QuoteSlide",
+    "BulletsSlide",
+    "ConclusionSlide"
+  ],
+
+  "formConstraints": {},
+
+  "generation": {
+    "stages": ["intent", "plan", "component", "validate", "assemble"],
+    "planModeRequiredFor": ["pitch-deck", "sales-presentation"],
+    "askClarifyingQuestions": true,
+    "showPlanBeforeBuild": true,
+    "parallelComponentGeneration": false,
+    "maxRetriesPerComponent": 2
+  },
+
+  "validation": {
+    "autoTest": ["typecheck", "eslint", "ast-scan"],
+    "staticAnalysisRules": [
+      "hasDefaultExport",
+      "noForbiddenImports",
+      "noDangerousHtml",
+      "noEval",
+      "usesTailwindOnly",
+      "hasSlideNavigation",
+      "noInlineStyles",
+      "noUnusedImports"
+    ],
+    "buildCommands": [
+      "tsc --noEmit"
+    ]
+  },
+
+  "model": {
+    "intentModel": "openrouter:deepseek/deepseek-chat",
+    "codeModel": "huggingface:deepseek-coder-7b",
+    "fallback": [
+      "openrouter:deepseek/deepseek-chat",
+      "openrouter:Qwen/Qwen2.5-Coder"
+    ]
+  },
+
+  "export": {
+    "formats": ["zip", "pdf", "pptx"],
+    "includeDatabaseSchema": false,
+    "includeReadme": true,
+    "includeEnvExample": false
+  },
+
+  "ui": {
+    "defaultPrompt": "Create a 10-slide pitch deck for a startup",
+    "examplePrompts": [
+      "Seed pitch deck for a fintech startup",
+      "Sales presentation for B2B SaaS",
+      "Educational slides about AI",
+      "Quarterly report presentation with charts"
+    ]
+  }
+}

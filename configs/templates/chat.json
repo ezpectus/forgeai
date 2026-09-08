@@ -1,0 +1,115 @@
+{
+  "id": "chat",
+  "name": "AI Chat",
+  "description": "Chat with an AI agent that writes code, searches the web, and runs commands in a sandbox.",
+  "version": "1.0.0",
+  "category": "agent",
+  "icon": "MessageSquare",
+  "order": 5,
+
+  "scope": {
+    "allowed": ["chat", "code-execution", "web-search", "file-analysis", "multi-step-tasks", "plan"],
+    "forbidden": ["local-shell", "file-system-access", "infinite-autonomous-loop", "unauthorized-commands"]
+  },
+
+  "stack": {
+    "framework": "nextjs-14",
+    "api": "hono",
+    "styling": "tailwind",
+    "components": "shadcn",
+    "state": "zustand",
+    "llmApi": "openrouter",
+    "sandbox": "e2b",
+    "database": "supabase",
+    "icons": "lucide-react"
+  },
+
+  "constraints": {
+    "maxAttachmentSizeMb": 25,
+    "maxAttachments": 10,
+    "maxMessagesInContext": 50,
+    "codeOnlyInSandbox": true,
+    "allowInlineStyles": false,
+    "allowClientEnv": false,
+    "componentStyle": "functional",
+    "typescriptStrict": true,
+    "allowedDependencies": [
+      "react",
+      "react-dom",
+      "next",
+      "lucide-react",
+      "zustand",
+      "tailwindcss",
+      "hono",
+      "@supabase/supabase-js"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment",
+      "child_process"
+    ]
+  },
+
+  "components": [
+    "ChatWindow",
+    "MessageList",
+    "MessageInput",
+    "FileAttachment",
+    "ToolCallDisplay",
+    "PlanDisplay"
+  ],
+
+  "formConstraints": {},
+
+  "generation": {
+    "stages": ["intent", "plan", "component"],
+    "planModeRequiredFor": ["multi-step-tasks", "code-execution"],
+    "askClarifyingQuestions": true,
+    "showPlanBeforeBuild": true,
+    "parallelComponentGeneration": false,
+    "maxRetriesPerComponent": 2
+  },
+
+  "validation": {
+    "autoTest": ["typecheck", "eslint", "ast-scan"],
+    "staticAnalysisRules": [
+      "noShellEscape",
+      "hasSandboxWrapper",
+      "streamingImplemented",
+      "chatHistoryPersisted",
+      "noForbiddenImports",
+      "noUnusedImports"
+    ],
+    "buildCommands": [
+      "tsc --noEmit"
+    ]
+  },
+
+  "model": {
+    "intentModel": "openrouter:deepseek/deepseek-chat",
+    "codeModel": "openrouter:deepseek/deepseek-chat",
+    "fallback": [
+      "openrouter:Qwen/Qwen2.5-Coder",
+      "openrouter:meta-llama/llama-3.1-70b-instruct"
+    ]
+  },
+
+  "export": {
+    "formats": ["zip"],
+    "includeDatabaseSchema": true,
+    "includeReadme": true,
+    "includeEnvExample": true
+  },
+
+  "ui": {
+    "defaultPrompt": "Help me build a simple landing page for my business",
+    "examplePrompts": [
+      "Search the web for latest AI news and summarize",
+      "Analyze this PDF and answer my questions",
+      "Run a Python script to sort this CSV",
+      "Plan a marketing campaign for my product"
+    ]
+  }
+}

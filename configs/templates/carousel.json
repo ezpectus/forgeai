@@ -1,0 +1,111 @@
+{
+  "id": "carousel",
+  "name": "AI Carousel",
+  "description": "Generate multi-slide social media carousel posts for Instagram, LinkedIn, and X.",
+  "version": "1.0.0",
+  "category": "create",
+  "icon": "Layers",
+  "order": 8,
+
+  "scope": {
+    "allowed": ["instagram", "linkedin", "twitter", "social-posts", "brand-consistent"],
+    "forbidden": ["animated-carousels", "video-in-carousel", "more-than-15-slides"]
+  },
+
+  "stack": {
+    "framework": "nextjs-14",
+    "styling": "tailwind",
+    "components": "shadcn",
+    "state": "zustand",
+    "renderer": "html5-canvas-svg",
+    "export": ["html2canvas"],
+    "icons": "lucide-react"
+  },
+
+  "constraints": {
+    "minSlides": 3,
+    "maxSlides": 15,
+    "allowedAspectRatios": ["1:1", "4:5", "16:9"],
+    "maxColorsInPalette": 3,
+    "maxFontsPerCarousel": 2,
+    "allowInlineStyles": false,
+    "allowClientEnv": false,
+    "componentStyle": "functional",
+    "typescriptStrict": true,
+    "allowedDependencies": [
+      "react",
+      "react-dom",
+      "next",
+      "lucide-react",
+      "html2canvas",
+      "zustand",
+      "tailwindcss"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment"
+    ]
+  },
+
+  "components": [
+    "CarouselEditor",
+    "SlidePreview",
+    "SlideThumbnail",
+    "ExportPng",
+    "TemplatePicker"
+  ],
+
+  "formConstraints": {},
+
+  "generation": {
+    "stages": ["intent", "plan", "component"],
+    "planModeRequiredFor": [],
+    "askClarifyingQuestions": true,
+    "showPlanBeforeBuild": true,
+    "parallelComponentGeneration": false,
+    "maxRetriesPerComponent": 2
+  },
+
+  "validation": {
+    "autoTest": ["typecheck", "eslint", "ast-scan"],
+    "staticAnalysisRules": [
+      "slideCount",
+      "validAspectRatio",
+      "maxColors",
+      "noBrandLogoTheft",
+      "noForbiddenImports",
+      "noUnusedImports"
+    ],
+    "buildCommands": [
+      "tsc --noEmit"
+    ]
+  },
+
+  "model": {
+    "intentModel": "openrouter:deepseek/deepseek-chat",
+    "codeModel": "huggingface:deepseek-coder-7b",
+    "fallback": [
+      "openrouter:deepseek/deepseek-chat",
+      "openrouter:Qwen/Qwen2.5-Coder"
+    ]
+  },
+
+  "export": {
+    "formats": ["zip", "png"],
+    "includeDatabaseSchema": false,
+    "includeReadme": true,
+    "includeEnvExample": false
+  },
+
+  "ui": {
+    "defaultPrompt": "Create a 5-slide Instagram carousel about AI tools for small business",
+    "examplePrompts": [
+      "LinkedIn carousel about startup fundraising tips",
+      "X carousel comparing 3 project management tools",
+      "Instagram carousel for a new coffee shop opening",
+      "5 tips for better sleep, Instagram 4:5"
+    ]
+  }
+}

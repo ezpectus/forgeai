@@ -1,0 +1,112 @@
+{
+  "id": "canvas",
+  "name": "AI Canvas",
+  "description": "Freeform visual workspace for images and videos with region editing and motion control.",
+  "version": "1.0.0",
+  "category": "create",
+  "icon": "Layout",
+  "order": 7,
+
+  "scope": {
+    "allowed": ["freeform-workspace", "image-upload", "image-generation", "arrange", "region-edit", "motion-control"],
+    "forbidden": ["copyright-infringement", "auto-public-share", "more-than-50-layers"]
+  },
+
+  "stack": {
+    "framework": "nextjs-14",
+    "styling": "tailwind",
+    "components": "shadcn",
+    "state": "zustand",
+    "canvas": "fabricjs",
+    "storage": "supabase-storage",
+    "imageApi": ["replicate", "huggingface"],
+    "icons": "lucide-react"
+  },
+
+  "constraints": {
+    "maxCanvasSize": 4096,
+    "maxLayers": 50,
+    "autoSaveIntervalSeconds": 30,
+    "allowInlineStyles": false,
+    "allowClientEnv": false,
+    "componentStyle": "functional",
+    "typescriptStrict": true,
+    "allowedDependencies": [
+      "react",
+      "react-dom",
+      "next",
+      "lucide-react",
+      "fabric",
+      "zustand",
+      "tailwindcss",
+      "@supabase/supabase-js"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment"
+    ]
+  },
+
+  "components": [
+    "CanvasWorkspace",
+    "LayerPanel",
+    "Toolbar",
+    "ImageGeneratorPanel",
+    "MaskTool",
+    "ExportPanel"
+  ],
+
+  "formConstraints": {},
+
+  "generation": {
+    "stages": ["intent", "component", "validate"],
+    "planModeRequiredFor": [],
+    "askClarifyingQuestions": false,
+    "showPlanBeforeBuild": false,
+    "parallelComponentGeneration": false,
+    "maxRetriesPerComponent": 2
+  },
+
+  "validation": {
+    "autoTest": ["typecheck", "eslint", "ast-scan"],
+    "staticAnalysisRules": [
+      "maxCanvasSize",
+      "maxLayers",
+      "hasAutoSave",
+      "noClientApiKey",
+      "noForbiddenImports",
+      "noUnusedImports"
+    ],
+    "buildCommands": [
+      "tsc --noEmit"
+    ]
+  },
+
+  "model": {
+    "intentModel": "openrouter:deepseek/deepseek-chat",
+    "codeModel": "huggingface:deepseek-coder-7b",
+    "fallback": [
+      "openrouter:deepseek/deepseek-chat",
+      "openrouter:Qwen/Qwen2.5-Coder"
+    ]
+  },
+
+  "export": {
+    "formats": ["zip"],
+    "includeDatabaseSchema": false,
+    "includeReadme": true,
+    "includeEnvExample": true
+  },
+
+  "ui": {
+    "defaultPrompt": "Create a product photo composition on a canvas",
+    "examplePrompts": [
+      "Generate a hero image and arrange it on a 4k canvas",
+      "Edit the text on this banner using mask tool",
+      "Animate between these two product shots with motion control",
+      "Create a virtual try-on composition"
+    ]
+  }
+}

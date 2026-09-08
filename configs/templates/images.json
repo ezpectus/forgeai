@@ -1,0 +1,107 @@
+{
+  "id": "images",
+  "name": "AI Images",
+  "description": "Generate, edit, remove backgrounds, and upscale images.",
+  "version": "1.0.0",
+  "category": "create",
+  "icon": "Image",
+  "order": 3,
+
+  "scope": {
+    "allowed": ["text-to-image", "batch", "background-removal", "upscale", "region-edit"],
+    "forbidden": ["nsfw", "deepfake", "face-swap-without-consent", "bulk-web-scraping"]
+  },
+
+  "stack": {
+    "framework": "nextjs-14",
+    "styling": "tailwind",
+    "components": "shadcn",
+    "state": "zustand",
+    "canvas": "html5-canvas",
+    "imageApi": ["replicate", "huggingface"],
+    "icons": "lucide-react"
+  },
+
+  "constraints": {
+    "maxImageSize": 2048,
+    "maxImagesPerBatch": 4,
+    "allowedFormats": ["png", "jpeg", "webp"],
+    "allowInlineStyles": false,
+    "allowClientEnv": false,
+    "componentStyle": "functional",
+    "typescriptStrict": true,
+    "allowedDependencies": [
+      "react",
+      "react-dom",
+      "next",
+      "lucide-react",
+      "zustand",
+      "tailwindcss"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment"
+    ]
+  },
+
+  "components": [
+    "ImageGenerator",
+    "ImageEditor",
+    "ImageGallery",
+    "MaskCanvas",
+    "ImageUpscaler"
+  ],
+
+  "formConstraints": {},
+
+  "generation": {
+    "stages": ["intent", "component", "validate"],
+    "planModeRequiredFor": [],
+    "askClarifyingQuestions": false,
+    "showPlanBeforeBuild": false,
+    "parallelComponentGeneration": false,
+    "maxRetriesPerComponent": 2
+  },
+
+  "validation": {
+    "autoTest": ["typecheck", "eslint", "ast-scan"],
+    "staticAnalysisRules": [
+      "noClientApiKey",
+      "validImageSize",
+      "hasLoadingState",
+      "noForbiddenImports",
+      "noUnusedImports"
+    ],
+    "buildCommands": [
+      "tsc --noEmit"
+    ]
+  },
+
+  "model": {
+    "intentModel": "openrouter:deepseek/deepseek-chat",
+    "codeModel": "huggingface:deepseek-coder-7b",
+    "fallback": [
+      "openrouter:deepseek/deepseek-chat",
+      "openrouter:Qwen/Qwen2.5-Coder"
+    ]
+  },
+
+  "export": {
+    "formats": ["zip"],
+    "includeDatabaseSchema": false,
+    "includeReadme": true,
+    "includeEnvExample": true
+  },
+
+  "ui": {
+    "defaultPrompt": "Generate a product photo of a coffee cup on a marble counter",
+    "examplePrompts": [
+      "Product shots of a bottle on marble counter",
+      "Remove background from this portrait",
+      "Upscale this logo to 4x",
+      "Edit the text on this sign to say 'Welcome'"
+    ]
+  }
+}
