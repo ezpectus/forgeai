@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { EditorOverlay } from '@/components/editor/EditorOverlay'
 import { GenerationProgress } from '@/components/generate/GenerationProgress'
 import { LivePreview } from '@/components/preview/LivePreview'
 import { PromptInput } from '@/components/prompt/PromptInput'
@@ -29,11 +30,13 @@ export function MainArea({
     content = <GenerationProgress />
   } else if (deployUrl) {
     content = (
-      <LivePreview
-        url={deployUrl}
-        status={previewStatus}
-        error={useProject.getState().error ?? undefined}
-      />
+      <EditorOverlay>
+        <LivePreview
+          url={deployUrl}
+          status={previewStatus}
+          error={useProject.getState().error ?? undefined}
+        />
+      </EditorOverlay>
     )
   } else if (status === 'ready') {
     content = <GenerationProgress />

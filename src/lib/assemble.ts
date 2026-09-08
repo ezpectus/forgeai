@@ -185,6 +185,15 @@ module.exports = nextConfig
     @apply bg-background text-foreground;
   }
 }
+
+[data-component] {
+  position: relative;
+}
+
+[data-component]:hover {
+  outline: 2px dashed hsl(var(--primary));
+  outline-offset: -2px;
+}
 `
 
   files['src/app/layout.tsx'] = `import type { Metadata } from 'next'
@@ -216,19 +225,14 @@ export default function RootLayout({
     .join('\n')
 
   const rendered = sectionComponents
-    .map((c) => `      <${c.name} />`)
+    .map(
+      (c) =>
+        `      <div data-component="${c.name}" onClick={() => window.parent.postMessage({ action: 'select', component: '${c.name}' }, '*')}>\n        <${c.name} />\n      </div>`
+    )
     .join('\n')
 
-  files['src/app/page.tsx'] = `${imports}
-
-export default function HomePage() {
-  return (
-    <main className="min-h-screen">
-${rendered}
-    </main>
-  )
-}
-`
+  files['src/app/page.tsx'] =
+    `'use client'\n\n${imports}\n\nexport default function HomePage() {\n  return (\n    <main className="min-h-screen">\n${rendered}\n    </main>\n  )\n}\n`
 
   for (const component of sectionComponents) {
     files[`src/components/sections/${component.name}.tsx`] = component.code
