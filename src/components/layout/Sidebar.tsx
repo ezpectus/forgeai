@@ -7,16 +7,18 @@ import {
   Headphones,
   Image,
   LayoutGrid,
-  Menu,
   MessageSquare,
   Monitor,
   PenTool,
   Table2,
   Video,
-  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { useUI } from '@/stores/ui'
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog'
 
 const functions = [
   { id: 'website', label: 'Website', icon: Globe },
@@ -33,7 +35,7 @@ const functions = [
 
 export function Sidebar({ className }: { className?: string }) {
   const [active, setActive] = useState('website')
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const { mobileSidebarOpen, closeMobileSidebar } = useUI()
 
   const list = (
     <nav className="flex flex-col gap-1 p-3">
@@ -45,7 +47,7 @@ export function Sidebar({ className }: { className?: string }) {
             type="button"
             onClick={() => {
               setActive(item.id)
-              setMobileOpen(false)
+              closeMobileSidebar()
             }}
             className={cn(
               'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
@@ -76,26 +78,14 @@ export function Sidebar({ className }: { className?: string }) {
         {list}
       </div>
 
-      <div className="fixed left-0 top-0 z-50 flex h-14 w-full items-center justify-between border-b bg-background px-4 md:hidden">
-        <span className="font-semibold">ForgeAI</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </Button>
-      </div>
-
-      {mobileOpen && (
-        <div className="fixed inset-x-0 top-14 z-40 flex flex-col border-b bg-background pb-4 md:hidden">
+      <Dialog open={mobileSidebarOpen} onOpenChange={closeMobileSidebar}>
+        <DialogContent className="fixed inset-y-0 left-0 top-0 h-full w-[280px] max-w-none translate-x-0 translate-y-0 justify-start rounded-none border-r bg-background p-0">
+          <div className="flex h-14 items-center border-b px-4 font-semibold">
+            ForgeAI
+          </div>
           {list}
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

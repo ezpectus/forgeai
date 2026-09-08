@@ -7,12 +7,16 @@ import {
   Copy,
   Download,
   LayoutGrid,
+  Menu,
+  Moon,
   Rocket,
   Settings,
+  Sun,
 } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
+import { useTheme } from '@/components/providers/ThemeProvider'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -179,11 +183,59 @@ function GalleryButton() {
   )
 }
 
+function ThemeToggle() {
+  const { theme, resolvedTheme, setTheme } = useTheme()
+
+  const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'
+  const Icon = resolvedTheme === 'dark' ? Moon : Sun
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(next)}
+      title={`Theme: ${theme} (click for ${next})`}
+      aria-label={`Theme is ${theme}, switch to ${next}`}
+    >
+      <Icon className="h-4 w-4" />
+    </Button>
+  )
+}
+
+function MobileMenu() {
+  const toggleMobileSidebar = useUI((state) => state.toggleMobileSidebar)
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleMobileSidebar}
+      className="md:hidden"
+      aria-label="Open menu"
+    >
+      <Menu className="h-5 w-5" />
+    </Button>
+  )
+}
+
 export function TopBar() {
   const openSettings = useUI((state) => state.openSettings)
 
   return (
-    <header className="flex h-14 justify-between border-b bg-background px-4">
+    <header className="flex h-14 items-center justify-between border-b bg-background px-4">
+      <div className="flex items-center gap-2 md:hidden">
+        <MobileMenu />
+        <Image
+          src="/favicon.svg"
+          alt="ForgeAI"
+          width={24}
+          height={24}
+          priority
+          unoptimized
+        />
+        <span className="font-semibold">ForgeAI</span>
+      </div>
+
       <div className="hidden items-center gap-2 text-lg font-semibold md:flex">
         <Image
           src="/favicon.svg"
@@ -195,7 +247,10 @@ export function TopBar() {
         />
         ForgeAI
       </div>
-      <div className="ml-auto flex gap-2">
+
+      <div className="ml-auto flex items-center gap-2">
+        <ThemeToggle />
+
         <Button
           variant="outline"
           size="sm"

@@ -48,6 +48,7 @@ export interface UIState {
   customizeTemplateId: string | null
   selectedComponent: string | null
   deployStatus: 'idle' | 'deploying' | 'deployed' | 'failed'
+  mobileSidebarOpen: boolean
 }
 
 // ------------------------------------------------------------------------

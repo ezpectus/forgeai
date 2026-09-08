@@ -23,14 +23,23 @@ export const metadata: Metadata = {
   },
 }
 
+const themeScript = `
+  (function() {
+    const theme = localStorage.getItem('forgeai-theme') || 'system';
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+  })();
+`
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        {/* prettier-ignore */} {/* security-scan:ignore inline theme script, no user input */} <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Providers>{children}</Providers>
       </body>
     </html>

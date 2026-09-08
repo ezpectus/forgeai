@@ -12,6 +12,9 @@ export type UIStore = UIState & {
   closeCustomize: () => void
   selectComponent: (name: string | null) => void
   setDeployStatus: (status: UIState['deployStatus']) => void
+  openMobileSidebar: () => void
+  closeMobileSidebar: () => void
+  toggleMobileSidebar: () => void
 }
 
 const initialState: UIState = {
@@ -21,6 +24,7 @@ const initialState: UIState = {
   customizeTemplateId: null,
   selectedComponent: null,
   deployStatus: 'idle',
+  mobileSidebarOpen: false,
 }
 
 export const useUI = create<UIStore>((set) => ({
@@ -46,4 +50,11 @@ export const useUI = create<UIStore>((set) => ({
   selectComponent: (selectedComponent) => set({ selectedComponent }),
 
   setDeployStatus: (deployStatus) => set({ deployStatus }),
+
+  openMobileSidebar: () => set({ mobileSidebarOpen: true }),
+
+  closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
+
+  toggleMobileSidebar: () =>
+    set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
 }))
