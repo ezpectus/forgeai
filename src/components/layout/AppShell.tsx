@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { EditPanel } from '@/components/editor/EditPanel'
 import { SettingsDialog } from '@/components/settings/SettingsDialog'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
@@ -11,6 +12,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
       <Sidebar className="md:col-start-1 md:row-span-3" />
       <TopBar />
       <MainArea className="md:col-start-2">{children}</MainArea>
+      <EditPanel />
       <StatusBar />
       <SettingsDialog />
     </div>

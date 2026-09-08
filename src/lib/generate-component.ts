@@ -101,3 +101,45 @@ export async function generateComponent(
     cost: result.cost,
   }
 }
+
+export async function regenerateComponent(
+  config: ComponentSpec,
+  componentName: string,
+  currentCode: string,
+  instruction: string,
+  auth: Record<string, string>
+): Promise<ComponentState> {
+  const filePath = join(process.cwd(), 'configs/templates', `${config.id}.json`)
+  const raw = await readFile(filePath, 'utf-8')
+  const template = JSON.parse(raw) as ComponentSpec
+
+  const systemPrompt = buildSystemPrompt(template, componentName)
+  const userPrompt = `Current component code:\n${currentCode}\n\nInstruction: ${instruction}\n\nMake minimal changes. Preserve structure. Return only the TypeScript React component code. No markdown, no explanation.`
+
+  const chain = buildChain(auth)
+
+  if (chain.length === 0) {
+    return {
+      name: componentName,
+      code: '',
+      status: 'error',
+      version: 0,
+      error: 'No API keys available',
+    }
+  }
+
+  const result = await callWithFallback(
+    userPrompt,
+    { systemPrompt, temperature: 0.2, maxTokens: 2048 },
+    auth,
+    chain
+  )
+
+  return {
+    name: componentName,
+    code: result.code,
+    status: 'ready',
+    version: 1,
+    cost: result.cost,
+  }
+}

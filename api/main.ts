@@ -6,6 +6,7 @@ import { corsMiddleware } from './middleware/cors'
 import { rateLimitMiddleware } from './middleware/rateLimit'
 import type { AppEnv } from './lib/env'
 import { log } from './lib/logger'
+import componentRoute from './routes/component'
 import deployRoute from './routes/deploy'
 import deployStatusRoute from './routes/deploy-status'
 import generateRoute from './routes/generate'
@@ -20,6 +21,7 @@ app.use(authMiddleware)
 
 app.route('/api/health', healthRoute)
 app.route('/api/generate', generateRoute)
+app.route('/api/generate/component', componentRoute)
 app.route('/api/deploy', deployRoute)
 app.route('/api/deploy', deployStatusRoute)
 
