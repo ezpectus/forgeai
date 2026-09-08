@@ -264,8 +264,47 @@ export default function RootLayout({
 
   const formHandlerNode = intent.dbRequired ? '      <FormHandler />\n' : ''
 
+  files['src/lib/analytics.ts'] = `export interface AnalyticsEvent {
+  id: string
+  type: 'page_view' | 'form_submit' | 'conversion'
+  timestamp: number
+  data?: Record<string, unknown>
+}
+
+const STORAGE_KEY = 'forgeai_analytics'
+
+function generateId(): string {
+  return \`\${Date.now()}-\${Math.random().toString(36).slice(2, 9)}\`
+}
+
+function loadEvents(): AnalyticsEvent[] {
+  if (typeof window === 'undefined') return []
+  const raw = localStorage.getItem(STORAGE_KEY)
+  return raw ? (JSON.parse(raw) as AnalyticsEvent[]) : []
+}
+
+function saveEvents(events: AnalyticsEvent[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events.slice(-1000)))
+}
+
+export function trackEvent(type: AnalyticsEvent['type'], data?: Record<string, unknown>) {
+  const events = loadEvents()
+  events.push({ id: generateId(), type, timestamp: Date.now(), data })
+  saveEvents(events)
+}
+
+export function trackPageView(path: string) {
+  trackEvent('page_view', { path })
+}
+
+export function trackFormSubmit(formName: string) {
+  trackEvent('form_submit', { form: formName })
+}
+`
+
   files['src/app/page.tsx'] =
-    `'use client'\n\n${imports}${formHandler}\nexport default function HomePage() {\n  return (\n    <main className="min-h-screen">\n${rendered}${formHandlerNode}    </main>\n  )\n}\n`
+    `'use client'\n\nimport { useEffect } from 'react'\n${imports}${formHandler}\nimport { trackPageView, trackFormSubmit } from '@/lib/analytics'\n\nexport default function HomePage() {\n  useEffect(() => {\n    trackPageView('/')\n  }, [])\n\n  function handleFormSubmit(name: string) {\n    trackFormSubmit(name)\n  }\n\n  return (\n    <main className="min-h-screen" onSubmit={(e) => {\n      const form = e.target as HTMLFormElement\n      if (form.dataset.form) handleFormSubmit(form.dataset.form)\n    }}>\n${rendered}${formHandlerNode}    </main>\n  )\n}\n`
 
   files['src/app/sitemap.ts'] = `import type { MetadataRoute } from 'next'
 
