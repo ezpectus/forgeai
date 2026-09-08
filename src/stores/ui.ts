@@ -15,6 +15,7 @@ export type UIStore = UIState & {
   openMobileSidebar: () => void
   closeMobileSidebar: () => void
   toggleMobileSidebar: () => void
+  setActiveMode: (mode: string) => void
 }
 
 const initialState: UIState = {
@@ -25,6 +26,7 @@ const initialState: UIState = {
   selectedComponent: null,
   deployStatus: 'idle',
   mobileSidebarOpen: false,
+  activeMode: 'website',
 }
 
 // Zustand store that controls the visible shell: open panels, selected
@@ -59,4 +61,6 @@ export const useUI = create<UIStore>((set) => ({
 
   toggleMobileSidebar: () =>
     set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
+
+  setActiveMode: (activeMode) => set({ activeMode }),
 }))

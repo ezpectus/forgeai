@@ -5,27 +5,13 @@ import { Loader2, Sparkles } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
 import { useUI } from '@/stores/ui'
 import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
-
-const models = [
-  { value: 'deepseek-v3', label: 'DeepSeek V3 (OpenRouter)' },
-  { value: 'deepseek-coder', label: 'DeepSeek Coder (HuggingFace)' },
-  { value: 'qwen-coder', label: 'Qwen Coder (OpenRouter)' },
-  { value: 'gemini-flash', label: 'Gemini 1.5 Flash (Google)' },
-  { value: 'gemini-pro', label: 'Gemini 1.5 Pro (Google)' },
-  { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
-]
+import { ModelSelector } from './ModelSelector'
+import { FaqSection } from './FaqSection'
 
 /**
  * Main prompt input component. Collects the user's idea, lets them pick an AI
@@ -47,7 +33,8 @@ export function PromptInput() {
   } = useProject()
 
   const [prompt, setPromptLocal] = useState('')
-  const [model, setModel] = useState(models[0].value)
+  const [provider, setProvider] = useState('auto')
+  const [model, setModel] = useState('')
 
   const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
@@ -73,6 +60,7 @@ export function PromptInput() {
       '/api/generate',
       {
         prompt: trimmed,
+        provider,
         model,
         auth: { openrouter, huggingface, gemini },
         token,
@@ -144,19 +132,15 @@ export function PromptInput() {
         <ExampleChips onSelect={handleSelect} />
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Select value={model} onValueChange={setModel}>
-          <SelectTrigger className="w-full sm:w-[260px]">
-            <SelectValue placeholder="Select model" />
-          </SelectTrigger>
-          <SelectContent>
-            {models.map((m) => (
-              <SelectItem key={m.value} value={m.value}>
-                {m.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <ModelSelector
+          provider={provider}
+          model={model}
+          onChange={(p, m) => {
+            setProvider(p)
+            setModel(m)
+          }}
+        />
 
         <div className="flex gap-2">
           <Button
@@ -183,6 +167,8 @@ export function PromptInput() {
           Add an OpenRouter, HuggingFace, or Gemini key in Settings to generate.
         </p>
       )}
+
+      <FaqSection />
     </div>
   )
 }

@@ -6,25 +6,41 @@ import { buildSystemPrompt, buildUserPrompt } from './prompt-builder'
 import { HuggingFace } from '@/plugins/providers/huggingface'
 import { OpenRouter } from '@/plugins/providers/openrouter'
 import { Gemini } from '@/plugins/providers/gemini'
+import { providers } from '@/plugins/providers'
 import type { AIProvider, ComponentSpec, ComponentState, IntentResult } from '@/types'
 
 // Build the ordered list of AI providers to try, based on which keys the user has set.
-function buildChain(auth: Record<string, string>) {
+function buildChain(
+  auth: Record<string, string>,
+  preferred?: { provider: string; model: string }
+) {
   const chain: { provider: AIProvider; model: string }[] = []
+  const seen = new Set<string>()
 
-  if (auth.openrouter) {
+  if (preferred && auth[preferred.provider]) {
+    const provider = providers.find((p) => p.name === preferred.provider)
+    if (provider) {
+      chain.push({ provider, model: preferred.model })
+      seen.add(provider.name)
+    }
+  }
+
+  if (auth.openrouter && !seen.has('openrouter')) {
     chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
+    seen.add('openrouter')
   }
 
-  if (auth.gemini) {
+  if (auth.gemini && !seen.has('gemini')) {
     chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
+    seen.add('gemini')
   }
 
-  if (auth.huggingface) {
+  if (auth.huggingface && !seen.has('huggingface')) {
     chain.push({
       provider: HuggingFace,
       model: 'deepseek-ai/deepseek-coder-6.7b-instruct',
     })
+    seen.add('huggingface')
   }
 
   return chain
@@ -72,7 +88,8 @@ export async function generateComponent(
   prompt: string,
   config: ComponentSpec,
   componentName: string,
-  auth: Record<string, string>
+  auth: Record<string, string>,
+  preferred?: { provider: string; model: string }
 ): Promise<ComponentState> {
   const filePath = join(process.cwd(), 'configs/templates', `${config.id}.json`)
   const raw = await readFile(filePath, 'utf-8')
@@ -86,7 +103,7 @@ export async function generateComponent(
   const intent = hasAnyKey ? await analyzeIntent(prompt, auth) : DEFAULT_INTENT
 
   const userPrompt = buildUserPrompt(intent, componentName, prompt)
-  const chain = buildChain(auth)
+  const chain = buildChain(auth, preferred)
 
   if (chain.length === 0) {
     return {

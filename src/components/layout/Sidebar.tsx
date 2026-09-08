@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   FileText,
   Globe,
@@ -38,8 +37,8 @@ const functions = [
  * with a desktop sidebar and a mobile dialog version.
  */
 export function Sidebar({ className }: { className?: string }) {
-  const [active, setActive] = useState('website')
-  const { mobileSidebarOpen, closeMobileSidebar } = useUI()
+  const { mobileSidebarOpen, closeMobileSidebar, activeMode, setActiveMode } =
+    useUI()
 
   const list = (
     <nav className="flex flex-col gap-1 p-3">
@@ -50,12 +49,12 @@ export function Sidebar({ className }: { className?: string }) {
             key={item.id}
             type="button"
             onClick={() => {
-              setActive(item.id)
+              setActiveMode(item.id)
               closeMobileSidebar()
             }}
             className={cn(
               'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-              active === item.id
+              activeMode === item.id
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             )}

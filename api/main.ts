@@ -16,6 +16,7 @@ import deployStatusRoute from './routes/deploy-status'
 import exportRoute from './routes/export'
 import generateRoute from './routes/generate'
 import healthRoute from './routes/health'
+import modelsRoute from './routes/models'
 
 import { securityHeaders } from './middleware/security'
 
@@ -30,6 +31,7 @@ app.use(rateLimitMiddleware)
 app.use(authMiddleware)
 
 app.route('/api/health', healthRoute)
+app.route('/api/models', modelsRoute)
 app.route('/api/templates', templatesRoute)
 app.route('/api/generate', generateRoute)
 app.route('/api/generate/component', componentRoute)

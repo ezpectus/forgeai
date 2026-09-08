@@ -50,6 +50,7 @@ export interface UIState {
   selectedComponent: string | null
   deployStatus: 'idle' | 'deploying' | 'deployed' | 'failed'
   mobileSidebarOpen: boolean
+  activeMode: string
 }
 
 // ------------------------------------------------------------------------
@@ -297,6 +298,8 @@ export interface GenerateRequest {
   prompt: string
   config?: GenConfig
   templateId?: string | null
+  provider?: string
+  model?: string
 }
 
 export interface GenerateComponentRequest {

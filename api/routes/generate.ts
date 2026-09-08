@@ -21,6 +21,8 @@ app.post('/', async (c) => {
     prompt: string
     templateId?: string
     auth?: Record<string, string>
+    provider?: string
+    model?: string
   }
 
   try {
@@ -28,6 +30,8 @@ app.post('/', async (c) => {
       prompt: string
       templateId?: string
       auth?: Record<string, string>
+      provider?: string
+      model?: string
     }>()
   } catch {
     return c.json({ error: 'Invalid JSON body', code: 'BAD_REQUEST' }, 400)
@@ -93,11 +97,17 @@ app.post('/', async (c) => {
           const componentName = section.name
           send('component', { name: componentName, status: 'generating' })
 
+          const preferred =
+            body.provider && body.model
+              ? { provider: body.provider, model: body.model }
+              : undefined
+
           let result = await generateComponent(
             body.prompt,
             config,
             componentName,
-            auth
+            auth,
+            preferred
           )
 
           if (result.status === 'ready') {
