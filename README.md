@@ -45,7 +45,7 @@ The agent follows a three-phase workflow:
 - Inline visual editor — click any block, describe a change, it updates in place
 - Version history with one-click rollback
 
-**3. Grow** (roadmap) — After deployment, automate the repetitive work:
+**3. Grow** ✅ v1.0 — After deployment, automate the repetitive work:
 
 - SEO optimization (meta tags, sitemap, structured data)
 - Analytics dashboard (visitors, page views, conversions)
@@ -191,15 +191,15 @@ For full sequence diagrams and data flow, see [docs/architecture.md](docs/archit
 
 ## Screenshots
 
-> Screenshots will be added once the UI is built.
+> UI is built and working. Add real screenshots by running `npm run dev`, generating a site, and exporting PNGs into `public/screenshots/`.
 
-| Screen                       | Preview       |
-| ---------------------------- | ------------- |
-| Prompt input                 | _coming soon_ |
-| Generation progress          | _coming soon_ |
-| Live preview + visual editor | _coming soon_ |
-| Template gallery             | _coming soon_ |
-| Settings / API keys          | _coming soon_ |
+| Screen                       | Preview                                  |
+| ---------------------------- | ---------------------------------------- |
+| Prompt input                 | `public/screenshots/prompt.png`          |
+| Generation progress          | `public/screenshots/progress.png`        |
+| Live preview + visual editor | `public/screenshots/editor.png`          |
+| Template gallery             | `public/screenshots/gallery.png`         |
+| Settings / API keys          | `public/screenshots/settings.png`        |
 
 ---
 
@@ -261,13 +261,26 @@ For now, self-host or ask a developer friend to run it for you.
 ### Install & Run — For Developers
 
 ```bash
-git clone https://github.com/your-username/forgeai.git
+git clone https://github.com/forgeai/forgeai.git
 cd forgeai
 npm install
+```
+
+Start the API orchestrator in one terminal:
+
+```bash
+npm run api
+```
+
+Start the Next.js frontend in another:
+
+```bash
 npm run dev
 ```
 
 Open `http://localhost:3000`, enter your API keys in Settings, type your idea, and hit Generate.
+
+The frontend proxies `/api/*` requests to the orchestrator via `API_URL` (default `http://localhost:3001`).
 
 ### Self-Hosting
 
@@ -278,6 +291,9 @@ HUGGINGFACE_TOKEN=hf_xxx
 SUPABASE_URL=https://xxx.supabase.co
 SUPABASE_KEY=sb_xxx
 VERCEL_TOKEN=xxx
+API_PORT=3001
+API_URL=http://localhost:3001
+CORS_ORIGINS=http://localhost:3000
 
 docker-compose up
 ```
@@ -386,14 +402,14 @@ forgeai/
 | Version    | Status             | Deliverable                                                                                                           |
 | ---------- | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | **v0.0**   | ✅ **Done**        | System design, docs, brand, `package.json`, types, repo setup                                                         |
-| **v0.1**   | 🚧 **In Progress** | Prompt → generated code + config-driven generation                                                                    |
-| **v0.2**   | ⏳ **Next**        | Prompt → live URL + multi-model fallback                                                                              |
-| **v0.3**   | ⏳ **Planned**     | Visual editor overlay + differential prompting + version history                                                      |
-| **v0.4**   | ⏳ **Planned**     | ZIP export + Supabase auto-binding                                                                                    |
-| **v0.5**   | ⏳ **Planned**     | Template gallery (15,000+ templates) + community templates                                                            |
-| **v0.6**   | ⏳ **Planned**     | Multi-page generation                                                                                                 |
-| **v0.7**   | ⏳ **Planned**     | Plugin system                                                                                                         |
-| **v1.0**   | ⏳ **Planned**     | Grow layer (SEO, analytics, email automation, A/B testing) + full release                                             |
+| **v0.1**   | ✅ **Done**        | Prompt → generated code + config-driven generation                                                                    |
+| **v0.2**   | ✅ **Done**        | Prompt → live URL + multi-model fallback                                                                              |
+| **v0.3**   | ✅ **Done**        | Visual editor overlay + differential prompting + version history                                                      |
+| **v0.4**   | ✅ **Done**        | ZIP export + Supabase auto-binding                                                                                    |
+| **v0.5**   | ✅ **Done**        | Template gallery (15,000+ templates) + community templates                                                            |
+| **v0.6**   | ✅ **Done**        | Multi-page generation                                                                                                 |
+| **v0.7**   | ✅ **Done**        | Plugin system                                                                                                         |
+| **v1.0**   | ✅ **Done**        | Grow layer (SEO, analytics, email automation, A/B testing) + security, performance, tests, and full release           |
 | **Future** | 💡 **Idea**        | AI voice agent, messaging integration (Telegram/Slack/Discord), image/video generation, canvas mode, audio generation |
 
 ### What's Done So Far
@@ -409,6 +425,9 @@ forgeai/
 - ✅ TypeScript interfaces (`src/types.ts`)
 - ✅ `.env.example`, `Dockerfile`, `docker-compose.yml`
 - ✅ BYOK + security model documented
+- ✅ SEO, analytics, email automation, A/B testing (Grow layer v1.0)
+- ✅ Unit + integration + E2E tests (Vitest + Playwright)
+- ✅ Performance + security hardening for v1.0 release
 
 ### Next Up
 
@@ -472,7 +491,7 @@ Those are closed SaaS. You don't own the code, can't choose models, can't self-h
 | Template gallery | ✅ 15,000+    | ❌         | ❌         | ❌         | ✅      |
 | Visual editor    | ✅            | ✅         | ✅         | ❌         | ✅      |
 | Auto-database    | ✅ Supabase   | ❌         | ⚠️         | ❌         | ✅      |
-| Grow layer       | roadmap       | ❌         | ❌         | ❌         | ✅      |
+| Grow layer       | ✅ v1.0       | ❌         | ❌         | ❌         | ✅      |
 
 ---
 

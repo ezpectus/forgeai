@@ -149,7 +149,7 @@ The MVP focuses on **AI Websites**. Other output types are in the roadmap.
 | Template gallery | ✅ 15,000+  | ❌         | ❌         | ❌         | ✅      |
 | Visual editor    | ✅          | ✅         | ✅         | ❌         | ✅      |
 | Auto-database    | ✅ Supabase | ❌         | ⚠️         | ❌         | ✅      |
-| Grow layer       | Roadmap     | ❌         | ❌         | ❌         | ✅      |
+| **Grow layer**       | ✅ v1.0     | ❌         | ❌         | ❌         | ✅      |
 
 ---
 
@@ -183,16 +183,16 @@ ForgeAI itself is free and open-source under MIT. Optional monetization can come
 
 | Version    | Status         | Deliverable                                                 |
 | ---------- | -------------- | ----------------------------------------------------------- |
-| **v0.0**   | ✅ Done        | Docs, brand, package.json, types, repo setup                |
-| **v0.1**   | 🚧 In Progress | Prompt → generated code + config-driven generation          |
-| **v0.2**   | ⏳ Next        | Prompt → live URL + multi-model fallback                    |
-| **v0.3**   | ⏳ Planned     | Visual editor overlay + differential prompting              |
-| **v0.4**   | ⏳ Planned     | ZIP export + Supabase auto-binding                          |
-| **v0.5**   | ⏳ Planned     | Template gallery + community templates                      |
-| **v0.6**   | ⏳ Planned     | Multi-page generation                                       |
-| **v0.7**   | ⏳ Planned     | Plugin system                                               |
-| **v1.0**   | ⏳ Planned     | Grow layer + full release                                   |
-| **Future** | 💡 Idea        | AI voice agent, messaging integration, canvas, audio, video |
+| **v0.0**   | Done           | Docs, brand, package.json, types, repo setup                |
+| **v0.1**   | Done           | Prompt → generated code + config-driven generation          |
+| **v0.2**   | Done           | Prompt → live URL + multi-model fallback                    |
+| **v0.3**   | Done           | Visual editor overlay + differential prompting              |
+| **v0.4**   | Done           | ZIP export + Supabase auto-binding                          |
+| **v0.5**   | Done           | Template gallery + community templates                      |
+| **v0.6**   | Done           | Multi-page generation                                       |
+| **v0.7**   | Done           | Plugin system                                               |
+| **v1.0**   | Done           | SEO, analytics, email automation, A/B testing, security, performance, tests, release |
+| **Future** | Planned        | AI voice agent, messaging integration, canvas, audio, video |
 
 ---
 
