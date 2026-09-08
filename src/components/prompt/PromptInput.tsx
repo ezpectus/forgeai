@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
+import { useUI } from '@/stores/ui'
 import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
 
@@ -26,6 +27,7 @@ const models = [
 
 export function PromptInput() {
   const { openrouter, huggingface } = useKeys()
+  const { openGallery } = useUI()
   const {
     setPrompt,
     setStatus,
@@ -151,7 +153,7 @@ export function PromptInput() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => undefined}
+            onClick={openGallery}
             className="w-full sm:w-auto"
           >
             Templates
@@ -169,7 +171,7 @@ export function PromptInput() {
       </div>
 
       {!hasKeys && (
-        <p className="text-sm text-red-500">
+        <p className="text-sm text-destructive">
           Add an OpenRouter or HuggingFace key in Settings to generate.
         </p>
       )}

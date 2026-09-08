@@ -6,8 +6,21 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ForgeAI',
-  description: 'Open-source prompt-to-live-URL generator',
+  title: {
+    default: 'ForgeAI',
+    template: '%s | ForgeAI',
+  },
+  description: 'Open-source prompt-to-live-URL generator. BYOK, self-hostable, MIT licensed.',
+  metadataBase: new URL('https://forgeai.dev'),
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'ForgeAI',
+    description: 'Open-source prompt-to-live-URL generator',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({

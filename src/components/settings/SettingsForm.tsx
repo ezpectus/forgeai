@@ -175,17 +175,17 @@ export function SettingsForm() {
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                 )}
                 {tests[provider].status === 'ok' && (
-                  <Check className="mr-1 h-4 w-4 text-green-500" />
+                  <Check className="mr-1 h-4 w-4 text-success" />
                 )}
                 {tests[provider].status === 'error' && (
-                  <X className="mr-1 h-4 w-4 text-red-500" />
+                  <X className="mr-1 h-4 w-4 text-destructive" />
                 )}
                 Test
               </Button>
             )}
           </div>
           {tests[provider as Provider]?.status === 'error' && (
-            <p className="text-xs text-red-500">
+            <p className="text-xs text-destructive">
               {tests[provider as Provider].message}
             </p>
           )}

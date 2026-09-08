@@ -54,7 +54,7 @@ export function GenerationProgress() {
       )}
 
       {error && (
-        <p className="rounded-md bg-red-100 p-3 text-sm text-red-700">
+        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </p>
       )}

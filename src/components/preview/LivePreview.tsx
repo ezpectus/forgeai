@@ -30,7 +30,7 @@ export function LivePreview({
   if (status === 'error') {
     return (
       <Card className="m-4 p-6">
-        <p className="font-medium text-red-500">Deploy failed</p>
+        <p className="font-medium text-destructive">Deploy failed</p>
         {error && <p className="mt-1 text-sm text-muted-foreground">{error}</p>}
       </Card>
     )
@@ -65,6 +65,7 @@ export function LivePreview({
         sandbox="allow-scripts"
         className="h-full w-full"
         title="Live preview"
+        loading="lazy"
       />
     </div>
   )

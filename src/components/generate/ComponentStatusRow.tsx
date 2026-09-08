@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import {
   CheckCircle,
@@ -20,8 +22,8 @@ const statusIcons = {
 const statusClasses = {
   pending: 'text-muted-foreground',
   generating: 'text-primary',
-  ready: 'text-green-500',
-  error: 'text-red-500',
+  ready: 'text-success',
+  error: 'text-destructive',
   editing: 'text-muted-foreground',
 }
 
@@ -65,7 +67,7 @@ export function ComponentStatusRow({
         )}
       </div>
       {component.error && (
-        <p className="mt-1 text-sm text-red-500">{component.error}</p>
+        <p className="mt-1 text-sm text-destructive">{component.error}</p>
       )}
       {open && component.code && (
         <pre className="mt-2 max-h-48 overflow-auto rounded bg-muted p-2 text-xs">
