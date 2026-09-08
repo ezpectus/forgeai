@@ -1,7 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Copy, Download, Rocket, Settings } from 'lucide-react'
+import {
+  Check,
+  Copy,
+  Download,
+  LayoutGrid,
+  Rocket,
+  Settings,
+} from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
@@ -141,6 +148,36 @@ function ExportMenu() {
   )
 }
 
+function GalleryButton() {
+  const {
+    galleryOpen,
+    customizeTemplateId,
+    openGallery,
+    closeGallery,
+    closeCustomize,
+  } = useUI()
+  const isOpen = galleryOpen || customizeTemplateId !== null
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={
+        isOpen
+          ? () => {
+              closeGallery()
+              closeCustomize()
+            }
+          : openGallery
+      }
+      className="gap-2"
+    >
+      <LayoutGrid className="h-4 w-4" />
+      <span className="hidden sm:inline">{isOpen ? 'Home' : 'Templates'}</span>
+    </Button>
+  )
+}
+
 export function TopBar() {
   const openSettings = useUI((state) => state.openSettings)
 
@@ -157,6 +194,8 @@ export function TopBar() {
           <Settings className="h-4 w-4" />
           <span className="hidden sm:inline">Settings</span>
         </Button>
+
+        <GalleryButton />
 
         <ExportMenu />
 

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { EditorOverlay } from '@/components/editor/EditorOverlay'
+import { CustomizePanel } from '@/components/gallery/CustomizePanel'
+import { GalleryView } from '@/components/gallery/GalleryView'
 import { GenerationProgress } from '@/components/generate/GenerationProgress'
 import { LivePreview } from '@/components/preview/LivePreview'
 import { PromptInput } from '@/components/prompt/PromptInput'
@@ -15,7 +17,8 @@ export function MainArea({
   className?: string
 }) {
   const { status, deployUrl } = useProject()
-  const { deployStatus } = useUI()
+  const { deployStatus, galleryOpen, customizeTemplateId, openCustomize } =
+    useUI()
 
   const previewStatus =
     deployStatus === 'deployed'
@@ -26,7 +29,11 @@ export function MainArea({
 
   let content = <PromptInput />
 
-  if (status === 'generating') {
+  if (customizeTemplateId) {
+    content = <CustomizePanel templateId={customizeTemplateId} />
+  } else if (galleryOpen) {
+    content = <GalleryView onSelect={(id) => openCustomize(id)} />
+  } else if (status === 'generating') {
     content = <GenerationProgress />
   } else if (deployUrl) {
     content = (

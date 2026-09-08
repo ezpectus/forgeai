@@ -6,6 +6,10 @@ export type UIStore = UIState & {
   closeSettings: () => void
   openEditor: () => void
   closeEditor: () => void
+  openGallery: () => void
+  closeGallery: () => void
+  openCustomize: (templateId: string) => void
+  closeCustomize: () => void
   selectComponent: (name: string | null) => void
   setDeployStatus: (status: UIState['deployStatus']) => void
 }
@@ -13,6 +17,8 @@ export type UIStore = UIState & {
 const initialState: UIState = {
   settingsOpen: false,
   editorOpen: false,
+  galleryOpen: false,
+  customizeTemplateId: null,
   selectedComponent: null,
   deployStatus: 'idle',
 }
@@ -27,6 +33,15 @@ export const useUI = create<UIStore>((set) => ({
   openEditor: () => set({ editorOpen: true }),
 
   closeEditor: () => set({ editorOpen: false, selectedComponent: null }),
+
+  openGallery: () => set({ galleryOpen: true }),
+
+  closeGallery: () => set({ galleryOpen: false }),
+
+  openCustomize: (customizeTemplateId) =>
+    set({ customizeTemplateId, galleryOpen: false }),
+
+  closeCustomize: () => set({ customizeTemplateId: null }),
 
   selectComponent: (selectedComponent) => set({ selectedComponent }),
 

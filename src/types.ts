@@ -44,6 +44,8 @@ export interface KeysState {
 export interface UIState {
   settingsOpen: boolean
   editorOpen: boolean
+  galleryOpen: boolean
+  customizeTemplateId: string | null
   selectedComponent: string | null
   deployStatus: 'idle' | 'deploying' | 'deployed' | 'failed'
 }
