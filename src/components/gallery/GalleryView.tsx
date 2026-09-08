@@ -7,7 +7,13 @@ import { Button } from '@/components/ui/button'
 import { SubmitTemplate } from './SubmitTemplate'
 import { TemplateCard, type TemplateSummary } from './TemplateCard'
 
-const TYPES = ['all', 'website', 'presentation', 'carousel', 'report']
+const TYPES = [
+  { value: 'all', label: 'All types' },
+  { value: 'websites', label: 'Websites' },
+  { value: 'presentations', label: 'Presentations' },
+  { value: 'carousels', label: 'Carousels' },
+  { value: 'reports', label: 'Reports' },
+]
 
 export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
   const [templates, setTemplates] = useState<TemplateSummary[]>([])
@@ -34,13 +40,21 @@ export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
     try {
       const res = await fetch(`/api/templates?${params.toString()}`)
       const data = (await res.json()) as {
-        data: TemplateSummary[]
-        total: number
+        data?: TemplateSummary[]
+        total?: number
+        error?: string
       }
-      setTemplates(data.data)
-      setTotal(data.total)
+
+      if (!res.ok) {
+        throw new Error(data.error ?? `Failed to load templates (${res.status})`)
+      }
+
+      setTemplates(data.data ?? [])
+      setTotal(data.total ?? 0)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load templates')
+      setTemplates([])
+      setTotal(0)
     } finally {
       setLoading(false)
     }
@@ -88,8 +102,8 @@ export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
             className="rounded border bg-background px-2 text-sm"
           >
             {TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t === 'all' ? 'All types' : t}
+              <option key={t.value} value={t.value}>
+                {t.label}
               </option>
             ))}
           </select>

@@ -115,12 +115,18 @@ export const Gemini: AIProvider = {
   },
 
   async health(apiKey: string): Promise<boolean> {
-    const model = this.defaultModel
-    const res = await fetch(
-      `${API_BASE}/models/${model}?key=${apiKey}`,
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    return res.ok
+    const res = await fetch(`${API_BASE}/models?key=${apiKey}`, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    if (!res.ok) return false
+
+    const data = (await res.json()) as {
+      models?: { name?: string }[]
+    }
+    return data.models?.some((m) =>
+      (m.name ?? '').includes('gemini')
+    ) ?? false
   },
 
   estimateCost(tokensIn: number, tokensOut: number, model: string): number {

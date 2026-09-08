@@ -64,12 +64,12 @@ export function MainArea({
 
   let content = <PromptInput />
 
-  if (customizeTemplateId) {
+  if (status === 'generating' || status === 'ready') {
+    content = <GenerationProgress />
+  } else if (customizeTemplateId) {
     content = <CustomizePanel templateId={customizeTemplateId} />
   } else if (galleryOpen) {
     content = <GalleryView onSelect={(id) => openCustomize(id)} />
-  } else if (status === 'generating') {
-    content = <GenerationProgress />
   } else if (deployUrl) {
     content = (
       <EditorOverlay>
@@ -80,8 +80,6 @@ export function MainArea({
         />
       </EditorOverlay>
     )
-  } else if (status === 'ready') {
-    content = <GenerationProgress />
   }
 
   return (

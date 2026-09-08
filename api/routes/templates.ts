@@ -77,9 +77,11 @@ app.get('/:id', async (c) => {
 
 app.post('/:id/customize', async (c) => {
   const id = c.req.param('id')
-  const { prompt, auth } = await c.req.json<{
+  const { prompt, auth, provider, model } = await c.req.json<{
     prompt: string
     auth?: Record<string, string>
+    provider?: string
+    model?: string
   }>()
 
   if (!auth || (!auth.openrouter && !auth.huggingface && !auth.gemini)) {
@@ -123,6 +125,9 @@ app.post('/:id/customize', async (c) => {
           'noForbiddenImports',
         ]
 
+        const preferred =
+          provider && model ? { provider, model } : undefined
+
         for (const section of intent.sections) {
           const componentName = section.name
           send('component', { name: componentName, status: 'generating' })
@@ -131,7 +136,8 @@ app.post('/:id/customize', async (c) => {
             prompt,
             config,
             componentName,
-            auth
+            auth,
+            preferred
           )
 
           if (result.status === 'ready') {

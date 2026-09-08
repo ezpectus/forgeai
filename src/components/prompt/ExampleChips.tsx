@@ -76,7 +76,7 @@ export function ExampleChips({ onSelect }: ExampleChipsProps) {
   const examples = examplesByMode[activeMode] ?? defaultExamples
 
   return (
-    <div className="flex w-full gap-2 overflow-x-auto pb-2">
+    <div className="scrollbar-hide flex w-full gap-2 overflow-x-auto pb-2">
       {examples.map((example) => (
         <button
           key={example}

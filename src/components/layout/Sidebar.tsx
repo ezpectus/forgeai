@@ -4,6 +4,7 @@ import {
   FileText,
   Globe,
   Headphones,
+  Home,
   Image,
   LayoutGrid,
   MessageSquare,
@@ -32,26 +33,84 @@ const functions = [
   { id: 'spreadsheets', label: 'Spreadsheets', icon: Table2 },
 ]
 
+const navItems = [
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'templates', label: 'Templates', icon: LayoutGrid },
+]
+
 /**
  * Navigation sidebar listing all ForgeAI functions (Website, Slides, Images, etc.)
  * with a desktop sidebar and a mobile dialog version.
  */
 export function Sidebar({ className }: { className?: string }) {
-  const { mobileSidebarOpen, closeMobileSidebar, activeMode, setActiveMode } =
-    useUI()
+  const {
+    mobileSidebarOpen,
+    closeMobileSidebar,
+    activeMode,
+    setActiveMode,
+    galleryOpen,
+    customizeTemplateId,
+    openGallery,
+    closeGallery,
+    closeCustomize,
+  } = useUI()
+
+  const isInGallery = galleryOpen || customizeTemplateId !== null
+
+  function selectMode(id: string) {
+    setActiveMode(id)
+    if (isInGallery) {
+      closeGallery()
+      closeCustomize()
+    }
+    closeMobileSidebar()
+  }
+
+  const topNav = (
+    <nav className="flex flex-col gap-1 border-b p-3">
+      {navItems.map((item) => {
+        const Icon = item.icon
+        const isActive = item.id === 'home' ? !isInGallery : isInGallery
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => {
+              if (item.id === 'home') {
+                closeGallery()
+                closeCustomize()
+              } else {
+                openGallery()
+              }
+              closeMobileSidebar()
+            }}
+            className={cn(
+              'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {item.label}
+          </button>
+        )
+      })}
+    </nav>
+  )
 
   const list = (
-    <nav className="flex flex-col gap-1 p-3">
+    <nav className="flex flex-col gap-1 overflow-y-auto p-3">
+      <p className="px-3 py-1 text-xs font-semibold uppercase text-muted-foreground">
+        Mode
+      </p>
       {functions.map((item) => {
         const Icon = item.icon
         return (
           <button
             key={item.id}
             type="button"
-            onClick={() => {
-              setActiveMode(item.id)
-              closeMobileSidebar()
-            }}
+            onClick={() => selectMode(item.id)}
             className={cn(
               'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
               activeMode === item.id
@@ -71,13 +130,14 @@ export function Sidebar({ className }: { className?: string }) {
     <>
       <div
         className={cn(
-          'hidden w-[240px] flex-col border-r bg-background md:flex',
+          'hidden h-full w-[240px] flex-col border-r bg-background md:flex',
           className
         )}
       >
         <div className="flex h-14 items-center border-b px-4 font-semibold">
           ForgeAI
         </div>
+        {topNav}
         {list}
       </div>
 
@@ -86,6 +146,7 @@ export function Sidebar({ className }: { className?: string }) {
           <div className="flex h-14 items-center border-b px-4 font-semibold">
             ForgeAI
           </div>
+          {topNav}
           {list}
         </DialogContent>
       </Dialog>

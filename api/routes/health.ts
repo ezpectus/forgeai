@@ -38,16 +38,21 @@ app.get('/', async (c) => {
     )
   }
 
-  const ok = await service.health(auth)
+  try {
+    const ok = await service.health(auth)
 
-  if (!ok) {
-    return c.json(
-      { status: 'error', error: 'Provider health check failed' },
-      503
-    )
+    if (!ok) {
+      return c.json(
+        { status: 'error', error: 'Provider health check failed' },
+        503
+      )
+    }
+
+    return c.json({ status: 'ok' })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return c.json({ status: 'error', error: message }, 503)
   }
-
-  return c.json({ status: 'ok' })
 })
 
 export default app

@@ -3,9 +3,10 @@
 import { useProject } from '@/stores/project'
 
 export function StatusBar() {
-  const { status, components } = useProject((state) => ({
+  const { status, components, cost } = useProject((state) => ({
     status: state.status,
     components: state.components,
+    cost: state.cost,
   }))
 
   const readyCount = components.filter((c) => c.status === 'ready').length
@@ -16,7 +17,7 @@ export function StatusBar() {
       <span>
         Components: {readyCount}/{components.length}
       </span>
-      <span>Cost: $0.000</span>
+      <span>Cost: ${cost.toFixed(4)}</span>
     </footer>
   )
 }

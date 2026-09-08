@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, HelpCircle, Loader2, X } from 'lucide-react'
+import { Check, HelpCircle, Loader2, Trash2, X } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useUI } from '@/stores/ui'
 import { Button } from '@/components/ui/button'
@@ -99,10 +99,11 @@ export function SettingsForm() {
   async function handleTest(provider: Provider) {
     setTests((prev) => ({ ...prev, [provider]: { status: 'testing' } }))
 
-    const token =
+    const token = (
       provider === 'supabase'
         ? (keys.supabaseKey ?? '')
         : (values[provider as keyof typeof values] ?? '')
+    ).trim()
 
     try {
       const res = await fetch(`/api/health?provider=${provider}`, {
@@ -176,6 +177,19 @@ export function SettingsForm() {
               }
               className="flex-1"
             />
+            {values[key as keyof typeof values] && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  setValues((prev) => ({ ...prev, [key]: '' }))
+                }
+                title={`Clear ${label}`}
+              >
+                <Trash2 className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
             {provider && (
               <Button
                 type="button"

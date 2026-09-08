@@ -8,6 +8,7 @@ import { useKeys } from '@/stores/keys'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
+import { ModelSelector } from '@/components/prompt/ModelSelector'
 import type { ComponentState, IntentResult } from '@/types'
 
 export function CustomizePanel({ templateId }: { templateId: string }) {
@@ -24,7 +25,10 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
   const { closeCustomize } = useUI()
   const { openrouter, huggingface, gemini } = useKeys()
   const [prompt, setPromptLocal] = useState('')
+  const [provider, setProvider] = useState('auto')
+  const [model, setModel] = useState('')
   const [loading, setLoading] = useState(false)
+  const hasKeys = Boolean(openrouter || huggingface || gemini)
 
   async function handleCustomize() {
     if (!prompt.trim()) return
@@ -34,12 +38,16 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     setError(null)
     setLoading(true)
 
+    closeCustomize()
+
     const client = new SSEClient()
     const token = openrouter || huggingface || gemini || ''
     await client.connect(
       `/api/templates/${templateId}/customize`,
       {
         prompt: prompt.trim(),
+        provider,
+        model,
         auth: { openrouter, huggingface, gemini },
         token,
       },
@@ -115,9 +123,24 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         className="min-h-[120px] resize-none"
       />
 
+      <ModelSelector
+        provider={provider}
+        model={model}
+        onChange={(p, m) => {
+          setProvider(p)
+          setModel(m)
+        }}
+      />
+
+      {!hasKeys && (
+        <p className="text-sm text-destructive">
+          Add an API key in Settings to customize this template.
+        </p>
+      )}
+
       <Button
         onClick={handleCustomize}
-        disabled={!prompt.trim() || loading}
+        disabled={!prompt.trim() || !hasKeys || loading}
         className="gap-2"
       >
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}

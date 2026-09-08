@@ -47,7 +47,7 @@ test.describe('ForgeAI home', () => {
     })
 
     await page.getByPlaceholder('Describe the website you want...').fill('A landing page for a yoga studio')
-    await page.getByRole('button', { name: 'Generate' }).click()
+    await page.getByRole('button', { name: /^Generate$/ }).click()
 
     // Progress UI appears
     await expect(page.getByText('Generating...')).toBeVisible({ timeout: 5000 })

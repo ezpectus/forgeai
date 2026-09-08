@@ -112,6 +112,7 @@ function DeployButton() {
 function ExportMenu() {
   const { components } = useProject()
   const [open, setOpen] = useState(false)
+  const hasComponents = components.length > 0
 
   async function handleDownload() {
     const files: Record<string, string> = {}
@@ -139,7 +140,13 @@ function ExportMenu() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          disabled={!hasComponents}
+          title={hasComponents ? 'Export project' : 'Generate a project first'}
+        >
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">Export</span>
         </Button>
