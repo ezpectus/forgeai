@@ -97,14 +97,57 @@ function DeployButton() {
   )
 }
 
-export function TopBar() {
-  const openSettings = useUI((state) => state.openSettings)
-  const [exportOpen, setExportOpen] = useState(false)
+function ExportMenu() {
+  const { components } = useProject()
+  const [open, setOpen] = useState(false)
+
+  async function handleDownload() {
+    const files: Record<string, string> = {}
+    for (const component of components) {
+      files[`src/components/sections/${component.name}.tsx`] = component.code
+    }
+
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files }),
+    })
+
+    if (!res.ok) return
+
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'forgeai-project.zip'
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background px-4">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Download className="h-4 w-4" />
+          <span className="hidden sm:inline">Export</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={handleDownload}>
+          Download ZIP
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export function TopBar() {
+  const openSettings = useUI((state) => state.openSettings)
+
+  return (
+    <header className="flex h-14 justify-between border-b bg-background px-4">
       <span className="hidden text-lg font-semibold md:inline">ForgeAI</span>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -115,17 +158,7 @@ export function TopBar() {
           <span className="hidden sm:inline">Settings</span>
         </Button>
 
-        <DropdownMenu open={exportOpen} onOpenChange={setExportOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>Download ZIP</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ExportMenu />
 
         <DeployButton />
       </div>
