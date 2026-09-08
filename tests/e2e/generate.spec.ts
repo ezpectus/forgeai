@@ -49,9 +49,19 @@ test.describe('ForgeAI home', () => {
     await page.getByPlaceholder('Describe the website you want...').fill('A landing page for a yoga studio')
     await page.getByRole('button', { name: 'Generate' }).click()
 
+    // Progress UI appears
     await expect(page.getByText('Generating...')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('Hero')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('Features')).toBeVisible({ timeout: 5000 })
+
+    // Intent event is rendered
+    await expect(page.getByText('Type: landing')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Palette: calm')).toBeVisible()
+
+    // Component count updates as events stream in
+    await expect(page.getByText('2/2 components')).toBeVisible({ timeout: 5000 })
+
+    // Both component rows are visible
+    await expect(page.getByText('Hero')).toBeVisible()
+    await expect(page.getByText('Features')).toBeVisible()
   })
 })
 
