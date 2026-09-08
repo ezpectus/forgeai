@@ -13,20 +13,37 @@ import type { ComponentSpec, ComponentState } from '@/types'
 const app = new Hono<AppEnv>()
 
 app.post('/', async (c) => {
-  const token = c.get('auth') as string | null
-  const body = await c.req.json<{
+  let body: {
     prompt: string
     templateId?: string
     auth?: Record<string, string>
-  }>()
+  }
 
+  try {
+    body = await c.req.json<{
+      prompt: string
+      templateId?: string
+      auth?: Record<string, string>
+    }>()
+  } catch {
+    return c.json({ error: 'Invalid JSON body', code: 'BAD_REQUEST' }, 400)
+  }
+
+  if (!body.prompt || typeof body.prompt !== 'string' || !body.prompt.trim()) {
+    return c.json({ error: 'Prompt is required', code: 'BAD_REQUEST' }, 400)
+  }
+
+  const token = c.get('auth') as string | null
   const auth: Record<string, string> = { ...(body.auth ?? {}) }
   if (token && !auth.openrouter) {
     auth.openrouter = token
   }
 
   if (!auth.openrouter) {
-    return c.json({ error: 'Missing OpenRouter API key' }, 401)
+    return c.json(
+      { error: 'Missing OpenRouter API key', code: 'UNAUTHORIZED' },
+      401
+    )
   }
 
   const templateId = body.templateId ?? 'website'
@@ -35,8 +52,17 @@ app.post('/', async (c) => {
     'configs/templates',
     `${templateId}.json`
   )
-  const raw = await readFile(templatePath, 'utf-8')
-  const config = JSON.parse(raw) as ComponentSpec
+
+  let config: ComponentSpec
+  try {
+    const raw = await readFile(templatePath, 'utf-8')
+    config = JSON.parse(raw) as ComponentSpec
+  } catch {
+    return c.json(
+      { error: `Template config not found: ${templateId}`, code: 'NOT_FOUND' },
+      404
+    )
+  }
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
