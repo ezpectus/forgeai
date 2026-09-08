@@ -21,30 +21,26 @@ const CustomizePanel = dynamic(
 )
 const GalleryView = dynamic(
   () =>
-    import('@/components/gallery/GalleryView').then((mod) => ({
-      default: mod.GalleryView,
-    })),
+    import('@/components/gallery/GalleryView').then((mod) => mod.GalleryView),
   { ssr: false, loading }
 )
 const GenerationProgress = dynamic(
   () =>
-    import('@/components/generate/GenerationProgress').then((mod) => ({
-      default: mod.GenerationProgress,
-    })),
+    import('@/components/generate/GenerationProgress').then(
+      (mod) => mod.GenerationProgress
+    ),
   { ssr: false, loading }
 )
 const LivePreview = dynamic(
   () =>
-    import('@/components/preview/LivePreview').then((mod) => ({
-      default: mod.LivePreview,
-    })),
+    import('@/components/preview/LivePreview').then((mod) => mod.LivePreview),
   { ssr: false, loading }
 )
 const EditorOverlay = dynamic(
   () =>
-    import('@/components/editor/EditorOverlay').then((mod) => ({
-      default: mod.EditorOverlay,
-    })),
+    import('@/components/editor/EditorOverlay').then(
+      (mod) => mod.EditorOverlay
+    ),
   { ssr: false, loading }
 )
 

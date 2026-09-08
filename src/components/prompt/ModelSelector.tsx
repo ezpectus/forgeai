@@ -116,7 +116,20 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
     [openrouter, gemini, huggingface]
   )
 
-  const shownModels = provider === 'auto' ? [] : models.length > 0 ? models : fallbackModels[provider] ?? []
+  const selectedProviderLabel = useMemo(
+    () => availableProviders.find((p) => p.id === provider)?.label ?? provider,
+    [availableProviders, provider]
+  )
+
+  const shownModels = useMemo(
+    () => (provider === 'auto' ? [] : models.length > 0 ? models : fallbackModels[provider] ?? []),
+    [provider, models]
+  )
+
+  const selectedModelName = useMemo(
+    () => shownModels.find((m) => m.id === model)?.name,
+    [shownModels, model]
+  )
 
   return (
     <div className="flex w-full flex-col gap-2 sm:w-auto">
@@ -128,7 +141,9 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
           }}
         >
           <SelectTrigger className="w-full sm:w-[140px]">
-            <SelectValue placeholder="Provider" />
+            <SelectValue placeholder="Provider">
+              {selectedProviderLabel}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {availableProviders.map((p) => (
@@ -142,7 +157,9 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
         {provider !== 'auto' && (
           <Select value={model} onValueChange={(value) => onChange(provider, value)}>
             <SelectTrigger className="w-full sm:w-[200px]" disabled={loading || shownModels.length === 0}>
-              <SelectValue placeholder={loading ? 'Loading…' : 'Select model'} />
+              <SelectValue placeholder={loading ? 'Loading…' : 'Select model'}>
+                {selectedModelName}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {shownModels.map((m) => (

@@ -20,7 +20,7 @@ test.describe('ForgeAI home', () => {
     const input = page.getByPlaceholder('Describe the website you want...')
     await input.fill('A landing page for a yoga studio')
     await expect(input).toHaveValue('A landing page for a yoga studio')
-    await expect(page.getByText('deepseek-v3')).toBeVisible()
+    await expect(page.getByText('Auto (any key)')).toBeVisible()
   })
 
   test('generates a project with mocked API', async ({ page }) => {
