@@ -30,6 +30,8 @@ export function TemplateCard({
           alt={template.name}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
+          loading="lazy"
+          decoding="async"
           className="object-cover"
         />
       </div>

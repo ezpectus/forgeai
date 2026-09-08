@@ -6,34 +6,46 @@ import { PromptInput } from '@/components/prompt/PromptInput'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+
+const loading = () => (
+  <div className="flex h-full w-full items-center justify-center p-6">
+    <Skeleton className="h-full w-full" />
+  </div>
+)
 
 const CustomizePanel = dynamic(
   () =>
-    import('@/components/gallery/CustomizePanel').then((m) => m.CustomizePanel)
+    import('@/components/gallery/CustomizePanel').then((m) => m.CustomizePanel),
+  { ssr: false, loading }
 )
 const GalleryView = dynamic(
   () =>
     import('@/components/gallery/GalleryView').then((mod) => ({
       default: mod.GalleryView,
-    }))
+    })),
+  { ssr: false, loading }
 )
 const GenerationProgress = dynamic(
   () =>
     import('@/components/generate/GenerationProgress').then((mod) => ({
       default: mod.GenerationProgress,
-    }))
+    })),
+  { ssr: false, loading }
 )
 const LivePreview = dynamic(
   () =>
     import('@/components/preview/LivePreview').then((mod) => ({
       default: mod.LivePreview,
-    }))
+    })),
+  { ssr: false, loading }
 )
 const EditorOverlay = dynamic(
   () =>
     import('@/components/editor/EditorOverlay').then((mod) => ({
       default: mod.EditorOverlay,
-    }))
+    })),
+  { ssr: false, loading }
 )
 
 export function MainArea({

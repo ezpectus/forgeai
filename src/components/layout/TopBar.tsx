@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import {
   Check,
   Copy,
@@ -183,7 +184,17 @@ export function TopBar() {
 
   return (
     <header className="flex h-14 justify-between border-b bg-background px-4">
-      <span className="hidden text-lg font-semibold md:inline">ForgeAI</span>
+      <div className="hidden items-center gap-2 text-lg font-semibold md:flex">
+        <Image
+          src="/favicon.svg"
+          alt="ForgeAI"
+          width={24}
+          height={24}
+          priority
+          unoptimized
+        />
+        ForgeAI
+      </div>
       <div className="ml-auto flex gap-2">
         <Button
           variant="outline"

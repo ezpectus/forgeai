@@ -12,7 +12,18 @@ export function assembleProject(
       const name = section.name
       const component = components.find((c) => c.name === name)
       if (!component || component.status !== 'ready') return null
-      return { name, code: component.code }
+      return {
+        name,
+        code: component.code.replace(
+          /<img\b([^>]*)>/gi,
+          (_match: string, attrs: string) => {
+            let a = attrs.trim()
+            if (!/\bloading\s*=/.test(a)) a += ' loading="lazy"'
+            if (!/\bdecoding\s*=/.test(a)) a += ' decoding="async"'
+            return `<img ${a.trim()} />`.replace(/  +/g, ' ')
+          }
+        ),
+      }
     })
     .filter(Boolean) as { name: string; code: string }[]
 
