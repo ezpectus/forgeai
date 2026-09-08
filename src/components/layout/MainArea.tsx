@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { PromptInput } from '@/components/prompt/PromptInput'
 import { cn } from '@/lib/utils'
 
 export function MainArea({
@@ -15,16 +16,7 @@ export function MainArea({
         className
       )}
     >
-      {children ?? (
-        <div className="max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight">
-            What do you want to build?
-          </h2>
-          <p className="mt-2 text-muted-foreground">
-            Type a prompt and ForgeAI will generate a live website for you.
-          </p>
-        </div>
-      )}
+      {children ?? <PromptInput />}
     </main>
   )
 }
