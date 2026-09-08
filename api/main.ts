@@ -7,9 +7,10 @@ import { rateLimitMiddleware } from './middleware/rateLimit'
 import type { AppEnv } from './lib/env'
 import { log } from './lib/logger'
 import componentRoute from './routes/component'
+import dbBindRoute from './routes/db-bind'
 import deployRoute from './routes/deploy'
-import exportRoute from './routes/export'
 import deployStatusRoute from './routes/deploy-status'
+import exportRoute from './routes/export'
 import generateRoute from './routes/generate'
 import healthRoute from './routes/health'
 
@@ -24,6 +25,7 @@ app.route('/api/health', healthRoute)
 app.route('/api/generate', generateRoute)
 app.route('/api/generate/component', componentRoute)
 app.route('/api/export', exportRoute)
+app.route('/api/db/bind', dbBindRoute)
 app.route('/api/deploy', deployRoute)
 app.route('/api/deploy', deployStatusRoute)
 
