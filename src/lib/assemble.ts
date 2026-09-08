@@ -231,8 +231,14 @@ export default function RootLayout({
     )
     .join('\n')
 
+  const formHandler = intent.dbRequired
+    ? "\nimport { FormHandler } from '@/components/FormHandler'\n"
+    : ''
+
+  const formHandlerNode = intent.dbRequired ? '      <FormHandler />\n' : ''
+
   files['src/app/page.tsx'] =
-    `'use client'\n\n${imports}\n\nexport default function HomePage() {\n  return (\n    <main className="min-h-screen">\n${rendered}\n    </main>\n  )\n}\n`
+    `'use client'\n\n${imports}${formHandler}\nexport default function HomePage() {\n  return (\n    <main className="min-h-screen">\n${rendered}${formHandlerNode}    </main>\n  )\n}\n`
 
   for (const component of sectionComponents) {
     files[`src/components/sections/${component.name}.tsx`] = component.code
@@ -247,11 +253,65 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 `
+
+    files['src/components/FormHandler.tsx'] = `'use client'
+
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+
+export function FormHandler() {
+  const [message, setMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    const projectId = process.env.NEXT_PUBLIC_PROJECT_ID ?? 'forgeai'
+
+    const handler = async (event: SubmitEvent) => {
+      const form = event.target as HTMLFormElement
+      const name = form.dataset.form
+
+      if (!name) return
+
+      event.preventDefault()
+
+      const formData = new FormData(form)
+      const data: Record<string, FormDataEntryValue> = {}
+      formData.forEach((value, key) => {
+        data[key] = value
+      })
+
+      const { error } = await supabase
+        .from(\`ai_gen_\${projectId}_\${name}\`)
+        .insert(data)
+
+      if (error) {
+        setMessage(\`Submission failed: \${error.message}\`)
+      } else {
+        setMessage('Submitted successfully!')
+        form.reset()
+      }
+
+      setTimeout(() => setMessage(null), 4000)
+    }
+
+    document.addEventListener('submit', handler as EventListener)
+    return () => document.removeEventListener('submit', handler as EventListener)
+  }, [])
+
+  if (!message) return null
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 rounded border bg-background p-3 shadow">
+      {message}
+    </div>
+  )
+}
+`
   }
 
   files['.env.local.example'] =
     `NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_PROJECT_ID=${projectId}
 `
 
   files['README.md'] = `# ForgeAI Project: ${projectId}
