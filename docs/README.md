@@ -7,6 +7,7 @@ Welcome to the ForgeAI docs. These documents are intended for contributors, deve
 ## Quick Links
 
 - **[README.md](../README.md)** — Quick start, features, cost, FAQ
+- **[UPWORK.md](../UPWORK.md)** — Portfolio / proposal summary for clients
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute, code style, PR process
 - **[vision.md](vision.md)** — Project vision, why ForgeAI exists, target audience
 - **[features.md](features.md)** — Feature specification and roadmap

@@ -301,11 +301,13 @@ Use the agent from messaging platforms:
 
 ## 12. Model Support
 
-- OpenRouter: DeepSeek V3, Qwen, GLM-4, Llama 3, and hundreds more
-- HuggingFace: DeepSeek Coder, GLM-4, and open-source models
-- User picks model or tier
-- Multi-model fallback: if one is down, switch automatically
-- Cost transparency: show tokens used and cost per generation
+- **OpenRouter** — 200+ models: DeepSeek, Qwen, Llama, GPT-4o, Claude, and more
+- **HuggingFace** — free serverless inference: DeepSeek Coder, GLM-4, Mistral, Llama 2
+- **Gemini** — free tier with `gemini-1.5-flash`, `gemini-1.5-pro`, and more
+- **Dynamic model list** — the app fetches the live list of available models from each provider's API; no hardcoded model list
+- **Provider + model selector** — pick provider, then pick any model that provider exposes; one-click refresh
+- **Multi-model fallback** — if the chosen model fails or is rate-limited, the orchestrator automatically tries the next available provider/key
+- **Cost transparency** — each model is marked as free/paid, and the orchestrator reports tokens used and cost per generation
 
 ---
 
@@ -321,6 +323,29 @@ Use the agent from messaging platforms:
 - Supabase RLS policies by default
 - Rate limiting on orchestrator
 - Prompt injection protection
+
+---
+
+## 14. Prompt UI
+
+### 14.1 Mode-Specific Example Ideas
+
+- Left sidebar selects the active generation mode: Website, Slides, Images, Videos, Chat, Reports, Canvas, Carousel, Audio, Spreadsheets
+- Example chips below the prompt input change automatically for the selected mode
+- Clicking a chip fills the prompt textarea with a relevant, ready-to-use idea
+
+### 14.2 Dynamic Provider + Model Selector
+
+- Provider dropdown: Auto, OpenRouter, HuggingFace, Gemini
+- Model dropdown fetches the live list of available models from the selected provider
+- One-click refresh button to re-fetch the model list
+- Models are marked as free or paid
+- If the selected model fails, the orchestrator falls back to the next available provider
+
+### 14.3 In-App FAQ
+
+- Collapsible FAQ section under the prompt input
+- Covers keys, free tiers, supported modes, model selection, fallback, and key storage
 
 ---
 

@@ -57,7 +57,7 @@ The agent follows a three-phase workflow:
 | ------------------------ | ---------- | ---------------------------------------------------------------------------------------------- |
 | Prompt-to-Live-URL       | ✅ v1.0    | Type a sentence → get a deployed URL (mocked in tests, needs real keys for full run)          |
 | Config-driven generation | ✅ v1.0    | Components are generated from strict specs and validation rules                               |
-| Multi-model fallback     | ✅ v1.0    | HuggingFace → OpenRouter chain with retries                                                   |
+| Multi-model fallback     | ✅ v1.0    | OpenRouter, HuggingFace, Gemini with dynamic model list and automatic fallback                |
 | Visual editor overlay    | ✅ v1.0    | Live preview iframe with selection and edit triggers                                          |
 | Differential prompting   | ✅ v1.0    | Sends only the changed component on re-generation                                             |
 | ZIP export               | ✅ v1.0    | Download the full Next.js project as a ZIP                                                    |
@@ -146,8 +146,9 @@ flowchart TB
     end
 
     subgraph Providers["External APIs (BYOK)"]
-        OpenRouter["OpenRouter<br/>DeepSeek / Qwen"]
-        HuggingFace["HuggingFace<br/>DeepSeek Coder"]
+        OpenRouter["OpenRouter<br/>DeepSeek / Qwen / 200+ models"]
+        HuggingFace["HuggingFace<br/>DeepSeek Coder / GLM-4"]
+        Gemini["Gemini<br/>Free tier"]
         Vercel["Vercel Build API"]
         E2B["E2B Sandbox"]
         Supabase["Supabase<br/>PostgreSQL"]
@@ -172,8 +173,10 @@ flowchart TB
     DbAPI --> Supabase
 
     GenAPI -->|fallback| OpenRouter
+    GenAPI -->|fallback| Gemini
     GenAPI -->|primary| HuggingFace
     ComponentGen -->|fallback| OpenRouter
+    ComponentGen -->|fallback| Gemini
     ComponentGen -->|primary| HuggingFace
 
     CompAPI -->|differential prompt| ComponentGen
@@ -205,8 +208,9 @@ Run the app, generate a project, then add your own PNGs to `public/screenshots/`
 | ---------------- | ----------------------------------- | ----------------------------------- |
 | Frontend         | Next.js 14 + Tailwind + shadcn/ui   | Fast, beautiful, SSR                |
 | API Orchestrator | Hono (Node.js)                      | 15KB, minimal, fast                 |
-| AI Intent        | OpenRouter (DeepSeek V3, Qwen)      | Cheap, multi-model                  |
+| AI Intent        | OpenRouter / Gemini / HuggingFace   | Cheap + free-tier options           |
 | AI Code Gen      | HuggingFace (DeepSeek Coder, GLM-4) | Free tier, open-source models       |
+|                  | + OpenRouter / Gemini fallback      | Multi-provider resilience           |
 | Deploy           | Vercel Build API / E2B Sandbox      | Instant live URL                    |
 | Database         | Supabase                            | Free tier, PostgreSQL, auto-binding |
 | State            | Zustand                             | 3KB, no boilerplate                 |
@@ -442,6 +446,7 @@ MIT licensed. PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 - OpenRouter: [openrouter.ai/keys](https://openrouter.ai/keys) — sign up, create a key, add $1-5 credit
 - HuggingFace: [hf.co/settings/tokens](https://hf.co/settings/tokens) — sign up, create a Read token (free)
+- Gemini: [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) — free tier with generous limits
 - Supabase: [supabase.com](https://supabase.com) — create a project (free tier), find keys in Settings > API
 - Vercel: [vercel.com/account/tokens](https://vercel.com/account/tokens) — create a token
 
@@ -449,7 +454,7 @@ MIT licensed. PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 ~$0.002 per generation. You pay the AI provider directly. $1 of OpenRouter credit = ~500 generations.
 
 **Can I use GPT-4 or Claude?**
-Yes. OpenRouter supports GPT-4o, Claude, Gemini, Llama, and 200+ other models. Just change the model in Settings. Cost will be higher (~$0.15-0.30 per generation with GPT-4o).
+Yes. OpenRouter supports GPT-4o, Claude, Llama, and 200+ other models. Gemini has a free tier and works out of the box. Just change the provider/model in the dropdown. Cost will be higher (~$0.15-0.30 per generation with GPT-4o).
 
 **Do you store my API keys?**
 No. Keys are stored in your browser's IndexedDB and sent per-request as Authorization headers. The orchestrator forwards them to the provider and immediately discards them. For self-hosted, you can use `.env` instead.
