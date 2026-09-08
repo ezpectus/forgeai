@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Rocket, Settings } from 'lucide-react'
+import { Check, Copy, Download, Rocket, Settings } from 'lucide-react'
+import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { Button } from '@/components/ui/button'
@@ -12,8 +13,91 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+function DeployButton() {
+  const { status, components, setDeployUrl, deployUrl, setError } = useProject()
+  const { deployStatus, setDeployStatus } = useUI()
+  const { vercel } = useKeys()
+  const [copied, setCopied] = useState(false)
+
+  const canDeploy =
+    status === 'ready' && !deployUrl && vercel && deployStatus !== 'deploying'
+
+  async function handleDeploy() {
+    if (!canDeploy) return
+
+    setDeployStatus('deploying')
+
+    const files: Record<string, string> = {}
+    for (const component of components) {
+      files[`src/components/sections/${component.name}.tsx`] = component.code
+    }
+
+    try {
+      const res = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: 'forgeai',
+          provider: 'vercel',
+          files,
+        }),
+      })
+
+      const data = (await res.json()) as {
+        url?: string
+        deployId?: string
+        error?: string
+      }
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? 'Deploy failed')
+      }
+
+      setDeployUrl(data.url)
+      setDeployStatus('deployed')
+    } catch (err) {
+      setDeployStatus('failed')
+      setError(err instanceof Error ? err.message : 'Deploy failed')
+    }
+  }
+
+  function copyUrl() {
+    if (!deployUrl) return
+    navigator.clipboard.writeText(deployUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <>
+      <Button
+        size="sm"
+        disabled={!canDeploy}
+        className="gap-2"
+        onClick={handleDeploy}
+        title="Deploy to Vercel"
+      >
+        <Rocket className="h-4 w-4" />
+        <span className="hidden sm:inline">
+          {deployStatus === 'deploying' ? 'Deploying...' : 'Deploy'}
+        </span>
+      </Button>
+
+      {deployUrl && (
+        <Button variant="outline" size="sm" onClick={copyUrl} className="gap-2">
+          {copied ? (
+            <Check className="h-4 w-4" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
+          <span className="hidden sm:inline">Copy URL</span>
+        </Button>
+      )}
+    </>
+  )
+}
+
 export function TopBar() {
-  const deployUrl = useProject((state) => state.deployUrl)
   const openSettings = useUI((state) => state.openSettings)
   const [exportOpen, setExportOpen] = useState(false)
 
@@ -43,15 +127,7 @@ export function TopBar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          size="sm"
-          disabled={!deployUrl}
-          className="gap-2"
-          onClick={() => window.open(deployUrl ?? '', '_blank')}
-        >
-          <Rocket className="h-4 w-4" />
-          <span className="hidden sm:inline">Deploy</span>
-        </Button>
+        <DeployButton />
       </div>
     </header>
   )
