@@ -56,6 +56,7 @@ export function Sidebar({ className }: { className?: string }) {
     closeGallery,
     closeCustomize,
     openProjects,
+    closeProjects,
     projectsOpen,
   } = useUI()
 
@@ -63,6 +64,7 @@ export function Sidebar({ className }: { className?: string }) {
 
   function selectMode(id: string) {
     setActiveMode(id)
+    closeProjects()
     if (isInGallery) {
       closeGallery()
       closeCustomize()
@@ -88,9 +90,11 @@ export function Sidebar({ className }: { className?: string }) {
               if (item.id === 'home') {
                 closeGallery()
                 closeCustomize()
+                closeProjects()
               } else if (item.id === 'projects') {
                 openProjects()
               } else {
+                closeProjects()
                 openGallery()
               }
               closeMobileSidebar()
