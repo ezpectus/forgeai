@@ -1,5 +1,9 @@
 import type { MiddlewareHandler } from 'hono'
 
+/**
+ * Attach OWASP-recommended security headers to every API response and remove
+ * the `X-Powered-By` header so the server fingerprint is not leaked.
+ */
 export const securityHeaders: MiddlewareHandler = async (c, next) => {
   c.header('X-Content-Type-Options', 'nosniff')
   c.header('X-Frame-Options', 'DENY')

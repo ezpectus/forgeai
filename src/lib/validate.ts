@@ -10,6 +10,11 @@ export interface ValidationResult {
   errors: string[]
 }
 
+/**
+ * Run a configurable set of validation rules against a generated component
+ * before it is accepted into the project. Catches syntax errors, disallowed
+ * imports, unsafe patterns, and missing accessibility requirements.
+ */
 export async function validateComponent(
   name: string,
   code: string,

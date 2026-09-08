@@ -11,6 +11,10 @@ const DEPLOYERS = {
 
 const app = new Hono<AppEnv>()
 
+/**
+ * Deploy endpoint. Routes the request to the chosen deployer (Vercel or E2B)
+ * and returns the live URL for the generated project.
+ */
 app.post('/', async (c) => {
   const auth = c.get('auth') as string | null
   const body = await c.req.json<{

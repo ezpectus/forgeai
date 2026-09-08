@@ -1,5 +1,10 @@
 import type { ComponentState, DeployFiles, IntentResult } from '@/types'
 
+/**
+ * Turn the analyzed intent and validated component code into a complete,
+ * deployable Next.js project, including configs, pages, and optional
+ * database wiring when forms are detected.
+ */
 export function assembleProject(
   intent: IntentResult,
   components: ComponentState[],

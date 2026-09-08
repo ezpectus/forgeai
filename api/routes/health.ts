@@ -2,15 +2,21 @@ import { Hono } from 'hono'
 import type { AIProvider } from '@/types'
 import { HuggingFace } from '@/plugins/providers/huggingface'
 import { OpenRouter } from '@/plugins/providers/openrouter'
+import { Gemini } from '@/plugins/providers/gemini'
 import type { AppEnv } from '../lib/env'
 
 const PROVIDERS: Record<string, AIProvider> = {
   openrouter: OpenRouter,
   huggingface: HuggingFace,
+  gemini: Gemini,
 }
 
 const app = new Hono<AppEnv>()
 
+/**
+ * Health check endpoint. Returns `ok` by default, or checks a specific provider
+ * with `?provider=openrouter|huggingface|gemini` when a key is provided.
+ */
 app.get('/', async (c) => {
   const provider = c.req.query('provider')
   const auth = c.get('auth') as string | null

@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * Render the generated site in a sandboxed iframe, with skeleton, error, and
+ * refresh states. Used in the main preview panel after deployment.
+ */
 export function LivePreview({
   url,
   status,

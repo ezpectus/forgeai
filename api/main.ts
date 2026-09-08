@@ -19,6 +19,8 @@ import healthRoute from './routes/health'
 
 import { securityHeaders } from './middleware/security'
 
+// Hono app instance that wires security, CORS, rate limiting, auth and all
+// generation/deploy/export routes together.
 const app = new Hono<AppEnv>()
 
 app.use(logger())
@@ -41,6 +43,7 @@ const port = Number(process.env.API_PORT ?? process.env.PORT ?? 3001)
 const __filename = fileURLToPath(import.meta.url)
 const isMain = process.argv.some((arg) => resolve(arg) === __filename)
 
+// Start the Hono server only when this file is the entry point (not during tests).
 if (isMain) {
   serve({ fetch: app.fetch, port }, () => {
     log.info(`API server running on http://localhost:${port}`)

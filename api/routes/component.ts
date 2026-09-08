@@ -6,20 +6,21 @@ import type { ComponentSpec } from '@/types'
 const app = new Hono<AppEnv>()
 
 app.post('/', async (c) => {
-  const token = c.get('auth') as string | null
   const body = await c.req.json<{
     projectId: string
     componentName: string
     currentCode: string
     instruction: string
     templateId?: string
+    auth?: Record<string, string>
   }>()
 
-  if (!token) {
-    return c.json({ error: 'Missing Authorization header' }, 401)
+  const auth = body.auth ?? {}
+
+  if (!auth.openrouter && !auth.huggingface && !auth.gemini) {
+    return c.json({ error: 'Missing API key', code: 'UNAUTHORIZED' }, 401)
   }
 
-  const auth = { openrouter: token }
   const templateId = body.templateId ?? 'website'
 
   try {

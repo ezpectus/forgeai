@@ -18,8 +18,11 @@ const initialState: KeysState = {
   supabaseUrl: null,
   supabaseKey: null,
   vercel: null,
+  gemini: null,
 }
 
+// Zustand store backed by IndexedDB. Stores user API keys locally in the
+// browser so they are never sent to our server unless a request needs them.
 export const useKeys = create<KeysStore>((set) => ({
   ...initialState,
 
@@ -34,15 +37,16 @@ export const useKeys = create<KeysStore>((set) => ({
   },
 
   loadKeys: async () => {
-    const [openrouter, huggingface, supabaseUrl, supabaseKey, vercel] =
+    const [openrouter, huggingface, gemini, supabaseUrl, supabaseKey, vercel] =
       await Promise.all([
         getKey('openrouter'),
         getKey('huggingface'),
+        getKey('gemini'),
         getKey('supabaseUrl'),
         getKey('supabaseKey'),
         getKey('vercel'),
       ])
-    set({ openrouter, huggingface, supabaseUrl, supabaseKey, vercel })
+    set({ openrouter, huggingface, gemini, supabaseUrl, supabaseKey, vercel })
   },
 }))
 

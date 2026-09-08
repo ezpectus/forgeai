@@ -2,6 +2,7 @@ const DB_NAME = 'forgeai-db'
 const DB_VERSION = 1
 const STORE_NAME = 'keys'
 
+// Open the browser's IndexedDB used to store user API keys locally (BYOK).
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !('indexedDB' in window)) {
@@ -22,6 +23,7 @@ export function openDB(): Promise<IDBDatabase> {
   })
 }
 
+// Read a saved API key from the browser's local IndexedDB store.
 export async function getKey(id: string): Promise<string | null> {
   const db = await openDB()
   return new Promise((resolve, reject) => {
@@ -37,6 +39,7 @@ export async function getKey(id: string): Promise<string | null> {
   })
 }
 
+// Persist an API key in the browser's local IndexedDB store.
 export async function setKey(id: string, value: string): Promise<void> {
   const db = await openDB()
   return new Promise((resolve, reject) => {
@@ -49,6 +52,7 @@ export async function setKey(id: string, value: string): Promise<void> {
   })
 }
 
+// Remove a saved API key from the browser's local IndexedDB store.
 export async function deleteKey(id: string): Promise<void> {
   const db = await openDB()
   return new Promise((resolve, reject) => {

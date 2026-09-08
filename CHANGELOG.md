@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated package and README repository URLs to `https://github.com/ezpectus/forgeai`.
+- Updated public docs (README, docs/README, docs/features) to reflect actual v1.0 feature set and roadmap status.
+- Added human-readable comments to core functions in `src/lib/`, `src/stores/`, `api/` and `src/components/providers/`.
+- CONTRIBUTING.md clone URL and comment style guideline updated.
+
 ## [1.0.0] - 2026-09-08
 
 ### Added

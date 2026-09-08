@@ -27,6 +27,8 @@ const initialState: UIState = {
   mobileSidebarOpen: false,
 }
 
+// Zustand store that controls the visible shell: open panels, selected
+// component, deploy status, and mobile sidebar.
 export const useUI = create<UIStore>((set) => ({
   ...initialState,
 

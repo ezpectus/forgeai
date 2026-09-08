@@ -2,6 +2,10 @@ import { generateComponent } from './generate-component'
 import { validateComponent } from './validate'
 import type { ComponentSpec, ComponentState } from '@/types'
 
+/**
+ * Re-generate a component that failed validation, feeding the exact errors back
+ * to the AI. Recurses up to two times before giving up on this component.
+ */
 export async function retryComponent(
   prompt: string,
   config: ComponentSpec,

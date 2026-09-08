@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { TemplateRating } from './TemplateRating'
+import { TemplateThumbnail } from './TemplateThumbnail'
 
 export interface TemplateSummary {
   id: string
@@ -25,13 +25,9 @@ export function TemplateCard({
   return (
     <div className="flex flex-col rounded border bg-background p-3 shadow-sm transition-shadow hover:shadow-md">
       <div className="relative aspect-video w-full overflow-hidden rounded bg-muted">
-        <Image
-          src={template.thumbnail}
-          alt={template.name}
-          fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          loading="lazy"
-          decoding="async"
+        <TemplateThumbnail
+          name={template.name}
+          topic={template.topic}
           className="object-cover"
         />
       </div>

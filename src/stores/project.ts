@@ -24,6 +24,8 @@ const initialState: ProjectState = {
   error: null,
 }
 
+// Zustand store that holds the current generation's state: prompt, intent,
+// generated components, deploy URL, cost, and any error message.
 export const useProject = create<ProjectStore>((set, get) => ({
   ...initialState,
 

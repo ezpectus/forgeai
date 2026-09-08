@@ -33,6 +33,10 @@ const functions = [
   { id: 'spreadsheets', label: 'Spreadsheets', icon: Table2 },
 ]
 
+/**
+ * Navigation sidebar listing all ForgeAI functions (Website, Slides, Images, etc.)
+ * with a desktop sidebar and a mobile dialog version.
+ */
 export function Sidebar({ className }: { className?: string }) {
   const [active, setActive] = useState('website')
   const { mobileSidebarOpen, closeMobileSidebar } = useUI()

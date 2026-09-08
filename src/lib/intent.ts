@@ -1,6 +1,8 @@
 import { callWithFallback } from './fallback'
 import { OpenRouter } from '@/plugins/providers/openrouter'
-import type { IntentResult, SectionIntent } from '@/types'
+import { Gemini } from '@/plugins/providers/gemini'
+import { HuggingFace } from '@/plugins/providers/huggingface'
+import type { AIProvider, IntentResult, SectionIntent } from '@/types'
 
 const SYSTEM_PROMPT = `You analyze website requests. Return valid JSON only.
 Schema: {
@@ -24,6 +26,7 @@ Schema: {
   "style": "..."
 }`
 
+// Clean up a JSON code block wrapper so the raw JSON can be parsed.
 function stripJsonBlock(text: string): string {
   return text
     .replace(/^```json\s*/i, '')
@@ -32,6 +35,7 @@ function stripJsonBlock(text: string): string {
     .trim()
 }
 
+// Normalize a raw section object into a typed `SectionIntent`, or reject it.
 function asSection(raw: unknown): SectionIntent | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
@@ -92,10 +96,41 @@ const DEFAULT_INTENT: IntentResult = {
   style: 'modern',
 }
 
+/**
+ * Send the user's prompt to an AI model and convert the returned JSON into a
+ * structured build plan: sections, palette, tone, and whether a database is needed.
+ */
+function buildChain(auth: Record<string, string>) {
+  const chain: { provider: AIProvider; model: string }[] = []
+
+  if (auth.openrouter) {
+    chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
+  }
+
+  if (auth.gemini) {
+    chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
+  }
+
+  if (auth.huggingface) {
+    chain.push({
+      provider: HuggingFace,
+      model: 'deepseek-ai/deepseek-coder-6.7b-instruct',
+    })
+  }
+
+  return chain
+}
+
 export async function analyzeIntent(
   prompt: string,
-  apiKey: string
+  auth: Record<string, string>
 ): Promise<IntentResult> {
+  const chain = buildChain(auth)
+
+  if (chain.length === 0) {
+    return DEFAULT_INTENT
+  }
+
   try {
     const result = await callWithFallback(
       prompt,
@@ -104,8 +139,8 @@ export async function analyzeIntent(
         temperature: 0.1,
         maxTokens: 1024,
       },
-      { openrouter: apiKey },
-      [{ provider: OpenRouter, model: 'deepseek/deepseek-chat' }]
+      auth,
+      chain
     )
 
     const cleaned = stripJsonBlock(result.code)

@@ -13,6 +13,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
+// Resolve 'system' theme to light or dark based on the user OS preference.
 function resolveTheme(theme: Theme): ResolvedTheme {
   if (theme !== 'system') return theme
   return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -20,6 +21,10 @@ function resolveTheme(theme: Theme): ResolvedTheme {
     : 'light'
 }
 
+/**
+ * Provide light/dark/system theme state to the app, sync with localStorage,
+ * and update the `dark` class on `<html>` to avoid hydration flashes.
+ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system')
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
@@ -59,6 +64,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// Hook for descendants to read and change the current theme.
 export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) {

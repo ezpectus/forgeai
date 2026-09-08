@@ -12,6 +12,10 @@ import type { ComponentSpec, ComponentState } from '@/types'
 
 const app = new Hono<AppEnv>()
 
+/**
+ * Main generation endpoint. Streams Server-Sent Events back to the browser:
+ * intent, component status, validation, assembly, and done/error.
+ */
 app.post('/', async (c) => {
   let body: {
     prompt: string
@@ -33,15 +37,11 @@ app.post('/', async (c) => {
     return c.json({ error: 'Prompt is required', code: 'BAD_REQUEST' }, 400)
   }
 
-  const token = c.get('auth') as string | null
   const auth: Record<string, string> = { ...(body.auth ?? {}) }
-  if (token && !auth.openrouter) {
-    auth.openrouter = token
-  }
 
-  if (!auth.openrouter) {
+  if (!auth.openrouter && !auth.huggingface && !auth.gemini) {
     return c.json(
-      { error: 'Missing OpenRouter API key', code: 'UNAUTHORIZED' },
+      { error: 'Missing API key', code: 'UNAUTHORIZED' },
       401
     )
   }
@@ -74,7 +74,7 @@ app.post('/', async (c) => {
       }
 
       try {
-        const intent = await analyzeIntent(body.prompt, auth.openrouter)
+        const intent = await analyzeIntent(body.prompt, auth)
         send('intent', intent)
 
         const components: ComponentState[] = []

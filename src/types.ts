@@ -36,6 +36,7 @@ export interface ProjectState {
 export interface KeysState {
   openrouter: string | null
   huggingface: string | null
+  gemini: string | null
   supabaseUrl: string | null
   supabaseKey: string | null
   vercel: string | null

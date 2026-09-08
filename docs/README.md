@@ -9,12 +9,12 @@ Welcome to the ForgeAI docs. These documents are intended for contributors, deve
 - **[README.md](../README.md)** — Quick start, features, cost, FAQ
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute, code style, PR process
 - **[vision.md](vision.md)** — Project vision, why ForgeAI exists, target audience
-- **[features.md](features.md)** — Full feature specification and roadmap
+- **[features.md](features.md)** — Feature specification and roadmap
 - **[system-design.md](system-design.md)** — Architecture, API, data flow, security
 - **[architecture.md](architecture.md)** — Visual Mermaid diagrams
 - **[templates.md](templates.md)** — AI function constraints and per-template rules
-- **[template-gallery.md](template-gallery.md)** — 15,000+ template gallery specification
-- **[github-setup.md](github-setup.md)** — GitHub repo setup, hashtags, social snippets
+- **[template-gallery.md](template-gallery.md)** — Template gallery specification
+- **[free-apis.md](free-apis.md)** — Free API keys and BYOK setup options
 
 ---
 

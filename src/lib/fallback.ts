@@ -10,10 +10,15 @@ export interface FallbackTarget {
   model: string
 }
 
+// Simple delay helper used to wait before retrying the next fallback provider.
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * Try each AI provider in the fallback chain, backing off when one is
+ * rate-limited or down, so a single model failure does not stop generation.
+ */
 export async function callWithFallback(
   prompt: string,
   config: GenConfig,

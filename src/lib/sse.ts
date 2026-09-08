@@ -3,10 +3,18 @@ export interface SSEMessage {
   data: unknown
 }
 
+/**
+ * Wraps a streaming HTTP connection and turns Server-Sent Events from the
+ * backend into typed callbacks the UI can act on during generation.
+ */
 export class SSEClient {
   private reader?: ReadableStreamDefaultReader<Uint8Array>
   private buffer = ''
 
+  /**
+   * Open a POST request, read the response as a stream, and dispatch each
+   * parsed event to the provided handlers until the stream closes.
+   */
   async connect(
     url: string,
     body: Record<string, unknown>,
@@ -49,6 +57,10 @@ export class SSEClient {
     }
   }
 
+  /**
+   * Split the raw SSE buffer into `event` + `data` pairs and parse the
+   * JSON payload so callers only receive structured messages.
+   */
   private processBuffer(
     onMessage: (event: string, data: unknown) => void,
     onError: (error: Error) => void
@@ -80,6 +92,7 @@ export class SSEClient {
     }
   }
 
+  // Close the active stream reader to stop receiving events.
   disconnect(): void {
     this.reader?.cancel()
   }

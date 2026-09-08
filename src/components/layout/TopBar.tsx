@@ -218,6 +218,10 @@ function MobileMenu() {
   )
 }
 
+/**
+ * Top application bar with branding, theme toggle, settings, templates,
+ * export, and deploy actions. Holds the action buttons used on every page.
+ */
 export function TopBar() {
   const openSettings = useUI((state) => state.openSettings)
 

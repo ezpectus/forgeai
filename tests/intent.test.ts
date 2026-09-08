@@ -33,7 +33,7 @@ describe('analyzeIntent', () => {
     })
     vi.stubGlobal('fetch', fetch)
 
-    const result = await analyzeIntent('yoga studio landing', 'fake-key')
+    const result = await analyzeIntent('yoga studio landing', { openrouter: 'fake-key' })
     expect(result.type).toBe('landing')
     expect(result.sections[0].name).toBe('hero')
     expect(fetch).toHaveBeenCalled()
@@ -49,7 +49,7 @@ describe('analyzeIntent', () => {
     })
     vi.stubGlobal('fetch', fetch)
 
-    const result = await analyzeIntent('yoga studio landing', 'fake-key')
+    const result = await analyzeIntent('yoga studio landing', { openrouter: 'fake-key' })
     expect(result.type).toBe('landing')
     expect(result.sections.length).toBeGreaterThan(0)
 

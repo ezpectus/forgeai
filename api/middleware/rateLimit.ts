@@ -9,6 +9,10 @@ const limits = new Map<string, RateLimitEntry>()
 const LIMIT = Number(process.env.RATE_LIMIT_RPM ?? 10)
 const WINDOW_MS = 60_000
 
+/**
+ * Simple in-memory per-IP rate limiter. Allows a configurable number of
+ * requests per minute and returns `429` with `RateLimit-*` headers when exceeded.
+ */
 export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
   const ip = c.req.header('x-forwarded-for') ?? 'unknown'
   const now = Date.now()

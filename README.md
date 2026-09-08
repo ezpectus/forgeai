@@ -35,43 +35,41 @@ This project is the open-source alternative. You connect your own API keys (Open
 
 The agent follows a three-phase workflow:
 
-**1. Plan** — You type your idea. The agent analyzes it, asks clarifying questions (audience, style, features needed), and shows you a visual plan: what sections it will build, what components, what database tables. You approve or adjust before anything is generated.
+**1. Plan** — You type your idea. The agent parses intent (type, sections, palette, tone) and shows a visual plan: what components it will build and whether a database is needed. You see the plan live in the generation progress UI before any code is generated.
 
 **2. Build** — The agent generates each component separately using config-driven specs (not one giant blob of code), validates every component with esbuild, and assembles a complete Next.js project. You get:
 
-- Live URL (deployed via Vercel or E2B sandbox)
+- Live URL (deployed via Vercel or E2B sandbox, when you have a Vercel token)
 - Full React + Tailwind code, downloadable as ZIP
 - Auto-generated database schema (Supabase) if your site has forms
-- Inline visual editor — click any block, describe a change, it updates in place
-- Version history with one-click rollback
+- Inline visual editor — click any block, describe a change, it re-generates that single component
 
-**3. Grow** ✅ v1.0 — After deployment, automate the repetitive work:
+**3. Grow** 🔄 Roadmap — After deployment, automate growth work:
 
 - SEO optimization (meta tags, sitemap, structured data)
 - Analytics dashboard (visitors, page views, conversions)
-- Automated email reminders for sign-ups and bookings
-- FAQ auto-responses for common customer questions
+- Automated email reminders and FAQ auto-responses
 - A/B testing for headlines and CTAs
-- Social media scheduling from your site content
 
 ### Core Capabilities
 
-| Feature                  | Status | Description                                                                                    |
-| ------------------------ | ------ | ---------------------------------------------------------------------------------------------- |
-| Prompt-to-Live-URL       | v0.2   | Type a sentence → get a deployed URL in ~15s                                                   |
-| Config-driven generation | v0.1   | Each component generated from a strict spec with skeleton, system prompt, and validation rules |
-| Multi-model fallback     | v0.2   | HuggingFace → OpenRouter → next model. No downtime if one provider is down                     |
-| Visual editor overlay    | v0.3   | Click any block in the preview → describe a change → only that component regenerates           |
-| Differential prompting   | v0.3   | Edits send only the changed component, not the whole page. Faster, cheaper, more precise       |
-| ZIP export               | v0.4   | Download the full Next.js project: components, configs, package.json, README                   |
-| Auto-database binding    | v0.4   | Forms on the page auto-generate Supabase SQL schema and wire up form submissions               |
-| Version history          | v0.3   | Every edit is a version. Roll back to any state with one click                                 |
-| Template library         | v0.5   | Start from a template (landing, portfolio, dashboard, e-commerce) and customize with a prompt  |
-| Multi-page generation    | v0.6   | Home, About, Contact, Blog — with navigation and routing                                       |
-| Plugin system            | v0.7   | Add your own AI models, deploy providers, templates, and components                            |
-| Grow layer               | v1.0   | SEO, analytics, email automation, A/B testing, social scheduling                               |
-| AI voice agent           | future | Add a voice agent to any deployed site — visitors speak, AI responds                           |
-| Messaging integration    | future | Run the agent from Telegram, Slack, Discord                                                    |
+| Feature                  | Status     | Description                                                                                    |
+| ------------------------ | ---------- | ---------------------------------------------------------------------------------------------- |
+| Prompt-to-Live-URL       | ✅ v1.0    | Type a sentence → get a deployed URL (mocked in tests, needs real keys for full run)          |
+| Config-driven generation | ✅ v1.0    | Components are generated from strict specs and validation rules                               |
+| Multi-model fallback     | ✅ v1.0    | HuggingFace → OpenRouter chain with retries                                                   |
+| Visual editor overlay    | ✅ v1.0    | Live preview iframe with selection and edit triggers                                          |
+| Differential prompting   | ✅ v1.0    | Sends only the changed component on re-generation                                             |
+| ZIP export               | ✅ v1.0    | Download the full Next.js project as a ZIP                                                    |
+| Auto-database binding    | ✅ v1.0    | Detects forms and generates Supabase SQL schema                                               |
+| Template library         | ✅ v1.0    | Basic template gallery + customization panel                                                  |
+| Security & validation    | ✅ v1.0    | esbuild parse, AST scan, prompt-injection tests, CSP, rate limiting                           |
+| Unit + E2E tests         | ✅ v1.0    | Vitest + Playwright with mocked API                                                           |
+| Multi-page generation    | 🔄 Roadmap | Home, About, Contact, Blog with navigation                                                    |
+| Plugin system            | 🔄 Roadmap | Add custom AI models, deployers, templates (interface exists, sample in README)               |
+| Grow layer               | 🔄 Roadmap | SEO, analytics, email automation, A/B testing after deployment                                |
+| AI voice agent           | 🔄 Future  | Add a voice agent to any deployed site                                                        |
+| Messaging integration    | 🔄 Future  | Run the agent from Telegram, Slack, Discord                                                   |
 
 ### How Generation Works
 
@@ -238,8 +236,7 @@ Compare: $0.15-0.30 with GPT-4o, $0.10-0.20 with Claude. This stack is **50-100x
 ### Prerequisites
 
 - Node.js 18+
-- An OpenRouter API key (get one at [openrouter.ai/keys](https://openrouter.ai/keys))
-- Optional: HuggingFace token ([hf.co/settings/tokens](https://hf.co/settings/tokens)) for cheaper code generation
+- At least one AI key: OpenRouter, HuggingFace, or Gemini (see [docs/free-apis.md](docs/free-apis.md) for the full free options)
 - Optional: Supabase project ([supabase.com](https://supabase.com)) for database features
 - Optional: Vercel token ([vercel.com/account/tokens](https://vercel.com/account/tokens)) for deployment
 
@@ -402,30 +399,29 @@ forgeai/
 | **v0.0**   | ✅ **Done**        | System design, docs, brand, `package.json`, types, repo setup                                                         |
 | **v0.1**   | ✅ **Done**        | Prompt → generated code + config-driven generation                                                                    |
 | **v0.2**   | ✅ **Done**        | Prompt → live URL + multi-model fallback                                                                              |
-| **v0.3**   | ✅ **Done**        | Visual editor overlay + differential prompting + version history                                                      |
-| **v0.4**   | ✅ **Done**        | ZIP export + Supabase auto-binding                                                                                    |
-| **v0.5**   | ✅ **Done**        | Template gallery (15,000+ templates) + community templates                                                            |
-| **v0.6**   | ✅ **Done**        | Multi-page generation                                                                                                 |
-| **v0.7**   | ✅ **Done**        | Plugin system                                                                                                         |
-| **v1.0**   | ✅ **Done**        | Grow layer (SEO, analytics, email automation, A/B testing) + security, performance, tests, and full release           |
-| **Future** | 💡 **Idea**        | AI voice agent, messaging integration (Telegram/Slack/Discord), image/video generation, canvas mode, audio generation |
+| **v0.3**   | ✅ **Done**        | Visual editor overlay + differential prompting                                                                        |
+| **v0.4**   | ✅ **Done**        | ZIP export + Supabase auto-binding (schema generation)                                                                |
+| **v0.5**   | 🔄 **Roadmap**     | Template gallery with search, filter and community templates                                                          |
+| **v0.6**   | 🔄 **Roadmap**     | Multi-page generation with navigation                                                                                 |
+| **v0.7**   | 🔄 **Roadmap**     | Plugin system for custom providers, deployers, templates                                                              |
+| **v1.0**   | ✅ **Done**        | Core pipeline + security, performance, tests, and open-source release                                                 |
+| **Future** | 💡 **Idea**        | Grow layer (SEO, analytics, email, A/B), AI voice agent, messaging, image/video generation, canvas, audio             |
 
 ### What's Done So Far
 
-- ✅ Complete system design (`docs/system-design.md`)
-- ✅ Public docs in English: `docs/vision.md`, `docs/features.md`, `docs/system-design.md`, `docs/templates.md`, `docs/template-gallery.md`, `docs/architecture.md`
+- ✅ Core system design (`docs/system-design.md`) — architecture, API, data flow, security model
+- ✅ Public docs: `docs/vision.md`, `docs/features.md`, `docs/system-design.md`, `docs/templates.md`, `docs/template-gallery.md`, `docs/architecture.md`
 - ✅ Internal docs in `internal/` (gitignored) for core maintainers
 - ✅ Feature spec (`docs/features.md`)
 - ✅ Template constraint configs (`configs/templates/*.json`)
-- ✅ Template gallery spec (`docs/template-gallery.md`)
 - ✅ GitHub setup, README, CONTRIBUTING, LICENSE
-- ✅ `package.json` with 9 production deps
+- ✅ `package.json` with minimal production deps
 - ✅ TypeScript interfaces (`src/types.ts`)
 - ✅ `.env.example`, `Dockerfile`, `docker-compose.yml`
 - ✅ BYOK + security model documented
-- ✅ SEO, analytics, email automation, A/B testing (Grow layer v1.0)
 - ✅ Unit + integration + E2E tests (Vitest + Playwright)
 - ✅ Performance + security hardening for v1.0 release
+- 🔄 Roadmap: Template gallery expansion, multi-page generation, plugin system, Grow layer
 
 ### Release
 
@@ -481,11 +477,11 @@ Those are closed SaaS. You don't own the code, can't choose models, can't self-h
 | BYOK             | ✅            | ❌         | ❌         | ❌         | ❌      |
 | Self-host        | ✅            | ❌         | ❌         | ❌         | ❌      |
 | Cost/generation  | ~$0.002       | $20+/mo    | $20+/mo    | $20+/mo    | $20+/mo |
-| Plugin system    | ✅            | ❌         | ❌         | ❌         | ❌      |
-| Template gallery | ✅ 15,000+    | ❌         | ❌         | ❌         | ✅      |
+| Plugin system    | 🔄 Roadmap    | ❌         | ❌         | ❌         | ❌      |
+| Template gallery | ✅ Core       | ❌         | ❌         | ❌         | ✅      |
 | Visual editor    | ✅            | ✅         | ✅         | ❌         | ✅      |
 | Auto-database    | ✅ Supabase   | ❌         | ⚠️         | ❌         | ✅      |
-| Grow layer       | ✅ v1.0       | ❌         | ❌         | ❌         | ✅      |
+| Grow layer       | 🔄 Roadmap    | ❌         | ❌         | ❌         | ✅      |
 
 ---
 

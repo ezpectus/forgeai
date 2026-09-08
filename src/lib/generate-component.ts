@@ -5,13 +5,19 @@ import { callWithFallback } from './fallback'
 import { buildSystemPrompt, buildUserPrompt } from './prompt-builder'
 import { HuggingFace } from '@/plugins/providers/huggingface'
 import { OpenRouter } from '@/plugins/providers/openrouter'
-import type { ComponentSpec, ComponentState, IntentResult } from '@/types'
+import { Gemini } from '@/plugins/providers/gemini'
+import type { AIProvider, ComponentSpec, ComponentState, IntentResult } from '@/types'
 
+// Build the ordered list of AI providers to try, based on which keys the user has set.
 function buildChain(auth: Record<string, string>) {
-  const chain: { provider: typeof OpenRouter; model: string }[] = []
+  const chain: { provider: AIProvider; model: string }[] = []
 
   if (auth.openrouter) {
     chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
+  }
+
+  if (auth.gemini) {
+    chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
   }
 
   if (auth.huggingface) {
@@ -58,6 +64,10 @@ const DEFAULT_INTENT: IntentResult = {
   style: 'modern',
 }
 
+/**
+ * Generate a single component (e.g. Hero, Features) from a template config,
+ * using the user's fallback chain of AI providers.
+ */
 export async function generateComponent(
   prompt: string,
   config: ComponentSpec,
@@ -69,9 +79,11 @@ export async function generateComponent(
   const template = JSON.parse(raw) as ComponentSpec
 
   const systemPrompt = buildSystemPrompt(template, componentName)
-  const intent = auth.openrouter
-    ? await analyzeIntent(prompt, auth.openrouter)
-    : DEFAULT_INTENT
+  const hasAnyKey =
+    Boolean(auth.openrouter) ||
+    Boolean(auth.huggingface) ||
+    Boolean(auth.gemini)
+  const intent = hasAnyKey ? await analyzeIntent(prompt, auth) : DEFAULT_INTENT
 
   const userPrompt = buildUserPrompt(intent, componentName, prompt)
   const chain = buildChain(auth)
@@ -102,6 +114,10 @@ export async function generateComponent(
   }
 }
 
+/**
+ * Re-generate one existing component with a specific instruction, used by the
+ * visual editor overlay for differential edits.
+ */
 export async function regenerateComponent(
   config: ComponentSpec,
   componentName: string,

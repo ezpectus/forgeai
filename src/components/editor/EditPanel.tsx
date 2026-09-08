@@ -5,6 +5,7 @@ import { Check, Loader2, X } from 'lucide-react'
 import { saveSnapshot } from '@/lib/version-history'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
+import { useKeys } from '@/stores/keys'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { VersionHistory } from './VersionHistory'
@@ -27,6 +28,7 @@ function DiffView({ oldCode, newCode }: { oldCode: string; newCode: string }) {
 export function EditPanel() {
   const { selectedComponent, editorOpen, closeEditor } = useUI()
   const { components, updateComponent } = useProject()
+  const { openrouter, huggingface, gemini } = useKeys()
 
   const component = components.find((c) => c.name === selectedComponent)
 
@@ -50,6 +52,7 @@ export function EditPanel() {
           componentName: component.name,
           currentCode: component.code,
           instruction: instruction.trim(),
+          auth: { openrouter, huggingface, gemini },
         }),
       })
 

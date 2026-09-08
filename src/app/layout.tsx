@@ -31,6 +31,10 @@ const themeScript = `
   })();
 `
 
+/**
+ * Root layout that sets the font, injects the anti-flicker theme script,
+ * and wraps every page in the global providers.
+ */
 export default function RootLayout({
   children,
 }: {

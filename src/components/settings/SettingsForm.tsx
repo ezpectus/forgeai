@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-type Provider = 'openrouter' | 'huggingface' | 'supabase' | 'vercel'
+type Provider = 'openrouter' | 'huggingface' | 'gemini' | 'supabase' | 'vercel'
 
 interface TestState {
   status: 'idle' | 'testing' | 'ok' | 'error'
@@ -40,6 +40,13 @@ const fields: {
     provider: 'huggingface',
   },
   {
+    key: 'gemini',
+    label: 'Gemini API Key',
+    type: 'password',
+    link: 'https://aistudio.google.com/app/apikey',
+    provider: 'gemini',
+  },
+  {
     key: 'supabaseUrl',
     label: 'Supabase URL',
     type: 'text',
@@ -62,6 +69,10 @@ const fields: {
   },
 ]
 
+/**
+ * Settings dialog form. Lets the user enter, test, and persist API keys
+ * for all supported providers in IndexedDB (BYOK).
+ */
 export function SettingsForm() {
   const { closeSettings } = useUI()
   const keys = useKeys()
@@ -69,6 +80,7 @@ export function SettingsForm() {
   const [values, setValues] = useState({
     openrouter: keys.openrouter ?? '',
     huggingface: keys.huggingface ?? '',
+    gemini: keys.gemini ?? '',
     supabaseUrl: keys.supabaseUrl ?? '',
     supabaseKey: keys.supabaseKey ?? '',
     vercel: keys.vercel ?? '',
@@ -77,6 +89,7 @@ export function SettingsForm() {
   const [tests, setTests] = useState<Record<Provider, TestState>>({
     openrouter: { status: 'idle' },
     huggingface: { status: 'idle' },
+    gemini: { status: 'idle' },
     supabase: { status: 'idle' },
     vercel: { status: 'idle' },
   })

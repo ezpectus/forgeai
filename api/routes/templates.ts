@@ -76,25 +76,26 @@ app.get('/:id', async (c) => {
 })
 
 app.post('/:id/customize', async (c) => {
-  const token = c.get('auth') as string | null
   const id = c.req.param('id')
-  const { prompt } = await c.req.json<{ prompt: string }>()
+  const { prompt, auth } = await c.req.json<{
+    prompt: string
+    auth?: Record<string, string>
+  }>()
 
-  if (!token) {
-    return c.json({ error: 'Missing Authorization header' }, 401)
+  if (!auth || (!auth.openrouter && !auth.huggingface && !auth.gemini)) {
+    return c.json({ error: 'Missing API key', code: 'UNAUTHORIZED' }, 401)
   }
 
   const index = await loadIndex()
   const item = index.find((t) => t.id === id)
 
   if (!item) {
-    return c.json({ error: 'Template not found' }, 404)
+    return c.json({ error: 'Template not found', code: 'NOT_FOUND' }, 404)
   }
 
   const raw = await readFile(join(process.cwd(), 'public', item.path), 'utf-8')
   const config = JSON.parse(raw) as ComponentSpec
 
-  const auth = { openrouter: token }
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -107,7 +108,7 @@ app.post('/:id/customize', async (c) => {
 
       try {
         send('analyzing', { status: 'analyzing' })
-        const intent = await analyzeIntent(prompt, auth.openrouter)
+        const intent = await analyzeIntent(prompt, auth)
         send('intent', intent)
 
         const components = []

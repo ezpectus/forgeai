@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Loader2, Sparkles, X } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
+import { useKeys } from '@/stores/keys'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
@@ -21,6 +22,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     reset,
   } = useProject()
   const { closeCustomize } = useUI()
+  const { openrouter, huggingface, gemini } = useKeys()
   const [prompt, setPromptLocal] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -33,9 +35,14 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     setLoading(true)
 
     const client = new SSEClient()
+    const token = openrouter || huggingface || gemini || ''
     await client.connect(
       `/api/templates/${templateId}/customize`,
-      { prompt: prompt.trim() },
+      {
+        prompt: prompt.trim(),
+        auth: { openrouter, huggingface, gemini },
+        token,
+      },
       (event, data) => {
         if (event === 'intent') {
           setIntent(data as IntentResult)

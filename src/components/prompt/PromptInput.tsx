@@ -22,11 +22,17 @@ const models = [
   { value: 'deepseek-v3', label: 'DeepSeek V3 (OpenRouter)' },
   { value: 'deepseek-coder', label: 'DeepSeek Coder (HuggingFace)' },
   { value: 'qwen-coder', label: 'Qwen Coder (OpenRouter)' },
+  { value: 'gemini-flash', label: 'Gemini 1.5 Flash (Google)' },
+  { value: 'gemini-pro', label: 'Gemini 1.5 Pro (Google)' },
   { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
 ]
 
+/**
+ * Main prompt input component. Collects the user's idea, lets them pick an AI
+ * model, and starts the streaming generation process via the orchestrator.
+ */
 export function PromptInput() {
-  const { openrouter, huggingface } = useKeys()
+  const { openrouter, huggingface, gemini } = useKeys()
   const { openGallery } = useUI()
   const {
     setPrompt,
@@ -43,7 +49,7 @@ export function PromptInput() {
   const [prompt, setPromptLocal] = useState('')
   const [model, setModel] = useState(models[0].value)
 
-  const hasKeys = Boolean(openrouter || huggingface)
+  const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
 
   function handleSelect(text: string) {
@@ -62,12 +68,14 @@ export function PromptInput() {
     setError(null)
 
     const client = new SSEClient()
+    const token = openrouter || huggingface || gemini || ''
     await client.connect(
       '/api/generate',
       {
         prompt: trimmed,
         model,
-        token: openrouter ?? '',
+        auth: { openrouter, huggingface, gemini },
+        token,
       },
       (event, data) => {
         if (event === 'intent') {
@@ -172,7 +180,7 @@ export function PromptInput() {
 
       {!hasKeys && (
         <p className="text-sm text-destructive">
-          Add an OpenRouter or HuggingFace key in Settings to generate.
+          Add an OpenRouter, HuggingFace, or Gemini key in Settings to generate.
         </p>
       )}
     </div>

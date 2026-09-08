@@ -7,7 +7,7 @@ Thank you for your interest in contributing! This guide covers everything you ne
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-username/forgeai.git
+git clone https://github.com/ezpectus/forgeai.git
 cd forgeai
 npm install
 npm run dev
@@ -109,7 +109,7 @@ Create a JSON file in `configs/templates/` following the schema in `docs/templat
 - `const`/`let` only (no `var`)
 - `async/await` over `.then()` chains
 - Tailwind CSS only (no inline styles, no CSS-in-JS)
-- Comments only when logic is non-obvious
+- Comments explain *why* a non-obvious choice was made, and a short JSDoc/single-line comment above each exported function explaining what it does
 - Mobile-first responsive classes
 
 ### Linting

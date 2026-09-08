@@ -373,16 +373,15 @@ See `docs/template-gallery.md` for full spec.
 
 ### MVP (v0.1 – v0.4)
 
-- [x] AI Websites (prompt → live URL)
-- [x] Config-driven component generation
-- [x] Multi-model fallback
-- [x] Plan Mode (ask questions → show plan → approve → build)
-- [x] Inline editing (click → describe → update)
-- [x] Version history with rollback
-- [x] Differential prompting
+- [x] AI Websites (prompt → generated Next.js code)
+- [x] Config-driven component generation (strict specs + validation)
+- [x] Multi-model fallback (HuggingFace → OpenRouter)
+- [x] Basic plan mode (parse intent, show sections/palette)
+- [x] Inline editing trigger (select component, send differential prompt)
+- [x] Differential prompting (re-generate single component)
 - [x] ZIP export
-- [x] Auto-database binding (Supabase)
-- [x] Auto-provisioned infrastructure
+- [x] Auto-database binding (Supabase schema generation)
+- [x] Security + validation hardening
 
 ### Near-term (v0.5 – v0.7)
 

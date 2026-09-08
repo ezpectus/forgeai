@@ -2,6 +2,10 @@ import { useProject } from '@/stores/project'
 import { Progress } from '@/components/ui/progress'
 import { ComponentStatusRow } from './ComponentStatusRow'
 
+/**
+ * Show the live generation progress: intent summary, component status rows,
+ * progress bar, estimated cost, and any error.
+ */
 export function GenerationProgress() {
   const { status, components, intent, cost, error } = useProject()
 
