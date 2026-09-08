@@ -4,11 +4,12 @@ import { serve } from '@hono/node-server'
 import { authMiddleware } from './middleware/auth'
 import { corsMiddleware } from './middleware/cors'
 import { rateLimitMiddleware } from './middleware/rateLimit'
+import type { AppEnv } from './lib/env'
 import { log } from './lib/logger'
 import generateRoute from './routes/generate'
 import healthRoute from './routes/health'
 
-const app = new Hono()
+const app = new Hono<AppEnv>()
 
 app.use(logger())
 app.use(corsMiddleware)
