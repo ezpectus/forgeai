@@ -76,7 +76,7 @@ export interface SectionIntent {
 // ------------------------------------------------------------------------
 
 export interface GenConfig {
-  model: string
+  model?: string
   fallback?: string[]
   temperature?: number
   maxTokens?: number
