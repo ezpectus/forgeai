@@ -13,6 +13,7 @@ const initialState: KeysState = {
   huggingface: null,
   supabaseUrl: null,
   supabaseKey: null,
+  vercel: null,
 }
 
 export const useKeys = create<KeysStore>((set) => ({
@@ -29,13 +30,15 @@ export const useKeys = create<KeysStore>((set) => ({
   },
 
   loadKeys: async () => {
-    const [openrouter, huggingface, supabaseUrl, supabaseKey] = await Promise.all([
-      getKey('openrouter'),
-      getKey('huggingface'),
-      getKey('supabaseUrl'),
-      getKey('supabaseKey'),
-    ])
-    set({ openrouter, huggingface, supabaseUrl, supabaseKey })
+    const [openrouter, huggingface, supabaseUrl, supabaseKey, vercel] =
+      await Promise.all([
+        getKey('openrouter'),
+        getKey('huggingface'),
+        getKey('supabaseUrl'),
+        getKey('supabaseKey'),
+        getKey('vercel'),
+      ])
+    set({ openrouter, huggingface, supabaseUrl, supabaseKey, vercel })
   },
 }))
 

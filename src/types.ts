@@ -35,6 +35,7 @@ export interface KeysState {
   huggingface: string | null;
   supabaseUrl: string | null;
   supabaseKey: string | null;
+  vercel: string | null;
 }
 
 export interface UIState {

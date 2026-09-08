@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { SettingsDialog } from '@/components/settings/SettingsDialog'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { MainArea } from './MainArea'
@@ -11,6 +12,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
       <TopBar />
       <MainArea className="md:col-start-2">{children}</MainArea>
       <StatusBar />
+      <SettingsDialog />
     </div>
   )
 }
