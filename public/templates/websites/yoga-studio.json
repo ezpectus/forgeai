@@ -1,10 +1,20 @@
 {
-  "id": "yoga-studio",
-  "name": "Yoga Studio",
-  "description": "A wellness website for a yoga studio with classes, instructors, and booking form.",
   "scope": {
-    "allowed": ["landing", "hero", "classes", "instructors", "schedule", "booking-form", "footer"],
-    "forbidden": ["navbar", "sidebar", "mega-menu", "search", "cart"]
+    "allowed": [
+      "landing",
+      "hero",
+      "features",
+      "pricing",
+      "contact-form",
+      "footer"
+    ],
+    "forbidden": [
+      "navbar",
+      "sidebar",
+      "mega-menu",
+      "search",
+      "cart"
+    ]
   },
   "stack": {
     "framework": "nextjs",
@@ -14,40 +24,85 @@
     "state": "zustand"
   },
   "constraints": {
-    "allowedDependencies": ["react", "next", "lucide-react", "zustand", "@supabase/supabase-js"],
-    "forbiddenDependencies": ["jquery", "lodash", "moment", "axios"],
-    "maxComponents": 7,
+    "allowedDependencies": [
+      "react",
+      "next",
+      "lucide-react",
+      "zustand",
+      "@supabase/supabase-js"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "lodash",
+      "moment",
+      "axios"
+    ],
+    "maxComponents": 6,
     "maxLengthPerComponent": 500
   },
-  "components": ["Hero", "Classes", "Instructors", "Schedule", "BookingForm", "Footer"],
+  "components": [
+    "Hero",
+    "Features",
+    "Pricing",
+    "ContactForm",
+    "Footer"
+  ],
   "generation": {
-    "stages": ["intent", "components", "validate", "assemble"],
+    "stages": [
+      "intent",
+      "components",
+      "validate",
+      "assemble"
+    ],
     "askClarifyingQuestions": false,
     "showPlanBeforeBuild": false,
     "parallelComponentGeneration": true,
     "maxRetriesPerComponent": 2
   },
   "validation": {
-    "autoTest": ["render", "build"],
-    "staticAnalysisRules": ["syntax", "hasDefaultExport", "noDangerousHtml", "noEval", "usesTailwindOnly", "imagesHaveAlt", "formsHaveNames", "noForbiddenImports"],
-    "buildCommands": ["npm run build"]
+    "autoTest": [
+      "render",
+      "build"
+    ],
+    "staticAnalysisRules": [
+      "syntax",
+      "hasDefaultExport",
+      "noDangerousHtml",
+      "noEval",
+      "usesTailwindOnly",
+      "imagesHaveAlt",
+      "formsHaveNames",
+      "noForbiddenImports"
+    ],
+    "buildCommands": [
+      "npm run build"
+    ]
   },
   "model": {
     "intentModel": "openrouter/deepseek-v3",
     "codeModel": "huggingface/deepseek-coder",
-    "fallback": ["openrouter/qwen-coder", "openrouter/llama-3.1-405b"]
+    "fallback": [
+      "openrouter/qwen-coder",
+      "openrouter/llama-3.1-405b"
+    ]
   },
   "export": {
-    "formats": ["zip", "vercel", "e2b"],
+    "formats": [
+      "zip",
+      "vercel",
+      "e2b"
+    ],
     "includeDatabaseSchema": true,
     "includeReadme": true,
     "includeEnvExample": true
   },
   "ui": {
-    "defaultPrompt": "Yoga studio website with classes, instructors, and booking form",
+    "defaultPrompt": "Create a yoga studio website with modern design and clear sections",
     "examplePrompts": [
-      "Landing for a yoga studio with booking form",
-      "Wellness studio with schedule and contact"
+      "A yoga studio with testimonials and a contact form"
     ]
-  }
+  },
+  "id": "yoga-studio",
+  "name": "Yoga Studio",
+  "description": "A yoga studio website template."
 }

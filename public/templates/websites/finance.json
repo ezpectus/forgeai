@@ -97,12 +97,12 @@
     "includeEnvExample": true
   },
   "ui": {
-    "defaultPrompt": "Create a portfolio website with modern design and clear sections",
+    "defaultPrompt": "Create a finance website with modern design and clear sections",
     "examplePrompts": [
-      "A portfolio with testimonials and a contact form"
+      "A finance with testimonials and a contact form"
     ]
   },
-  "id": "portfolio",
-  "name": "Portfolio",
-  "description": "A portfolio website template."
+  "id": "finance",
+  "name": "Finance",
+  "description": "A finance website template."
 }

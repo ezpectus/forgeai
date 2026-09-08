@@ -97,12 +97,12 @@
     "includeEnvExample": true
   },
   "ui": {
-    "defaultPrompt": "Create a portfolio website with modern design and clear sections",
+    "defaultPrompt": "Create a case study presentation with modern design and clear sections",
     "examplePrompts": [
-      "A portfolio with testimonials and a contact form"
+      "A case study with testimonials and a contact form"
     ]
   },
-  "id": "portfolio",
-  "name": "Portfolio",
-  "description": "A portfolio website template."
+  "id": "case-study",
+  "name": "Case Study",
+  "description": "A case study presentation template."
 }

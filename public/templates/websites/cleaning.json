@@ -97,12 +97,12 @@
     "includeEnvExample": true
   },
   "ui": {
-    "defaultPrompt": "Create a portfolio website with modern design and clear sections",
+    "defaultPrompt": "Create a cleaning website with modern design and clear sections",
     "examplePrompts": [
-      "A portfolio with testimonials and a contact form"
+      "A cleaning with testimonials and a contact form"
     ]
   },
-  "id": "portfolio",
-  "name": "Portfolio",
-  "description": "A portfolio website template."
+  "id": "cleaning",
+  "name": "Cleaning",
+  "description": "A cleaning website template."
 }

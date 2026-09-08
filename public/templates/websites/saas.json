@@ -1,10 +1,20 @@
 {
-  "id": "saas",
-  "name": "SaaS Landing",
-  "description": "A modern SaaS landing page with hero, features, pricing, testimonials, and contact form.",
   "scope": {
-    "allowed": ["landing", "hero", "features", "pricing", "testimonials", "contact-form", "footer"],
-    "forbidden": ["navbar", "sidebar", "mega-menu", "search", "cart"]
+    "allowed": [
+      "landing",
+      "hero",
+      "features",
+      "pricing",
+      "contact-form",
+      "footer"
+    ],
+    "forbidden": [
+      "navbar",
+      "sidebar",
+      "mega-menu",
+      "search",
+      "cart"
+    ]
   },
   "stack": {
     "framework": "nextjs",
@@ -14,40 +24,85 @@
     "state": "zustand"
   },
   "constraints": {
-    "allowedDependencies": ["react", "next", "lucide-react", "zustand", "@supabase/supabase-js"],
-    "forbiddenDependencies": ["jquery", "lodash", "moment", "axios"],
-    "maxComponents": 8,
+    "allowedDependencies": [
+      "react",
+      "next",
+      "lucide-react",
+      "zustand",
+      "@supabase/supabase-js"
+    ],
+    "forbiddenDependencies": [
+      "jquery",
+      "lodash",
+      "moment",
+      "axios"
+    ],
+    "maxComponents": 6,
     "maxLengthPerComponent": 500
   },
-  "components": ["Hero", "Features", "Pricing", "Testimonials", "ContactForm", "Footer"],
+  "components": [
+    "Hero",
+    "Features",
+    "Pricing",
+    "ContactForm",
+    "Footer"
+  ],
   "generation": {
-    "stages": ["intent", "components", "validate", "assemble"],
+    "stages": [
+      "intent",
+      "components",
+      "validate",
+      "assemble"
+    ],
     "askClarifyingQuestions": false,
     "showPlanBeforeBuild": false,
     "parallelComponentGeneration": true,
     "maxRetriesPerComponent": 2
   },
   "validation": {
-    "autoTest": ["render", "build"],
-    "staticAnalysisRules": ["syntax", "hasDefaultExport", "noDangerousHtml", "noEval", "usesTailwindOnly", "imagesHaveAlt", "formsHaveNames", "noForbiddenImports"],
-    "buildCommands": ["npm run build"]
+    "autoTest": [
+      "render",
+      "build"
+    ],
+    "staticAnalysisRules": [
+      "syntax",
+      "hasDefaultExport",
+      "noDangerousHtml",
+      "noEval",
+      "usesTailwindOnly",
+      "imagesHaveAlt",
+      "formsHaveNames",
+      "noForbiddenImports"
+    ],
+    "buildCommands": [
+      "npm run build"
+    ]
   },
   "model": {
     "intentModel": "openrouter/deepseek-v3",
     "codeModel": "huggingface/deepseek-coder",
-    "fallback": ["openrouter/qwen-coder", "openrouter/llama-3.1-405b"]
+    "fallback": [
+      "openrouter/qwen-coder",
+      "openrouter/llama-3.1-405b"
+    ]
   },
   "export": {
-    "formats": ["zip", "vercel", "e2b"],
+    "formats": [
+      "zip",
+      "vercel",
+      "e2b"
+    ],
     "includeDatabaseSchema": true,
     "includeReadme": true,
     "includeEnvExample": true
   },
   "ui": {
-    "defaultPrompt": "Landing page for a SaaS product with pricing and contact form",
+    "defaultPrompt": "Create a saas website with modern design and clear sections",
     "examplePrompts": [
-      "Landing for a team collaboration SaaS",
-      "Pricing-focused SaaS website with testimonials"
+      "A saas with testimonials and a contact form"
     ]
-  }
+  },
+  "id": "saas",
+  "name": "Saas",
+  "description": "A saas website template."
 }

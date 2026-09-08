@@ -97,12 +97,12 @@
     "includeEnvExample": true
   },
   "ui": {
-    "defaultPrompt": "Create a portfolio website with modern design and clear sections",
+    "defaultPrompt": "Create a how it works carousel with modern design and clear sections",
     "examplePrompts": [
-      "A portfolio with testimonials and a contact form"
+      "A how it works with testimonials and a contact form"
     ]
   },
-  "id": "portfolio",
-  "name": "Portfolio",
-  "description": "A portfolio website template."
+  "id": "how-it-works",
+  "name": "How It Works",
+  "description": "A how it works carousel template."
 }

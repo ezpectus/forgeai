@@ -1,47 +1,461 @@
 [
   {
-    "id": "website",
-    "name": "General Website",
-    "type": "website",
-    "topic": "general",
-    "description": "A flexible multi-section landing website.",
-    "thumbnail": "/templates/thumbnails/website.png",
-    "path": "/templates/websites/website.json"
-  },
-  {
-    "id": "saas",
-    "name": "SaaS Landing",
-    "type": "website",
-    "topic": "saas",
-    "description": "Hero, features, pricing, and contact form for SaaS products.",
-    "thumbnail": "/templates/thumbnails/saas.png",
-    "path": "/templates/websites/saas.json"
-  },
-  {
-    "id": "portfolio",
-    "name": "Portfolio",
-    "type": "website",
-    "topic": "personal",
-    "description": "A clean portfolio with projects and contact.",
-    "thumbnail": "/templates/thumbnails/portfolio.png",
-    "path": "/templates/websites/portfolio.json"
-  },
-  {
     "id": "restaurant",
     "name": "Restaurant",
-    "type": "website",
-    "topic": "food",
-    "description": "Menu, gallery, and booking form for a restaurant.",
+    "type": "websites",
+    "topic": "restaurant",
+    "description": "A restaurant website template.",
     "thumbnail": "/templates/thumbnails/restaurant.png",
     "path": "/templates/websites/restaurant.json"
   },
   {
     "id": "yoga-studio",
     "name": "Yoga Studio",
-    "type": "website",
-    "topic": "wellness",
-    "description": "Classes, instructors, and booking form for a yoga studio.",
+    "type": "websites",
+    "topic": "yoga-studio",
+    "description": "A yoga studio website template.",
     "thumbnail": "/templates/thumbnails/yoga-studio.png",
     "path": "/templates/websites/yoga-studio.json"
+  },
+  {
+    "id": "coffee-shop",
+    "name": "Coffee Shop",
+    "type": "websites",
+    "topic": "coffee-shop",
+    "description": "A coffee shop website template.",
+    "thumbnail": "/templates/thumbnails/coffee-shop.png",
+    "path": "/templates/websites/coffee-shop.json"
+  },
+  {
+    "id": "barbershop",
+    "name": "Barbershop",
+    "type": "websites",
+    "topic": "barbershop",
+    "description": "A barbershop website template.",
+    "thumbnail": "/templates/thumbnails/barbershop.png",
+    "path": "/templates/websites/barbershop.json"
+  },
+  {
+    "id": "dental",
+    "name": "Dental",
+    "type": "websites",
+    "topic": "dental",
+    "description": "A dental website template.",
+    "thumbnail": "/templates/thumbnails/dental.png",
+    "path": "/templates/websites/dental.json"
+  },
+  {
+    "id": "law-firm",
+    "name": "Law Firm",
+    "type": "websites",
+    "topic": "law-firm",
+    "description": "A law firm website template.",
+    "thumbnail": "/templates/thumbnails/law-firm.png",
+    "path": "/templates/websites/law-firm.json"
+  },
+  {
+    "id": "real-estate",
+    "name": "Real Estate",
+    "type": "websites",
+    "topic": "real-estate",
+    "description": "A real estate website template.",
+    "thumbnail": "/templates/thumbnails/real-estate.png",
+    "path": "/templates/websites/real-estate.json"
+  },
+  {
+    "id": "construction",
+    "name": "Construction",
+    "type": "websites",
+    "topic": "construction",
+    "description": "A construction website template.",
+    "thumbnail": "/templates/thumbnails/construction.png",
+    "path": "/templates/websites/construction.json"
+  },
+  {
+    "id": "cleaning",
+    "name": "Cleaning",
+    "type": "websites",
+    "topic": "cleaning",
+    "description": "A cleaning website template.",
+    "thumbnail": "/templates/thumbnails/cleaning.png",
+    "path": "/templates/websites/cleaning.json"
+  },
+  {
+    "id": "photography",
+    "name": "Photography",
+    "type": "websites",
+    "topic": "photography",
+    "description": "A photography website template.",
+    "thumbnail": "/templates/thumbnails/photography.png",
+    "path": "/templates/websites/photography.json"
+  },
+  {
+    "id": "wedding",
+    "name": "Wedding",
+    "type": "websites",
+    "topic": "wedding",
+    "description": "A wedding website template.",
+    "thumbnail": "/templates/thumbnails/wedding.png",
+    "path": "/templates/websites/wedding.json"
+  },
+  {
+    "id": "event-planner",
+    "name": "Event Planner",
+    "type": "websites",
+    "topic": "event-planner",
+    "description": "A event planner website template.",
+    "thumbnail": "/templates/thumbnails/event-planner.png",
+    "path": "/templates/websites/event-planner.json"
+  },
+  {
+    "id": "travel-agency",
+    "name": "Travel Agency",
+    "type": "websites",
+    "topic": "travel-agency",
+    "description": "A travel agency website template.",
+    "thumbnail": "/templates/thumbnails/travel-agency.png",
+    "path": "/templates/websites/travel-agency.json"
+  },
+  {
+    "id": "hotel",
+    "name": "Hotel",
+    "type": "websites",
+    "topic": "hotel",
+    "description": "A hotel website template.",
+    "thumbnail": "/templates/thumbnails/hotel.png",
+    "path": "/templates/websites/hotel.json"
+  },
+  {
+    "id": "gym",
+    "name": "Gym",
+    "type": "websites",
+    "topic": "gym",
+    "description": "A gym website template.",
+    "thumbnail": "/templates/thumbnails/gym.png",
+    "path": "/templates/websites/gym.json"
+  },
+  {
+    "id": "saas",
+    "name": "Saas",
+    "type": "websites",
+    "topic": "saas",
+    "description": "A saas website template.",
+    "thumbnail": "/templates/thumbnails/saas.png",
+    "path": "/templates/websites/saas.json"
+  },
+  {
+    "id": "portfolio",
+    "name": "Portfolio",
+    "type": "websites",
+    "topic": "portfolio",
+    "description": "A portfolio website template.",
+    "thumbnail": "/templates/thumbnails/portfolio.png",
+    "path": "/templates/websites/portfolio.json"
+  },
+  {
+    "id": "ecommerce",
+    "name": "Ecommerce",
+    "type": "websites",
+    "topic": "ecommerce",
+    "description": "A ecommerce website template.",
+    "thumbnail": "/templates/thumbnails/ecommerce.png",
+    "path": "/templates/websites/ecommerce.json"
+  },
+  {
+    "id": "blog",
+    "name": "Blog",
+    "type": "websites",
+    "topic": "blog",
+    "description": "A blog website template.",
+    "thumbnail": "/templates/thumbnails/blog.png",
+    "path": "/templates/websites/blog.json"
+  },
+  {
+    "id": "agency",
+    "name": "Agency",
+    "type": "websites",
+    "topic": "agency",
+    "description": "A agency website template.",
+    "thumbnail": "/templates/thumbnails/agency.png",
+    "path": "/templates/websites/agency.json"
+  },
+  {
+    "id": "consulting",
+    "name": "Consulting",
+    "type": "websites",
+    "topic": "consulting",
+    "description": "A consulting website template.",
+    "thumbnail": "/templates/thumbnails/consulting.png",
+    "path": "/templates/websites/consulting.json"
+  },
+  {
+    "id": "coaching",
+    "name": "Coaching",
+    "type": "websites",
+    "topic": "coaching",
+    "description": "A coaching website template.",
+    "thumbnail": "/templates/thumbnails/coaching.png",
+    "path": "/templates/websites/coaching.json"
+  },
+  {
+    "id": "medical",
+    "name": "Medical",
+    "type": "websites",
+    "topic": "medical",
+    "description": "A medical website template.",
+    "thumbnail": "/templates/thumbnails/medical.png",
+    "path": "/templates/websites/medical.json"
+  },
+  {
+    "id": "finance",
+    "name": "Finance",
+    "type": "websites",
+    "topic": "finance",
+    "description": "A finance website template.",
+    "thumbnail": "/templates/thumbnails/finance.png",
+    "path": "/templates/websites/finance.json"
+  },
+  {
+    "id": "crypto",
+    "name": "Crypto",
+    "type": "websites",
+    "topic": "crypto",
+    "description": "A crypto website template.",
+    "thumbnail": "/templates/thumbnails/crypto.png",
+    "path": "/templates/websites/crypto.json"
+  },
+  {
+    "id": "pitch-deck",
+    "name": "Pitch Deck",
+    "type": "presentations",
+    "topic": "pitch-deck",
+    "description": "A pitch deck presentation template.",
+    "thumbnail": "/templates/thumbnails/pitch-deck.png",
+    "path": "/templates/presentations/pitch-deck.json"
+  },
+  {
+    "id": "sales-deck",
+    "name": "Sales Deck",
+    "type": "presentations",
+    "topic": "sales-deck",
+    "description": "A sales deck presentation template.",
+    "thumbnail": "/templates/thumbnails/sales-deck.png",
+    "path": "/templates/presentations/sales-deck.json"
+  },
+  {
+    "id": "product-launch",
+    "name": "Product Launch",
+    "type": "presentations",
+    "topic": "product-launch",
+    "description": "A product launch presentation template.",
+    "thumbnail": "/templates/thumbnails/product-launch.png",
+    "path": "/templates/presentations/product-launch.json"
+  },
+  {
+    "id": "quarterly-review",
+    "name": "Quarterly Review",
+    "type": "presentations",
+    "topic": "quarterly-review",
+    "description": "A quarterly review presentation template.",
+    "thumbnail": "/templates/thumbnails/quarterly-review.png",
+    "path": "/templates/presentations/quarterly-review.json"
+  },
+  {
+    "id": "board-meeting",
+    "name": "Board Meeting",
+    "type": "presentations",
+    "topic": "board-meeting",
+    "description": "A board meeting presentation template.",
+    "thumbnail": "/templates/thumbnails/board-meeting.png",
+    "path": "/templates/presentations/board-meeting.json"
+  },
+  {
+    "id": "investor-update",
+    "name": "Investor Update",
+    "type": "presentations",
+    "topic": "investor-update",
+    "description": "A investor update presentation template.",
+    "thumbnail": "/templates/thumbnails/investor-update.png",
+    "path": "/templates/presentations/investor-update.json"
+  },
+  {
+    "id": "webinar",
+    "name": "Webinar",
+    "type": "presentations",
+    "topic": "webinar",
+    "description": "A webinar presentation template.",
+    "thumbnail": "/templates/thumbnails/webinar.png",
+    "path": "/templates/presentations/webinar.json"
+  },
+  {
+    "id": "workshop",
+    "name": "Workshop",
+    "type": "presentations",
+    "topic": "workshop",
+    "description": "A workshop presentation template.",
+    "thumbnail": "/templates/thumbnails/workshop.png",
+    "path": "/templates/presentations/workshop.json"
+  },
+  {
+    "id": "status-report",
+    "name": "Status Report",
+    "type": "presentations",
+    "topic": "status-report",
+    "description": "A status report presentation template.",
+    "thumbnail": "/templates/thumbnails/status-report.png",
+    "path": "/templates/presentations/status-report.json"
+  },
+  {
+    "id": "case-study",
+    "name": "Case Study",
+    "type": "presentations",
+    "topic": "case-study",
+    "description": "A case study presentation template.",
+    "thumbnail": "/templates/thumbnails/case-study.png",
+    "path": "/templates/presentations/case-study.json"
+  },
+  {
+    "id": "instagram-tips",
+    "name": "Instagram Tips",
+    "type": "carousels",
+    "topic": "instagram-tips",
+    "description": "A instagram tips carousel template.",
+    "thumbnail": "/templates/thumbnails/instagram-tips.png",
+    "path": "/templates/carousels/instagram-tips.json"
+  },
+  {
+    "id": "linkedin-thoughts",
+    "name": "Linkedin Thoughts",
+    "type": "carousels",
+    "topic": "linkedin-thoughts",
+    "description": "A linkedin thoughts carousel template.",
+    "thumbnail": "/templates/thumbnails/linkedin-thoughts.png",
+    "path": "/templates/carousels/linkedin-thoughts.json"
+  },
+  {
+    "id": "twitter-thread",
+    "name": "Twitter Thread",
+    "type": "carousels",
+    "topic": "twitter-thread",
+    "description": "A twitter thread carousel template.",
+    "thumbnail": "/templates/thumbnails/twitter-thread.png",
+    "path": "/templates/carousels/twitter-thread.json"
+  },
+  {
+    "id": "product-showcase",
+    "name": "Product Showcase",
+    "type": "carousels",
+    "topic": "product-showcase",
+    "description": "A product showcase carousel template.",
+    "thumbnail": "/templates/thumbnails/product-showcase.png",
+    "path": "/templates/carousels/product-showcase.json"
+  },
+  {
+    "id": "testimonial-carousel",
+    "name": "Testimonial Carousel",
+    "type": "carousels",
+    "topic": "testimonial-carousel",
+    "description": "A testimonial carousel carousel template.",
+    "thumbnail": "/templates/thumbnails/testimonial-carousel.png",
+    "path": "/templates/carousels/testimonial-carousel.json"
+  },
+  {
+    "id": "how-it-works",
+    "name": "How It Works",
+    "type": "carousels",
+    "topic": "how-it-works",
+    "description": "A how it works carousel template.",
+    "thumbnail": "/templates/thumbnails/how-it-works.png",
+    "path": "/templates/carousels/how-it-works.json"
+  },
+  {
+    "id": "before-after",
+    "name": "Before After",
+    "type": "carousels",
+    "topic": "before-after",
+    "description": "A before after carousel template.",
+    "thumbnail": "/templates/thumbnails/before-after.png",
+    "path": "/templates/carousels/before-after.json"
+  },
+  {
+    "id": "quote-carousel",
+    "name": "Quote Carousel",
+    "type": "carousels",
+    "topic": "quote-carousel",
+    "description": "A quote carousel carousel template.",
+    "thumbnail": "/templates/thumbnails/quote-carousel.png",
+    "path": "/templates/carousels/quote-carousel.json"
+  },
+  {
+    "id": "annual-report",
+    "name": "Annual Report",
+    "type": "reports",
+    "topic": "annual-report",
+    "description": "A annual report report template.",
+    "thumbnail": "/templates/thumbnails/annual-report.png",
+    "path": "/templates/reports/annual-report.json"
+  },
+  {
+    "id": "market-research",
+    "name": "Market Research",
+    "type": "reports",
+    "topic": "market-research",
+    "description": "A market research report template.",
+    "thumbnail": "/templates/thumbnails/market-research.png",
+    "path": "/templates/reports/market-research.json"
+  },
+  {
+    "id": "competitor-analysis",
+    "name": "Competitor Analysis",
+    "type": "reports",
+    "topic": "competitor-analysis",
+    "description": "A competitor analysis report template.",
+    "thumbnail": "/templates/thumbnails/competitor-analysis.png",
+    "path": "/templates/reports/competitor-analysis.json"
+  },
+  {
+    "id": "user-research",
+    "name": "User Research",
+    "type": "reports",
+    "topic": "user-research",
+    "description": "A user research report template.",
+    "thumbnail": "/templates/thumbnails/user-research.png",
+    "path": "/templates/reports/user-research.json"
+  },
+  {
+    "id": "financial-summary",
+    "name": "Financial Summary",
+    "type": "reports",
+    "topic": "financial-summary",
+    "description": "A financial summary report template.",
+    "thumbnail": "/templates/thumbnails/financial-summary.png",
+    "path": "/templates/reports/financial-summary.json"
+  },
+  {
+    "id": "seo-report",
+    "name": "Seo Report",
+    "type": "reports",
+    "topic": "seo-report",
+    "description": "A seo report report template.",
+    "thumbnail": "/templates/thumbnails/seo-report.png",
+    "path": "/templates/reports/seo-report.json"
+  },
+  {
+    "id": "social-media-report",
+    "name": "Social Media Report",
+    "type": "reports",
+    "topic": "social-media-report",
+    "description": "A social media report report template.",
+    "thumbnail": "/templates/thumbnails/social-media-report.png",
+    "path": "/templates/reports/social-media-report.json"
+  },
+  {
+    "id": "sustainability-report",
+    "name": "Sustainability Report",
+    "type": "reports",
+    "topic": "sustainability-report",
+    "description": "A sustainability report report template.",
+    "thumbnail": "/templates/thumbnails/sustainability-report.png",
+    "path": "/templates/reports/sustainability-report.json"
   }
 ]
