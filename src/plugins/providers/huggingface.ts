@@ -1,4 +1,9 @@
-import type { AIProvider, GenConfig, GenResult } from '@/types'
+import {
+  ProviderError,
+  type AIProvider,
+  type GenConfig,
+  type GenResult,
+} from '@/types'
 
 const API_BASE = 'https://api-inference.huggingface.co'
 const WHOAMI_URL = 'https://huggingface.co/api/whoami'
@@ -35,12 +40,14 @@ export const HuggingFace: AIProvider = {
 
     if (!res.ok) {
       const text = await res.text().catch(() => 'Unknown HuggingFace error')
-      throw new Error(`HuggingFace error ${res.status}: ${text}`)
+      throw new ProviderError(
+        `HuggingFace error ${res.status}: ${text}`,
+        res.status
+      )
     }
 
     const data = (await res.json()) as
-      | { generated_text: string }[]
-      | { error?: string }
+      { generated_text: string }[] | { error?: string }
 
     if (Array.isArray(data) && data[0]?.generated_text) {
       return {
@@ -51,10 +58,10 @@ export const HuggingFace: AIProvider = {
     }
 
     if ('error' in data && data.error) {
-      throw new Error(data.error)
+      throw new ProviderError(data.error, 500)
     }
 
-    throw new Error('HuggingFace returned unexpected response')
+    throw new ProviderError('HuggingFace returned unexpected response', 500)
   },
 
   async health(apiKey: string): Promise<boolean> {

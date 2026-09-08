@@ -1,4 +1,9 @@
-import type { AIProvider, GenConfig, GenResult } from '@/types'
+import {
+  ProviderError,
+  type AIProvider,
+  type GenConfig,
+  type GenResult,
+} from '@/types'
 
 const API_BASE = 'https://openrouter.ai/api/v1'
 
@@ -55,15 +60,20 @@ export const OpenRouter: AIProvider = {
     })
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({ error: { message: 'Unknown OpenRouter error' } }))
-      throw new Error(data.error?.message ?? `OpenRouter error ${res.status}`)
+      const data = await res
+        .json()
+        .catch(() => ({ error: { message: 'Unknown OpenRouter error' } }))
+      throw new ProviderError(
+        data.error?.message ?? `OpenRouter error ${res.status}`,
+        res.status
+      )
     }
 
     const data = await res.json()
     const content = data.choices?.[0]?.message?.content
 
     if (!content || typeof content !== 'string') {
-      throw new Error('OpenRouter returned empty content')
+      throw new ProviderError('OpenRouter returned empty content', 500)
     }
 
     const code = stripMarkdownCodeBlock(content)
