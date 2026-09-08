@@ -5,7 +5,7 @@
 Turn a single sentence into a deployed, working website with database, forms, and custom domain — in ~15 seconds. You bring your own API keys, you own the code, you pay fractions of a cent per generation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/your-username/forgeai/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/forgeai/forgeai/pulls)
 [![Made with Next.js](https://img.shields.io/badge/Made%20with-Next.js-black)](https://nextjs.org/)
 [![Powered by OpenRouter](https://img.shields.io/badge/Powered%20by-OpenRouter-purple)](https://openrouter.ai/)
 
@@ -191,15 +191,13 @@ For full sequence diagrams and data flow, see [docs/architecture.md](docs/archit
 
 ## Screenshots
 
-> UI is built and working. Add real screenshots by running `npm run dev`, generating a site, and exporting PNGs into `public/screenshots/`.
+Run the app, generate a project, then add your own PNGs to `public/screenshots/`:
 
-| Screen                       | Preview                                  |
-| ---------------------------- | ---------------------------------------- |
-| Prompt input                 | `public/screenshots/prompt.png`          |
-| Generation progress          | `public/screenshots/progress.png`        |
-| Live preview + visual editor | `public/screenshots/editor.png`          |
-| Template gallery             | `public/screenshots/gallery.png`         |
-| Settings / API keys          | `public/screenshots/settings.png`        |
+- `public/screenshots/prompt.png`
+- `public/screenshots/progress.png`
+- `public/screenshots/editor.png`
+- `public/screenshots/gallery.png`
+- `public/screenshots/settings.png`
 
 ---
 
@@ -429,14 +427,10 @@ forgeai/
 - ✅ Unit + integration + E2E tests (Vitest + Playwright)
 - ✅ Performance + security hardening for v1.0 release
 
-### Next Up
+### Release
 
-1. Next.js project scaffold + Tailwind + shadcn/ui
-2. Settings UI for API keys (IndexedDB)
-3. Prompt input + intent analysis
-4. Component generation + validation pipeline
-5. Live preview in iframe
-6. Deploy via Vercel / E2B
+- v1.0.0 is released. See [CHANGELOG.md](CHANGELOG.md) for the full feature list.
+- Roadmap and open tasks are tracked in [GitHub issues](https://github.com/forgeai/forgeai/issues).
 
 ---
 
@@ -509,7 +503,7 @@ template-engine, config-driven, plugin-architecture, vercel, e2b, typescript
 ## Star History
 
 <!-- uncomment after first star
-[![Star History Chart](https://api.star-history.com/svg?repos=your-username/forgeai&type=Date)](https://star-history.com/#your-username/forgeai&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=forgeai/forgeai&type=Date)](https://star-history.com/#forgeai/forgeai&Date)
 -->
 
 ---

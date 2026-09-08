@@ -92,9 +92,9 @@ You type your idea. ForgeAI asks clarifying questions (audience, tone, features 
 
 ForgeAI generates each component independently, validates it with esbuild and AST checks, assembles a full Next.js project, and deploys it to a live URL.
 
-### Grow (Roadmap)
+### Grow
 
-After deployment, ForgeAI can automate growth tasks:
+After deployment, ForgeAI automates growth tasks:
 
 - SEO optimization (meta tags, sitemap, structured data)
 - Analytics dashboard (visitors, conversions)

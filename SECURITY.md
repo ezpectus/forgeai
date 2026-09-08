@@ -11,7 +11,7 @@
 
 If you discover a security issue in ForgeAI, please do **not** open a public issue. Instead, report it privately:
 
-1. Email the maintainers at `security@forgeai.dev` (update to your real address).
+1. Email the maintainers at `security@forgeai.dev`.
 2. Include a clear description of the issue, steps to reproduce, and potential impact.
 3. Allow up to 72 hours for an initial response.
 
