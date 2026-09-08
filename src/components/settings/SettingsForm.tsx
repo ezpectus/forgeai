@@ -24,6 +24,8 @@ const fields: {
   type: 'password' | 'text'
   link: string
   provider?: Provider
+  help?: string
+  rateLimitLink?: string
 }[] = [
   {
     key: 'openrouter',
@@ -31,6 +33,7 @@ const fields: {
     type: 'password',
     link: 'https://openrouter.ai/keys',
     provider: 'openrouter',
+    help: 'Create a key, then check Limits in your account. Free models work with $0 balance.',
   },
   {
     key: 'huggingface',
@@ -38,6 +41,7 @@ const fields: {
     type: 'password',
     link: 'https://hf.co/settings/tokens',
     provider: 'huggingface',
+    help: 'Use a token with read access. Inference is free for open models.',
   },
   {
     key: 'gemini',
@@ -45,6 +49,9 @@ const fields: {
     type: 'password',
     link: 'https://aistudio.google.com/app/apikey',
     provider: 'gemini',
+    help: 'Make sure the Generative Language API is enabled on the same project. Rate limits are shown in Google AI Studio only for that project.',
+    rateLimitLink:
+      'https://aistudio.google.com/app/plan_information',
   },
   {
     key: 'supabaseUrl',
@@ -155,7 +162,7 @@ export function SettingsForm() {
 
   return (
     <div className="grid gap-4 py-4">
-      {fields.map(({ key, label, type, link, provider }) => (
+      {fields.map(({ key, label, type, link, provider, help, rateLimitLink }) => (
         <div key={key} className="grid gap-2">
           <div className="flex items-center justify-between">
             <Label htmlFor={key}>{label}</Label>
@@ -216,6 +223,21 @@ export function SettingsForm() {
               </Button>
             )}
           </div>
+          {help && (
+            <p className="text-xs text-muted-foreground">{help}</p>
+          )}
+
+          {rateLimitLink && (
+            <a
+              href={rateLimitLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline"
+            >
+              Check rate limits / project quota →
+            </a>
+          )}
+
           {tests[provider as Provider]?.status === 'error' && (
             <p className="text-xs text-destructive">
               {tests[provider as Provider].message}
