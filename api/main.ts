@@ -9,6 +9,7 @@ import { log } from './lib/logger'
 import componentRoute from './routes/component'
 import dbBindRoute from './routes/db-bind'
 import deployRoute from './routes/deploy'
+import templatesRoute from './routes/templates'
 import deployStatusRoute from './routes/deploy-status'
 import exportRoute from './routes/export'
 import generateRoute from './routes/generate'
@@ -22,6 +23,7 @@ app.use(rateLimitMiddleware)
 app.use(authMiddleware)
 
 app.route('/api/health', healthRoute)
+app.route('/api/templates', templatesRoute)
 app.route('/api/generate', generateRoute)
 app.route('/api/generate/component', componentRoute)
 app.route('/api/export', exportRoute)

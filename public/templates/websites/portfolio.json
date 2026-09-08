@@ -1,0 +1,53 @@
+{
+  "id": "portfolio",
+  "name": "Portfolio",
+  "description": "A clean personal portfolio with hero, projects, about, and contact.",
+  "scope": {
+    "allowed": ["landing", "hero", "projects", "about", "skills", "contact-form", "footer"],
+    "forbidden": ["navbar", "sidebar", "mega-menu", "search", "cart"]
+  },
+  "stack": {
+    "framework": "nextjs",
+    "styling": "tailwindcss",
+    "components": "shadcn/ui",
+    "icons": "lucide-react",
+    "state": "zustand"
+  },
+  "constraints": {
+    "allowedDependencies": ["react", "next", "lucide-react", "zustand"],
+    "forbiddenDependencies": ["jquery", "lodash", "moment", "axios"],
+    "maxComponents": 7,
+    "maxLengthPerComponent": 500
+  },
+  "components": ["Hero", "Projects", "About", "Skills", "ContactForm", "Footer"],
+  "generation": {
+    "stages": ["intent", "components", "validate", "assemble"],
+    "askClarifyingQuestions": false,
+    "showPlanBeforeBuild": false,
+    "parallelComponentGeneration": true,
+    "maxRetriesPerComponent": 2
+  },
+  "validation": {
+    "autoTest": ["render", "build"],
+    "staticAnalysisRules": ["syntax", "hasDefaultExport", "noDangerousHtml", "noEval", "usesTailwindOnly", "imagesHaveAlt", "formsHaveNames", "noForbiddenImports"],
+    "buildCommands": ["npm run build"]
+  },
+  "model": {
+    "intentModel": "openrouter/deepseek-v3",
+    "codeModel": "huggingface/deepseek-coder",
+    "fallback": ["openrouter/qwen-coder", "openrouter/llama-3.1-405b"]
+  },
+  "export": {
+    "formats": ["zip", "vercel", "e2b"],
+    "includeDatabaseSchema": true,
+    "includeReadme": true,
+    "includeEnvExample": true
+  },
+  "ui": {
+    "defaultPrompt": "Personal portfolio website with projects and contact form",
+    "examplePrompts": [
+      "Portfolio for a designer",
+      "Developer portfolio with project cards"
+    ]
+  }
+}

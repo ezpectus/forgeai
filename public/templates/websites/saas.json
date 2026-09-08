@@ -1,0 +1,53 @@
+{
+  "id": "saas",
+  "name": "SaaS Landing",
+  "description": "A modern SaaS landing page with hero, features, pricing, testimonials, and contact form.",
+  "scope": {
+    "allowed": ["landing", "hero", "features", "pricing", "testimonials", "contact-form", "footer"],
+    "forbidden": ["navbar", "sidebar", "mega-menu", "search", "cart"]
+  },
+  "stack": {
+    "framework": "nextjs",
+    "styling": "tailwindcss",
+    "components": "shadcn/ui",
+    "icons": "lucide-react",
+    "state": "zustand"
+  },
+  "constraints": {
+    "allowedDependencies": ["react", "next", "lucide-react", "zustand", "@supabase/supabase-js"],
+    "forbiddenDependencies": ["jquery", "lodash", "moment", "axios"],
+    "maxComponents": 8,
+    "maxLengthPerComponent": 500
+  },
+  "components": ["Hero", "Features", "Pricing", "Testimonials", "ContactForm", "Footer"],
+  "generation": {
+    "stages": ["intent", "components", "validate", "assemble"],
+    "askClarifyingQuestions": false,
+    "showPlanBeforeBuild": false,
+    "parallelComponentGeneration": true,
+    "maxRetriesPerComponent": 2
+  },
+  "validation": {
+    "autoTest": ["render", "build"],
+    "staticAnalysisRules": ["syntax", "hasDefaultExport", "noDangerousHtml", "noEval", "usesTailwindOnly", "imagesHaveAlt", "formsHaveNames", "noForbiddenImports"],
+    "buildCommands": ["npm run build"]
+  },
+  "model": {
+    "intentModel": "openrouter/deepseek-v3",
+    "codeModel": "huggingface/deepseek-coder",
+    "fallback": ["openrouter/qwen-coder", "openrouter/llama-3.1-405b"]
+  },
+  "export": {
+    "formats": ["zip", "vercel", "e2b"],
+    "includeDatabaseSchema": true,
+    "includeReadme": true,
+    "includeEnvExample": true
+  },
+  "ui": {
+    "defaultPrompt": "Landing page for a SaaS product with pricing and contact form",
+    "examplePrompts": [
+      "Landing for a team collaboration SaaS",
+      "Pricing-focused SaaS website with testimonials"
+    ]
+  }
+}

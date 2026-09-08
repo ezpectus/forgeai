@@ -1,0 +1,47 @@
+[
+  {
+    "id": "website",
+    "name": "General Website",
+    "type": "website",
+    "topic": "general",
+    "description": "A flexible multi-section landing website.",
+    "thumbnail": "/templates/thumbnails/website.png",
+    "path": "/templates/websites/website.json"
+  },
+  {
+    "id": "saas",
+    "name": "SaaS Landing",
+    "type": "website",
+    "topic": "saas",
+    "description": "Hero, features, pricing, and contact form for SaaS products.",
+    "thumbnail": "/templates/thumbnails/saas.png",
+    "path": "/templates/websites/saas.json"
+  },
+  {
+    "id": "portfolio",
+    "name": "Portfolio",
+    "type": "website",
+    "topic": "personal",
+    "description": "A clean portfolio with projects and contact.",
+    "thumbnail": "/templates/thumbnails/portfolio.png",
+    "path": "/templates/websites/portfolio.json"
+  },
+  {
+    "id": "restaurant",
+    "name": "Restaurant",
+    "type": "website",
+    "topic": "food",
+    "description": "Menu, gallery, and booking form for a restaurant.",
+    "thumbnail": "/templates/thumbnails/restaurant.png",
+    "path": "/templates/websites/restaurant.json"
+  },
+  {
+    "id": "yoga-studio",
+    "name": "Yoga Studio",
+    "type": "website",
+    "topic": "wellness",
+    "description": "Classes, instructors, and booking form for a yoga studio.",
+    "thumbnail": "/templates/thumbnails/yoga-studio.png",
+    "path": "/templates/websites/yoga-studio.json"
+  }
+]

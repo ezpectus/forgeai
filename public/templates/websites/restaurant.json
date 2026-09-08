@@ -1,0 +1,53 @@
+{
+  "id": "restaurant",
+  "name": "Restaurant",
+  "description": "A restaurant website with hero, menu, gallery, and booking form.",
+  "scope": {
+    "allowed": ["landing", "hero", "menu", "gallery", "about", "reservation-form", "footer"],
+    "forbidden": ["navbar", "sidebar", "mega-menu", "search", "cart"]
+  },
+  "stack": {
+    "framework": "nextjs",
+    "styling": "tailwindcss",
+    "components": "shadcn/ui",
+    "icons": "lucide-react",
+    "state": "zustand"
+  },
+  "constraints": {
+    "allowedDependencies": ["react", "next", "lucide-react", "zustand", "@supabase/supabase-js"],
+    "forbiddenDependencies": ["jquery", "lodash", "moment", "axios"],
+    "maxComponents": 7,
+    "maxLengthPerComponent": 500
+  },
+  "components": ["Hero", "Menu", "Gallery", "About", "ReservationForm", "Footer"],
+  "generation": {
+    "stages": ["intent", "components", "validate", "assemble"],
+    "askClarifyingQuestions": false,
+    "showPlanBeforeBuild": false,
+    "parallelComponentGeneration": true,
+    "maxRetriesPerComponent": 2
+  },
+  "validation": {
+    "autoTest": ["render", "build"],
+    "staticAnalysisRules": ["syntax", "hasDefaultExport", "noDangerousHtml", "noEval", "usesTailwindOnly", "imagesHaveAlt", "formsHaveNames", "noForbiddenImports"],
+    "buildCommands": ["npm run build"]
+  },
+  "model": {
+    "intentModel": "openrouter/deepseek-v3",
+    "codeModel": "huggingface/deepseek-coder",
+    "fallback": ["openrouter/qwen-coder", "openrouter/llama-3.1-405b"]
+  },
+  "export": {
+    "formats": ["zip", "vercel", "e2b"],
+    "includeDatabaseSchema": true,
+    "includeReadme": true,
+    "includeEnvExample": true
+  },
+  "ui": {
+    "defaultPrompt": "Restaurant website with menu, gallery, and reservation form",
+    "examplePrompts": [
+      "Italian restaurant landing page",
+      "Cafe website with booking form"
+    ]
+  }
+}
