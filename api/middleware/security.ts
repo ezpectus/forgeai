@@ -5,6 +5,7 @@ export const securityHeaders: MiddlewareHandler = async (c, next) => {
   c.header('X-Frame-Options', 'DENY')
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
   c.header('X-XSS-Protection', '0')
+  c.header('X-Powered-By', '')
   c.header(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=()'
@@ -20,4 +21,9 @@ export const securityHeaders: MiddlewareHandler = async (c, next) => {
   }
 
   await next()
+
+  // Ensure no X-Powered-By slips through from downstream middleware or Hono itself.
+  if (c.res) {
+    c.res.headers.delete('X-Powered-By')
+  }
 }

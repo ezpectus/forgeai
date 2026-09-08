@@ -2,19 +2,37 @@ import { describe, expect, it } from 'vitest'
 import app from '../../api/main'
 
 describe('API security headers', () => {
-  it('applies X-Content-Type-Options, X-Frame-Options and Referrer-Policy', async () => {
-    const req = new Request('http://localhost:3001/api/health', {
-      method: 'GET',
-    })
-    const res = await app.fetch(req)
+  const routes = ['/api/health', '/api/templates']
+
+  it('applies security headers on all routes', async () => {
+    for (const route of routes) {
+      const res = await app.fetch(
+        new Request(`http://localhost:3001${route}`)
+      )
+
+      expect(res.status).toBe(200)
+      expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff')
+      expect(res.headers.get('X-Frame-Options')).toBe('DENY')
+      expect(res.headers.get('Referrer-Policy')).toBe(
+        'strict-origin-when-cross-origin'
+      )
+      expect(res.headers.get('Permissions-Policy')).toContain('camera=()')
+      expect(res.headers.get('Content-Security-Policy')).toBe(
+        "default-src 'self'; frame-ancestors 'none';"
+      )
+      expect(res.headers.get('X-Powered-By')).toBeNull()
+    }
+  })
+
+  it('returns rate-limit headers on every response', async () => {
+    const res = await app.fetch(new Request('http://localhost:3001/api/health'))
 
     expect(res.status).toBe(200)
-    expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff')
-    expect(res.headers.get('X-Frame-Options')).toBe('DENY')
-    expect(res.headers.get('Referrer-Policy')).toBe(
-      'strict-origin-when-cross-origin'
+    expect(res.headers.get('RateLimit-Limit')).toBe(
+      String(process.env.RATE_LIMIT_RPM ?? 10)
     )
-    expect(res.headers.get('Permissions-Policy')).toContain('camera=()')
+    expect(Number(res.headers.get('RateLimit-Remaining'))).toBeGreaterThanOrEqual(0)
+    expect(Number(res.headers.get('RateLimit-Reset'))).toBeGreaterThan(0)
   })
 
   it('enforces rate limiting after the configured burst', async () => {
@@ -33,5 +51,6 @@ describe('API security headers', () => {
     expect(res.status).toBe(429)
     const body = await res.json()
     expect(body.code).toBe('RATE_LIMIT')
+    expect(res.headers.get('RateLimit-Remaining')).toBe('0')
   })
 })
