@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { Check, Loader2, X } from 'lucide-react'
+import { saveSnapshot } from '@/lib/version-history'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { VersionHistory } from './VersionHistory'
 
 function DiffView({ oldCode, newCode }: { oldCode: string; newCode: string }) {
   return (
@@ -74,6 +76,7 @@ export function EditPanel() {
       code: newCode,
       version: component.version + 1,
     })
+    saveSnapshot(component.name, newCode, instruction.trim() || undefined)
     setNewCode('')
     setInstruction('')
   }
@@ -114,6 +117,14 @@ export function EditPanel() {
       </Button>
 
       {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+
+      {component && (
+        <VersionHistory
+          componentName={component.name}
+          currentCode={component.code}
+          onRestore={(code) => updateComponent(component.name, { code })}
+        />
+      )}
 
       {newCode && (
         <>
