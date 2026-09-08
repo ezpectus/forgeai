@@ -3,6 +3,7 @@ import {
   type AIProvider,
   type GenConfig,
   type GenResult,
+  type HealthResult,
 } from '@/types'
 
 const API_BASE = 'https://openrouter.ai/api/v1'
@@ -91,11 +92,24 @@ export const OpenRouter: AIProvider = {
     }
   },
 
-  async health(apiKey: string): Promise<boolean> {
+  async health(apiKey: string): Promise<HealthResult> {
     const res = await fetch(`${API_BASE}/auth`, {
       headers: { Authorization: `Bearer ${apiKey}` },
     })
-    return res.ok
+
+    if (!res.ok) {
+      const data = await res
+        .json()
+        .catch(() => ({ error: { message: 'Unknown OpenRouter error' } }))
+      const message =
+        data.error?.message ??
+        (res.status === 429
+          ? 'OpenRouter rate limit exceeded. Try a different model or wait.'
+          : `OpenRouter error ${res.status}`)
+      return { ok: false, status: res.status, error: message }
+    }
+
+    return { ok: true }
   },
 
   estimateCost(tokensIn: number, tokensOut: number, model: string): number {

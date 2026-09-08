@@ -39,12 +39,27 @@ app.get('/', async (c) => {
   }
 
   try {
-    const ok = await service.health(auth)
+    const result = await service.health(auth)
 
-    if (!ok) {
+    if (typeof result === 'boolean') {
+      if (!result) {
+        return c.json(
+          { status: 'error', error: 'Provider health check failed' },
+          503
+        )
+      }
+      return c.json({ status: 'ok' })
+    }
+
+    if (!result.ok) {
+      const status = result.status ?? 503
       return c.json(
-        { status: 'error', error: 'Provider health check failed' },
-        503
+        {
+          status: 'error',
+          error: result.error ?? 'Provider health check failed',
+          statusCode: result.status,
+        },
+        status as Parameters<typeof c.json>[1]
       )
     }
 

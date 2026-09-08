@@ -3,6 +3,7 @@ import {
   type AIProvider,
   type GenConfig,
   type GenResult,
+  type HealthResult,
 } from '@/types'
 
 const API_BASE = 'https://api-inference.huggingface.co'
@@ -64,11 +65,20 @@ export const HuggingFace: AIProvider = {
     throw new ProviderError('HuggingFace returned unexpected response', 500)
   },
 
-  async health(apiKey: string): Promise<boolean> {
+  async health(apiKey: string): Promise<HealthResult> {
     const res = await fetch(WHOAMI_URL, {
       headers: { Authorization: `Bearer ${apiKey}` },
     })
-    return res.ok
+
+    if (!res.ok) {
+      const message =
+        res.status === 429
+          ? 'HuggingFace rate limit exceeded. Try again later.'
+          : `HuggingFace error ${res.status}`
+      return { ok: false, status: res.status, error: message }
+    }
+
+    return { ok: true }
   },
 
   estimateCost(): number {

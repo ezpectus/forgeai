@@ -3,6 +3,7 @@ import {
   type AIProvider,
   type GenConfig,
   type GenResult,
+  type HealthResult,
 } from '@/types'
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
@@ -114,19 +115,39 @@ export const Gemini: AIProvider = {
     }
   },
 
-  async health(apiKey: string): Promise<boolean> {
+  async health(apiKey: string): Promise<HealthResult> {
     const res = await fetch(`${API_BASE}/models?key=${apiKey}`, {
       headers: { 'Content-Type': 'application/json' },
     })
 
-    if (!res.ok) return false
+    if (!res.ok) {
+      const data = await res
+        .json()
+        .catch(() => ({ error: { message: 'Unknown Gemini error', status: res.status } }))
+      const message =
+        data.error?.message ??
+        (res.status === 429
+          ? 'Gemini rate limit exceeded. Wait a minute or check your quota in Google AI Studio.'
+          : `Gemini error ${res.status}`)
+      return { ok: false, status: res.status, error: message }
+    }
 
     const data = (await res.json()) as {
       models?: { name?: string }[]
     }
-    return data.models?.some((m) =>
+    const hasGemini = data.models?.some((m) =>
       (m.name ?? '').includes('gemini')
     ) ?? false
+
+    if (!hasGemini) {
+      return {
+        ok: false,
+        status: 503,
+        error: 'Gemini did not return any models. The API key may not have access to Gemini.',
+      }
+    }
+
+    return { ok: true }
   },
 
   estimateCost(tokensIn: number, tokensOut: number, model: string): number {

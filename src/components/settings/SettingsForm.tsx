@@ -116,10 +116,15 @@ export function SettingsForm() {
           [provider]: { status: 'ok' },
         }))
       } else {
-        const data = await res.json().catch(() => ({ error: 'Unknown error' }))
+        const data = await res
+          .json()
+          .catch(() => ({ error: 'Unknown error', statusCode: res.status }))
+        const message = data.statusCode
+          ? `[${data.statusCode}] ${data.error}`
+          : data.error
         setTests((prev) => ({
           ...prev,
-          [provider]: { status: 'error', message: data.error },
+          [provider]: { status: 'error', message },
         }))
       }
     } catch (err) {

@@ -113,6 +113,12 @@ export interface GenResult {
   cost?: number
 }
 
+export interface HealthResult {
+  ok: boolean
+  status?: number
+  error?: string
+}
+
 export interface AIProvider {
   name: string
   supportedModels: string[]
@@ -129,7 +135,7 @@ export interface AIProvider {
   /**
    * Check whether the provider is reachable.
    */
-  health(apiKey: string): Promise<boolean>
+  health(apiKey: string): Promise<boolean | HealthResult>
   /**
    * Calculate cost based on token usage.
    */
