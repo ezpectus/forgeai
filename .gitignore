@@ -52,6 +52,7 @@ internal/
 .cache/
 .eslintcache
 .turbo/
+*.tsbuildinfo
 
 # Test
 coverage/
