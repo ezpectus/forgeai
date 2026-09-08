@@ -6,6 +6,8 @@ import { corsMiddleware } from './middleware/cors'
 import { rateLimitMiddleware } from './middleware/rateLimit'
 import type { AppEnv } from './lib/env'
 import { log } from './lib/logger'
+import deployRoute from './routes/deploy'
+import deployStatusRoute from './routes/deploy-status'
 import generateRoute from './routes/generate'
 import healthRoute from './routes/health'
 
@@ -18,6 +20,8 @@ app.use(authMiddleware)
 
 app.route('/api/health', healthRoute)
 app.route('/api/generate', generateRoute)
+app.route('/api/deploy', deployRoute)
+app.route('/api/deploy', deployStatusRoute)
 
 const port = Number(process.env.PORT ?? 3001)
 
