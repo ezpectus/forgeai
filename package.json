@@ -1,6 +1,6 @@
 {
   "name": "forgeai",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Open-source prompt-to-live-URL generator. BYOK, self-hostable, MIT licensed.",
   "private": false,
   "license": "MIT",
@@ -81,6 +81,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.5",
+    "estree-walker": "^2.0.2",
     "lighthouse": "^13.4.1",
     "postcss": "^8.4.40",
     "prettier": "^3.3.0",

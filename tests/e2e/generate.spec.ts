@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test'
 
+const sseStream = [
+  'event: intent\ndata: {"name":"yoga","type":"landing","palette":"calm","tone":"friendly","style":"modern","sections":[{"name":"Hero"},{"name":"Features"}]}',
+  'event: component\ndata: {"name":"Hero","code":"export default function Hero() { return <section>Hero</section> }","status":"ready","version":1}',
+  'event: component\ndata: {"name":"Features","code":"export default function Features() { return <section>Features</section> }","status":"ready","version":1}',
+  'event: done\ndata: {}',
+].join('\n\n') + '\n\n'
+
 test.describe('ForgeAI home', () => {
   test('loads the prompt input page', async ({ page }) => {
     await page.goto('/')
@@ -15,4 +22,36 @@ test.describe('ForgeAI home', () => {
     await expect(input).toHaveValue('A landing page for a yoga studio')
     await expect(page.getByText('deepseek-v3')).toBeVisible()
   })
+
+  test('generates a project with mocked API', async ({ page }) => {
+    await page.goto('/')
+
+    // Open settings and set a fake key so Generate is enabled
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await page.locator('#openrouter').fill('sk-or-test')
+    await page.getByRole('button', { name: 'Save' }).click()
+
+    await page.route('/api/generate', async (route, request) => {
+      if (request.method() !== 'POST') {
+        await route.continue()
+        return
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+        body: sseStream,
+      })
+    })
+
+    await page.getByPlaceholder('Describe the website you want...').fill('A landing page for a yoga studio')
+    await page.getByRole('button', { name: 'Generate' }).click()
+
+    await expect(page.getByText('Generating...')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Hero')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Features')).toBeVisible({ timeout: 5000 })
+  })
 })
+
