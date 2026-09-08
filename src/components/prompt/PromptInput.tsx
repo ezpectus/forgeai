@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Loader2, Sparkles } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
+import { useHistory } from '@/stores/history'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
@@ -19,7 +20,8 @@ import { FaqSection } from './FaqSection'
  */
 export function PromptInput() {
   const { openrouter, huggingface, gemini } = useKeys()
-  const { openGallery } = useUI()
+  const { openGallery, activeMode } = useUI()
+  const { add: addToHistory } = useHistory()
   const {
     setPrompt,
     setStatus,
@@ -27,6 +29,7 @@ export function PromptInput() {
     setIntent,
     addComponent,
     updateComponent,
+    setProjectId,
     setCost,
     reset,
     status,
@@ -90,6 +93,24 @@ export function PromptInput() {
 
         if (event === 'done') {
           setStatus('ready')
+          const done = data as { projectId?: string }
+          if (done.projectId) {
+            setProjectId(done.projectId)
+          }
+          const state = useProject.getState()
+          if (state.projectId) {
+            addToHistory({
+              id: state.projectId,
+              prompt: state.prompt,
+              mode: activeMode,
+              provider,
+              model,
+              cost: state.cost,
+              componentCount: state.components.length,
+              status: 'ready',
+              createdAt: new Date().toISOString(),
+            })
+          }
         }
 
         if (event === 'error') {

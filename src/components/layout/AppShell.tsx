@@ -19,6 +19,13 @@ const SettingsDialog = dynamic(
     })),
   { ssr: false }
 )
+const ProjectsDialog = dynamic(
+  () =>
+    import('@/components/projects/ProjectsDialog').then((mod) => ({
+      default: mod.ProjectsDialog,
+    })),
+  { ssr: false }
+)
 
 export function AppShell({ children }: { children?: ReactNode }) {
   return (
@@ -29,6 +36,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
       <StatusBar />
       <EditPanel />
       <SettingsDialog />
+      <ProjectsDialog />
     </div>
   )
 }

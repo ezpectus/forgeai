@@ -2,6 +2,7 @@
 
 import {
   FileText,
+  Folder,
   Globe,
   Headphones,
   Home,
@@ -36,6 +37,7 @@ const functions = [
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'templates', label: 'Templates', icon: LayoutGrid },
+  { id: 'projects', label: 'My Projects', icon: Folder },
 ]
 
 /**
@@ -53,6 +55,8 @@ export function Sidebar({ className }: { className?: string }) {
     openGallery,
     closeGallery,
     closeCustomize,
+    openProjects,
+    projectsOpen,
   } = useUI()
 
   const isInGallery = galleryOpen || customizeTemplateId !== null
@@ -70,7 +74,12 @@ export function Sidebar({ className }: { className?: string }) {
     <nav className="flex flex-col gap-1 border-b p-3">
       {navItems.map((item) => {
         const Icon = item.icon
-        const isActive = item.id === 'home' ? !isInGallery : isInGallery
+        const isActive =
+          item.id === 'home'
+            ? !isInGallery
+            : item.id === 'projects'
+              ? projectsOpen
+              : isInGallery
         return (
           <button
             key={item.id}
@@ -79,6 +88,8 @@ export function Sidebar({ className }: { className?: string }) {
               if (item.id === 'home') {
                 closeGallery()
                 closeCustomize()
+              } else if (item.id === 'projects') {
+                openProjects()
               } else {
                 openGallery()
               }

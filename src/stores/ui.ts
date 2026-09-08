@@ -16,6 +16,8 @@ export type UIStore = UIState & {
   closeMobileSidebar: () => void
   toggleMobileSidebar: () => void
   setActiveMode: (mode: string) => void
+  openProjects: () => void
+  closeProjects: () => void
 }
 
 const initialState: UIState = {
@@ -27,6 +29,7 @@ const initialState: UIState = {
   deployStatus: 'idle',
   mobileSidebarOpen: false,
   activeMode: 'website',
+  projectsOpen: false,
 }
 
 // Zustand store that controls the visible shell: open panels, selected
@@ -63,4 +66,8 @@ export const useUI = create<UIStore>((set) => ({
     set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
 
   setActiveMode: (activeMode) => set({ activeMode }),
+
+  openProjects: () => set({ projectsOpen: true }),
+
+  closeProjects: () => set({ projectsOpen: false }),
 }))

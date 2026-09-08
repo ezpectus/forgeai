@@ -6,6 +6,7 @@ export type ProjectStore = ProjectState & {
   setIntent: (intent: IntentResult | null) => void
   addComponent: (component: ComponentState) => void
   updateComponent: (name: string, updates: Partial<ComponentState>) => void
+  setProjectId: (id: string | null) => void
   setStatus: (status: ProjectState['status']) => void
   setDeployUrl: (url: string | null) => void
   setCost: (cost: number) => void
@@ -42,6 +43,8 @@ export const useProject = create<ProjectStore>((set, get) => ({
         component.name === name ? { ...component, ...updates } : component
       ),
     }),
+
+  setProjectId: (projectId) => set({ projectId }),
 
   setStatus: (status) => set({ status }),
 

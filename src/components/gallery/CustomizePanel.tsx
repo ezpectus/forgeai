@@ -5,6 +5,7 @@ import { Loader2, Sparkles, X } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
+import { useHistory } from '@/stores/history'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
@@ -19,11 +20,13 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     setIntent,
     addComponent,
     updateComponent,
+    setProjectId,
     setCost,
     reset,
   } = useProject()
-  const { closeCustomize } = useUI()
+  const { closeCustomize, activeMode } = useUI()
   const { openrouter, huggingface, gemini } = useKeys()
+  const { add: addToHistory } = useHistory()
   const [prompt, setPromptLocal] = useState('')
   const [provider, setProvider] = useState('auto')
   const [model, setModel] = useState('')
@@ -77,6 +80,24 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         if (event === 'done') {
           setStatus('ready')
           setLoading(false)
+          const done = data as { projectId?: string }
+          if (done.projectId) {
+            setProjectId(done.projectId)
+          }
+          const state = useProject.getState()
+          if (state.projectId) {
+            addToHistory({
+              id: state.projectId,
+              prompt: state.prompt,
+              mode: activeMode,
+              provider,
+              model,
+              cost: state.cost,
+              componentCount: state.components.length,
+              status: 'ready',
+              createdAt: new Date().toISOString(),
+            })
+          }
         }
 
         if (event === 'error') {

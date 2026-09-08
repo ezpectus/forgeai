@@ -33,6 +33,18 @@ export interface ProjectState {
   error: string | null
 }
 
+export interface ProjectRecord {
+  id: string
+  prompt: string
+  mode: string
+  provider: string
+  model: string
+  cost: number
+  componentCount: number
+  status: ProjectStatus
+  createdAt: string
+}
+
 export interface KeysState {
   openrouter: string | null
   huggingface: string | null
@@ -51,6 +63,7 @@ export interface UIState {
   deployStatus: 'idle' | 'deploying' | 'deployed' | 'failed'
   mobileSidebarOpen: boolean
   activeMode: string
+  projectsOpen: boolean
 }
 
 // ------------------------------------------------------------------------
