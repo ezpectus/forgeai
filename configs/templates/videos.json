@@ -8,8 +8,19 @@
   "order": 4,
 
   "scope": {
-    "allowed": ["text-to-video", "image-to-video", "background-removal", "motion-control", "timeline"],
-    "forbidden": ["live-streaming", "long-form-video", "complex-video-editor", "bulk-processing"]
+    "allowed": [
+      "text-to-video",
+      "image-to-video",
+      "background-removal",
+      "motion-control",
+      "timeline"
+    ],
+    "forbidden": [
+      "live-streaming",
+      "long-form-video",
+      "complex-video-editor",
+      "bulk-processing"
+    ]
   },
 
   "stack": {
@@ -40,21 +51,10 @@
       "zustand",
       "tailwindcss"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment",
-      "ffmpeg"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment", "ffmpeg"]
   },
 
-  "components": [
-    "VideoGenerator",
-    "VideoPlayer",
-    "Timeline",
-    "VideoExporter"
-  ],
+  "components": ["VideoGenerator", "VideoPlayer", "Timeline", "VideoExporter"],
 
   "formConstraints": {},
 
@@ -76,9 +76,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

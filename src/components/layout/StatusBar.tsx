@@ -13,7 +13,9 @@ export function StatusBar() {
   return (
     <footer className="flex h-8 items-center justify-between border-t bg-muted px-4 text-xs text-muted-foreground">
       <span className="capitalize">Status: {status}</span>
-      <span>Components: {readyCount}/{components.length}</span>
+      <span>
+        Components: {readyCount}/{components.length}
+      </span>
       <span>Cost: $0.000</span>
     </footer>
   )

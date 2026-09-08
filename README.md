@@ -38,6 +38,7 @@ The agent follows a three-phase workflow:
 **1. Plan** — You type your idea. The agent analyzes it, asks clarifying questions (audience, style, features needed), and shows you a visual plan: what sections it will build, what components, what database tables. You approve or adjust before anything is generated.
 
 **2. Build** — The agent generates each component separately using config-driven specs (not one giant blob of code), validates every component with esbuild, and assembles a complete Next.js project. You get:
+
 - Live URL (deployed via Vercel or E2B sandbox)
 - Full React + Tailwind code, downloadable as ZIP
 - Auto-generated database schema (Supabase) if your site has forms
@@ -45,6 +46,7 @@ The agent follows a three-phase workflow:
 - Version history with one-click rollback
 
 **3. Grow** (roadmap) — After deployment, automate the repetitive work:
+
 - SEO optimization (meta tags, sitemap, structured data)
 - Analytics dashboard (visitors, page views, conversions)
 - Automated email reminders for sign-ups and bookings
@@ -54,22 +56,22 @@ The agent follows a three-phase workflow:
 
 ### Core Capabilities
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Prompt-to-Live-URL | v0.2 | Type a sentence → get a deployed URL in ~15s |
-| Config-driven generation | v0.1 | Each component generated from a strict spec with skeleton, system prompt, and validation rules |
-| Multi-model fallback | v0.2 | HuggingFace → OpenRouter → next model. No downtime if one provider is down |
-| Visual editor overlay | v0.3 | Click any block in the preview → describe a change → only that component regenerates |
-| Differential prompting | v0.3 | Edits send only the changed component, not the whole page. Faster, cheaper, more precise |
-| ZIP export | v0.4 | Download the full Next.js project: components, configs, package.json, README |
-| Auto-database binding | v0.4 | Forms on the page auto-generate Supabase SQL schema and wire up form submissions |
-| Version history | v0.3 | Every edit is a version. Roll back to any state with one click |
-| Template library | v0.5 | Start from a template (landing, portfolio, dashboard, e-commerce) and customize with a prompt |
-| Multi-page generation | v0.6 | Home, About, Contact, Blog — with navigation and routing |
-| Plugin system | v0.7 | Add your own AI models, deploy providers, templates, and components |
-| Grow layer | v1.0 | SEO, analytics, email automation, A/B testing, social scheduling |
-| AI voice agent | future | Add a voice agent to any deployed site — visitors speak, AI responds |
-| Messaging integration | future | Run the agent from Telegram, Slack, Discord |
+| Feature                  | Status | Description                                                                                    |
+| ------------------------ | ------ | ---------------------------------------------------------------------------------------------- |
+| Prompt-to-Live-URL       | v0.2   | Type a sentence → get a deployed URL in ~15s                                                   |
+| Config-driven generation | v0.1   | Each component generated from a strict spec with skeleton, system prompt, and validation rules |
+| Multi-model fallback     | v0.2   | HuggingFace → OpenRouter → next model. No downtime if one provider is down                     |
+| Visual editor overlay    | v0.3   | Click any block in the preview → describe a change → only that component regenerates           |
+| Differential prompting   | v0.3   | Edits send only the changed component, not the whole page. Faster, cheaper, more precise       |
+| ZIP export               | v0.4   | Download the full Next.js project: components, configs, package.json, README                   |
+| Auto-database binding    | v0.4   | Forms on the page auto-generate Supabase SQL schema and wire up form submissions               |
+| Version history          | v0.3   | Every edit is a version. Roll back to any state with one click                                 |
+| Template library         | v0.5   | Start from a template (landing, portfolio, dashboard, e-commerce) and customize with a prompt  |
+| Multi-page generation    | v0.6   | Home, About, Contact, Blog — with navigation and routing                                       |
+| Plugin system            | v0.7   | Add your own AI models, deploy providers, templates, and components                            |
+| Grow layer               | v1.0   | SEO, analytics, email automation, A/B testing, social scheduling                               |
+| AI voice agent           | future | Add a voice agent to any deployed site — visitors speak, AI responds                           |
+| Messaging integration    | future | Run the agent from Telegram, Slack, Discord                                                    |
 
 ### How Generation Works
 
@@ -105,6 +107,7 @@ Step 6: DB Binding (if forms detected)
 ```
 
 Each component config includes:
+
 - **System prompt** — strict rules (React + Tailwind only, return JSON, no inline styles)
 - **Skeleton** — base file structure pre-written, AI fills the content
 - **Schema** — expected response shape
@@ -190,29 +193,29 @@ For full sequence diagrams and data flow, see [docs/architecture.md](docs/archit
 
 > Screenshots will be added once the UI is built.
 
-| Screen | Preview |
-|--------|---------|
-| Prompt input | *coming soon* |
-| Generation progress | *coming soon* |
-| Live preview + visual editor | *coming soon* |
-| Template gallery | *coming soon* |
-| Settings / API keys | *coming soon* |
+| Screen                       | Preview       |
+| ---------------------------- | ------------- |
+| Prompt input                 | _coming soon_ |
+| Generation progress          | _coming soon_ |
+| Live preview + visual editor | _coming soon_ |
+| Template gallery             | _coming soon_ |
+| Settings / API keys          | _coming soon_ |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Frontend | Next.js 14 + Tailwind + shadcn/ui | Fast, beautiful, SSR |
-| API Orchestrator | Hono (Node.js) | 15KB, minimal, fast |
-| AI Intent | OpenRouter (DeepSeek V3, Qwen) | Cheap, multi-model |
-| AI Code Gen | HuggingFace (DeepSeek Coder, GLM-4) | Free tier, open-source models |
-| Deploy | Vercel Build API / E2B Sandbox | Instant live URL |
-| Database | Supabase | Free tier, PostgreSQL, auto-binding |
-| State | Zustand | 3KB, no boilerplate |
-| Export | JSZip | ZIP archive |
-| Validation | esbuild | Fast code parsing and bundling |
+| Layer            | Technology                          | Why                                 |
+| ---------------- | ----------------------------------- | ----------------------------------- |
+| Frontend         | Next.js 14 + Tailwind + shadcn/ui   | Fast, beautiful, SSR                |
+| API Orchestrator | Hono (Node.js)                      | 15KB, minimal, fast                 |
+| AI Intent        | OpenRouter (DeepSeek V3, Qwen)      | Cheap, multi-model                  |
+| AI Code Gen      | HuggingFace (DeepSeek Coder, GLM-4) | Free tier, open-source models       |
+| Deploy           | Vercel Build API / E2B Sandbox      | Instant live URL                    |
+| Database         | Supabase                            | Free tier, PostgreSQL, auto-binding |
+| State            | Zustand                             | 3KB, no boilerplate                 |
+| Export           | JSZip                               | ZIP archive                         |
+| Validation       | esbuild                             | Fast code parsing and bundling      |
 
 **9 production dependencies.** No Redux, no Axios, no Lodash, no Moment. Every dependency earns its place.
 
@@ -220,13 +223,13 @@ For full sequence diagrams and data flow, see [docs/architecture.md](docs/archit
 
 ## Cost
 
-| Step | Model | Cost |
-|------|-------|------|
-| Intent analysis | DeepSeek V3 (OpenRouter) | $0.0003 |
-| Component generation (×6) | DeepSeek Coder (HuggingFace) | $0.0012 |
-| Validation retry (avg 1) | DeepSeek Coder (HuggingFace) | $0.0003 |
-| Layout assembly | DeepSeek V3 (OpenRouter) | $0.0005 |
-| **Total per generation** | | **~$0.002** |
+| Step                      | Model                        | Cost        |
+| ------------------------- | ---------------------------- | ----------- |
+| Intent analysis           | DeepSeek V3 (OpenRouter)     | $0.0003     |
+| Component generation (×6) | DeepSeek Coder (HuggingFace) | $0.0012     |
+| Validation retry (avg 1)  | DeepSeek Coder (HuggingFace) | $0.0003     |
+| Layout assembly           | DeepSeek V3 (OpenRouter)     | $0.0005     |
+| **Total per generation**  |                              | **~$0.002** |
 
 Compare: $0.15-0.30 with GPT-4o, $0.10-0.20 with Claude. This stack is **50-100x cheaper**.
 
@@ -304,34 +307,34 @@ Add your own:
 
 ```typescript
 // plugins/providers/my-provider.ts
-import type { AIProvider } from '@/types';
+import type { AIProvider } from '@/types'
 
 export const MyProvider: AIProvider = {
   name: 'my-provider',
   async generate(prompt, config) {
     // call your API
-    return { code: '...' };
+    return { code: '...' }
   },
   async health() {
-    return true;
-  }
-};
+    return true
+  },
+}
 ```
 
 ```typescript
 // plugins/deployers/my-deployer.ts
-import type { Deployer } from '@/types';
+import type { Deployer } from '@/types'
 
 export const MyDeployer: Deployer = {
   name: 'my-deployer',
   async deploy(files) {
     // deploy to your platform
-    return { url: 'https://...', deployId: '...' };
+    return { url: 'https://...', deployId: '...' }
   },
   async status(deployId) {
-    return { status: 'ready', url: '...' };
-  }
-};
+    return { status: 'ready', url: '...' }
+  },
+}
 ```
 
 Register in `plugins/index.ts`. No core code changes needed.
@@ -380,18 +383,18 @@ forgeai/
 
 ## Roadmap
 
-| Version | Status | Deliverable |
-|---------|--------|-------------|
-| **v0.0** | ✅ **Done** | System design, docs, brand, `package.json`, types, repo setup |
-| **v0.1** | 🚧 **In Progress** | Prompt → generated code + config-driven generation |
-| **v0.2** | ⏳ **Next** | Prompt → live URL + multi-model fallback |
-| **v0.3** | ⏳ **Planned** | Visual editor overlay + differential prompting + version history |
-| **v0.4** | ⏳ **Planned** | ZIP export + Supabase auto-binding |
-| **v0.5** | ⏳ **Planned** | Template gallery (15,000+ templates) + community templates |
-| **v0.6** | ⏳ **Planned** | Multi-page generation |
-| **v0.7** | ⏳ **Planned** | Plugin system |
-| **v1.0** | ⏳ **Planned** | Grow layer (SEO, analytics, email automation, A/B testing) + full release |
-| **Future** | 💡 **Idea** | AI voice agent, messaging integration (Telegram/Slack/Discord), image/video generation, canvas mode, audio generation |
+| Version    | Status             | Deliverable                                                                                                           |
+| ---------- | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **v0.0**   | ✅ **Done**        | System design, docs, brand, `package.json`, types, repo setup                                                         |
+| **v0.1**   | 🚧 **In Progress** | Prompt → generated code + config-driven generation                                                                    |
+| **v0.2**   | ⏳ **Next**        | Prompt → live URL + multi-model fallback                                                                              |
+| **v0.3**   | ⏳ **Planned**     | Visual editor overlay + differential prompting + version history                                                      |
+| **v0.4**   | ⏳ **Planned**     | ZIP export + Supabase auto-binding                                                                                    |
+| **v0.5**   | ⏳ **Planned**     | Template gallery (15,000+ templates) + community templates                                                            |
+| **v0.6**   | ⏳ **Planned**     | Multi-page generation                                                                                                 |
+| **v0.7**   | ⏳ **Planned**     | Plugin system                                                                                                         |
+| **v1.0**   | ⏳ **Planned**     | Grow layer (SEO, analytics, email automation, A/B testing) + full release                                             |
+| **Future** | 💡 **Idea**        | AI voice agent, messaging integration (Telegram/Slack/Discord), image/video generation, canvas mode, audio generation |
 
 ### What's Done So Far
 
@@ -427,6 +430,7 @@ MIT licensed. PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 ## FAQ
 
 **Where do I get API keys?**
+
 - OpenRouter: [openrouter.ai/keys](https://openrouter.ai/keys) — sign up, create a key, add $1-5 credit
 - HuggingFace: [hf.co/settings/tokens](https://hf.co/settings/tokens) — sign up, create a Read token (free)
 - Supabase: [supabase.com](https://supabase.com) — create a project (free tier), find keys in Settings > API
@@ -457,27 +461,27 @@ Those are closed SaaS. You don't own the code, can't choose models, can't self-h
 
 ## Comparison
 
-| Feature | ForgeAI | bolt.new | Lovable | v0 | Runable |
-|---------|---------|----------|---------|----|---------| 
-| Open Source | ✅ MIT | ❌ | ❌ | ❌ | ❌ |
-| Own the code | ✅ ZIP export | ⚠️ limited | ⚠️ limited | ⚠️ limited | ❌ |
-| BYOK | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Self-host | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Cost/generation | ~$0.002 | $20+/mo | $20+/mo | $20+/mo | $20+/mo |
-| Plugin system | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Template gallery | ✅ 15,000+ | ❌ | ❌ | ❌ | ✅ |
-| Visual editor | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Auto-database | ✅ Supabase | ❌ | ⚠️ | ❌ | ✅ |
-| Grow layer | roadmap | ❌ | ❌ | ❌ | ✅ |
+| Feature          | ForgeAI       | bolt.new   | Lovable    | v0         | Runable |
+| ---------------- | ------------- | ---------- | ---------- | ---------- | ------- |
+| Open Source      | ✅ MIT        | ❌         | ❌         | ❌         | ❌      |
+| Own the code     | ✅ ZIP export | ⚠️ limited | ⚠️ limited | ⚠️ limited | ❌      |
+| BYOK             | ✅            | ❌         | ❌         | ❌         | ❌      |
+| Self-host        | ✅            | ❌         | ❌         | ❌         | ❌      |
+| Cost/generation  | ~$0.002       | $20+/mo    | $20+/mo    | $20+/mo    | $20+/mo |
+| Plugin system    | ✅            | ❌         | ❌         | ❌         | ❌      |
+| Template gallery | ✅ 15,000+    | ❌         | ❌         | ❌         | ✅      |
+| Visual editor    | ✅            | ✅         | ✅         | ❌         | ✅      |
+| Auto-database    | ✅ Supabase   | ❌         | ⚠️         | ❌         | ✅      |
+| Grow layer       | roadmap       | ❌         | ❌         | ❌         | ✅      |
 
 ---
 
 ## GitHub Topics
 
 ```
-ai, ai-agent, prompt-to-website, code-generation, nextjs, react, tailwindcss, 
-shadcn-ui, open-source, byok, self-hosted, supabase, openrouter, huggingface, 
-deepseek, text-to-code, low-code, no-code, landing-page-generator, website-builder, 
+ai, ai-agent, prompt-to-website, code-generation, nextjs, react, tailwindcss,
+shadcn-ui, open-source, byok, self-hosted, supabase, openrouter, huggingface,
+deepseek, text-to-code, low-code, no-code, landing-page-generator, website-builder,
 template-engine, config-driven, plugin-architecture, vercel, e2b, typescript
 ```
 

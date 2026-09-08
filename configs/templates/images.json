@@ -8,8 +8,19 @@
   "order": 3,
 
   "scope": {
-    "allowed": ["text-to-image", "batch", "background-removal", "upscale", "region-edit"],
-    "forbidden": ["nsfw", "deepfake", "face-swap-without-consent", "bulk-web-scraping"]
+    "allowed": [
+      "text-to-image",
+      "batch",
+      "background-removal",
+      "upscale",
+      "region-edit"
+    ],
+    "forbidden": [
+      "nsfw",
+      "deepfake",
+      "face-swap-without-consent",
+      "bulk-web-scraping"
+    ]
   },
 
   "stack": {
@@ -38,12 +49,7 @@
       "zustand",
       "tailwindcss"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
   },
 
   "components": [
@@ -74,9 +80,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

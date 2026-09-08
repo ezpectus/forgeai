@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import { deleteKey as deleteIDBKey, getKey, setKey as setIDBKey } from '@/lib/indexeddb'
+import {
+  deleteKey as deleteIDBKey,
+  getKey,
+  setKey as setIDBKey,
+} from '@/lib/indexeddb'
 import type { KeysState } from '@/types'
 
 export type KeysStore = KeysState & {

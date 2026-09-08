@@ -35,6 +35,7 @@ External APIs (called with user keys)
 ```
 
 ### Key principle: API keys never touch server storage
+
 User API keys are stored in browser **IndexedDB**. They are sent as `Authorization` headers per-request. The orchestrator forwards them to the provider and immediately discards them. No key is logged or persisted on the server.
 
 ---
@@ -46,6 +47,7 @@ User API keys are stored in browser **IndexedDB**. They are sent as `Authorizati
 #### `POST /api/generate`
 
 **Request:**
+
 ```json
 {
   "prompt": "Landing page for yoga studio with booking form",
@@ -61,6 +63,7 @@ User API keys are stored in browser **IndexedDB**. They are sent as `Authorizati
 ```
 
 **Response (Server-Sent Events):**
+
 ```
 event: intent
 data: {"type":"landing","sections":["hero","features","pricing","contact"],"palette":"calm-green","dbRequired":true}
@@ -79,6 +82,7 @@ data: {"projectId":"proj_abc123","files":{"src/app/page.tsx":"..."}}
 ```
 
 **Errors:**
+
 - `400` — Empty prompt
 - `401` — No API key provided
 - `429` — Rate limited by provider (triggers fallback)
@@ -90,6 +94,7 @@ data: {"projectId":"proj_abc123","files":{"src/app/page.tsx":"..."}}
 Differential regeneration of a single component.
 
 **Request:**
+
 ```json
 {
   "projectId": "proj_abc123",
@@ -101,6 +106,7 @@ Differential regeneration of a single component.
 ```
 
 **Response:**
+
 ```json
 {
   "component": "Hero",
@@ -114,6 +120,7 @@ Differential regeneration of a single component.
 #### `POST /api/deploy`
 
 **Request:**
+
 ```json
 {
   "projectId": "proj_abc123",
@@ -123,6 +130,7 @@ Differential regeneration of a single component.
 ```
 
 **Response:**
+
 ```json
 {
   "url": "https://forgeai-abc.vercel.app",
@@ -133,6 +141,7 @@ Differential regeneration of a single component.
 #### `GET /api/deploy/:id/status`
 
 **Response:**
+
 ```json
 {
   "status": "ready",
@@ -145,6 +154,7 @@ Differential regeneration of a single component.
 #### `POST /api/export`
 
 **Request:**
+
 ```json
 {
   "projectId": "proj_abc123",
@@ -160,6 +170,7 @@ Differential regeneration of a single component.
 #### `POST /api/db/bind`
 
 **Request:**
+
 ```json
 {
   "projectId": "proj_abc123",
@@ -178,6 +189,7 @@ Differential regeneration of a single component.
 ```
 
 **Response:**
+
 ```json
 {
   "tablesCreated": ["ai_gen_contact_form"],
@@ -192,13 +204,19 @@ Differential regeneration of a single component.
 Query: `?type=website&topic=pitch-decks&search=yoga&page=1&limit=20`
 
 **Response:**
+
 ```json
 {
   "total": 15560,
   "page": 1,
   "limit": 20,
   "templates": [
-    { "id": "tpl-001", "name": "Business pitch deck", "type": "presentation", "thumbnail": "/templates/tpl-001.png" }
+    {
+      "id": "tpl-001",
+      "name": "Business pitch deck",
+      "type": "presentation",
+      "thumbnail": "/templates/tpl-001.png"
+    }
   ]
 }
 ```
@@ -206,6 +224,7 @@ Query: `?type=website&topic=pitch-decks&search=yoga&page=1&limit=20`
 #### `POST /api/templates/:id/customize`
 
 **Request:**
+
 ```json
 {
   "userInput": "Fintech startup called PayFlow, seed round $2M",
@@ -214,6 +233,7 @@ Query: `?type=website&topic=pitch-decks&search=yoga&page=1&limit=20`
 ```
 
 **Response (SSE):**
+
 ```
 event: analyzing
 data: {"extracted":{"company":"PayFlow"}}
@@ -230,6 +250,7 @@ data: {"projectId":"proj_xyz","slides":[...]}
 #### `GET /api/health`
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -275,33 +296,37 @@ Every component is generated from a config. This is the core mechanism that keep
 
 ```typescript
 interface ComponentConfig {
-  id: string;
-  name: string;
-  scope: { allowed: string[]; forbidden: string[] };
-  stack: Record<string, string>;
-  constraints: Record<string, unknown>;
-  components: string[];
-  formConstraints?: Record<string, unknown>;
+  id: string
+  name: string
+  scope: { allowed: string[]; forbidden: string[] }
+  stack: Record<string, string>
+  constraints: Record<string, unknown>
+  components: string[]
+  formConstraints?: Record<string, unknown>
   generation: {
-    stages: string[];
-    planModeRequiredFor?: string[];
-    askClarifyingQuestions: boolean;
-    showPlanBeforeBuild: boolean;
-    parallelComponentGeneration: boolean;
-    maxRetriesPerComponent: number;
-  };
+    stages: string[]
+    planModeRequiredFor?: string[]
+    askClarifyingQuestions: boolean
+    showPlanBeforeBuild: boolean
+    parallelComponentGeneration: boolean
+    maxRetriesPerComponent: number
+  }
   validation: {
-    autoTest: string[];
-    staticAnalysisRules: string[];
-    buildCommands?: string[];
-  };
+    autoTest: string[]
+    staticAnalysisRules: string[]
+    buildCommands?: string[]
+  }
   model: {
-    intentModel: string;
-    codeModel: string;
-    fallback: string[];
-  };
-  export: { formats: string[]; includeDatabaseSchema: boolean; includeReadme: boolean };
-  ui: { defaultPrompt: string; examplePrompts: string[] };
+    intentModel: string
+    codeModel: string
+    fallback: string[]
+  }
+  export: {
+    formats: string[]
+    includeDatabaseSchema: boolean
+    includeReadme: boolean
+  }
+  ui: { defaultPrompt: string; examplePrompts: string[] }
 }
 ```
 
@@ -318,18 +343,18 @@ interface ComponentConfig {
 
 ## 5. Complexity and Failure Modes
 
-| Problem | Cause | Mitigation |
-|---------|-------|------------|
-| Broken AI code | Hallucinated imports, syntax errors, wrong types | esbuild parse, AST scan, auto-retry, fallback models |
-| AI provider down | Rate limit, outage | Multi-model fallback chain: HF → OpenRouter → next model |
-| Deploy fails | Vercel build error, invalid files | Local build/typecheck before deploy; deploy to E2B fallback |
-| API key leak | Key sent to malicious code | Keys never stored on server; only in IndexedDB; AST scan for hard-coded secrets |
-| XSS / malicious code | AI generates `<script>` or `dangerouslySetInnerHTML` | AST scan for forbidden patterns; sandboxed iframe preview |
-| Database conflicts | Table already exists | Prefix `ai_gen_`; dry-run SQL; versioned migrations |
-| Timeouts | Slow model, large prompt | Per-component timeouts; streaming; max retries |
-| High costs | Using expensive model | Default to cheap models; cost estimate shown before generation |
-| Browser memory | Large generated project | Component streaming; lazy load preview; ZIP export on server |
-| Concurrent edits | Multiple edits at once | Component-level locking; version numbers |
+| Problem              | Cause                                                | Mitigation                                                                      |
+| -------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Broken AI code       | Hallucinated imports, syntax errors, wrong types     | esbuild parse, AST scan, auto-retry, fallback models                            |
+| AI provider down     | Rate limit, outage                                   | Multi-model fallback chain: HF → OpenRouter → next model                        |
+| Deploy fails         | Vercel build error, invalid files                    | Local build/typecheck before deploy; deploy to E2B fallback                     |
+| API key leak         | Key sent to malicious code                           | Keys never stored on server; only in IndexedDB; AST scan for hard-coded secrets |
+| XSS / malicious code | AI generates `<script>` or `dangerouslySetInnerHTML` | AST scan for forbidden patterns; sandboxed iframe preview                       |
+| Database conflicts   | Table already exists                                 | Prefix `ai_gen_`; dry-run SQL; versioned migrations                             |
+| Timeouts             | Slow model, large prompt                             | Per-component timeouts; streaming; max retries                                  |
+| High costs           | Using expensive model                                | Default to cheap models; cost estimate shown before generation                  |
+| Browser memory       | Large generated project                              | Component streaming; lazy load preview; ZIP export on server                    |
+| Concurrent edits     | Multiple edits at once                               | Component-level locking; version numbers                                        |
 
 ---
 
@@ -337,34 +362,34 @@ interface ComponentConfig {
 
 ### 6.1 Minimal Dependencies
 
-| Dependency | Size | Purpose |
-|------------|------|---------|
-| next | 35MB | Framework |
-| tailwindcss | 5MB | Styling |
-| shadcn/ui | 0MB (copy-paste components) | UI components |
-| hono | 15KB | API orchestrator |
-| esbuild | 11MB | Validation + bundling |
-| jszip | 25KB | ZIP export |
-| lucide-react | 20KB | Icons |
-| zustand | 3KB | State |
-| @supabase/supabase-js | 100KB | Database client |
+| Dependency            | Size                        | Purpose               |
+| --------------------- | --------------------------- | --------------------- |
+| next                  | 35MB                        | Framework             |
+| tailwindcss           | 5MB                         | Styling               |
+| shadcn/ui             | 0MB (copy-paste components) | UI components         |
+| hono                  | 15KB                        | API orchestrator      |
+| esbuild               | 11MB                        | Validation + bundling |
+| jszip                 | 25KB                        | ZIP export            |
+| lucide-react          | 20KB                        | Icons                 |
+| zustand               | 3KB                         | State                 |
+| @supabase/supabase-js | 100KB                       | Database client       |
 
 ### 6.2 What Is Deliberately Excluded
 
-| Excluded | Reason |
-|----------|--------|
-| Redux | Overkill for this scope; Zustand is enough |
-| Axios | Native `fetch` is sufficient |
-| Lodash | Native JS covers 99% of use cases |
-| Moment | Native `Intl` or `date-fns` if needed later |
-| CSS-in-JS | Tailwind only; keeps generated code simple |
+| Excluded             | Reason                                                 |
+| -------------------- | ------------------------------------------------------ |
+| Redux                | Overkill for this scope; Zustand is enough             |
+| Axios                | Native `fetch` is sufficient                           |
+| Lodash               | Native JS covers 99% of use cases                      |
+| Moment               | Native `Intl` or `date-fns` if needed later            |
+| CSS-in-JS            | Tailwind only; keeps generated code simple             |
 | Heavy animation libs | CSS transitions + Framer Motion for complex cases only |
 
 ### 6.3 Plugin Architecture
 
 ```typescript
 // src/plugins/providers/openrouter.ts
-import { AIProvider } from '@/types';
+import { AIProvider } from '@/types'
 
 export const OpenRouter: AIProvider = {
   name: 'openrouter',
@@ -374,24 +399,27 @@ export const OpenRouter: AIProvider = {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: config.model,
-        messages: [{ role: 'system', content: config.systemPrompt }, { role: 'user', content: prompt }]
-      })
-    });
-    const json = await res.json();
-    return { code: json.choices[0].message.content };
+        messages: [
+          { role: 'system', content: config.systemPrompt },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    })
+    const json = await res.json()
+    return { code: json.choices[0].message.content }
   },
   async health(apiKey) {
     const res = await fetch('https://openrouter.ai/api/v1/auth', {
-      headers: { 'Authorization': `Bearer ${apiKey}` }
-    });
-    return res.ok;
-  }
-};
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
+    return res.ok
+  },
+}
 ```
 
 ---
@@ -427,21 +455,21 @@ Self-hosted users can also put keys in `.env`.
 ```typescript
 // stores/project.ts
 interface ProjectStore {
-  projectId: string | null;
-  prompt: string;
-  intent: IntentResult | null;
-  components: ComponentState[];
-  status: 'idle' | 'generating' | 'ready' | 'error';
-  deployUrl: string | null;
-  error: string | null;
+  projectId: string | null
+  prompt: string
+  intent: IntentResult | null
+  components: ComponentState[]
+  status: 'idle' | 'generating' | 'ready' | 'error'
+  deployUrl: string | null
+  error: string | null
 }
 
 // stores/keys.ts
 interface KeysStore {
-  openrouter: string | null;
-  huggingface: string | null;
-  supabaseUrl: string | null;
-  supabaseKey: string | null;
+  openrouter: string | null
+  huggingface: string | null
+  supabaseUrl: string | null
+  supabaseKey: string | null
 }
 ```
 
@@ -456,22 +484,22 @@ async function callWithFallback(
   const chain = [
     { provider: 'huggingface', model: config.codeModel },
     { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
-    { provider: 'openrouter', model: 'Qwen/Qwen2.5-Coder' }
-  ];
+    { provider: 'openrouter', model: 'Qwen/Qwen2.5-Coder' },
+  ]
 
   for (const target of chain) {
     try {
-      return await callProvider({ ...target, auth, prompt });
+      return await callProvider({ ...target, auth, prompt })
     } catch (err: any) {
       if (err.status === 429 || err.status >= 500) {
-        await backoff(chain.indexOf(target));
-        continue;
+        await backoff(chain.indexOf(target))
+        continue
       }
-      throw err;
+      throw err
     }
   }
 
-  throw new Error('All providers failed');
+  throw new Error('All providers failed')
 }
 ```
 
@@ -483,32 +511,32 @@ async function validateComponent(
   code: string,
   rules: string[]
 ): Promise<{ valid: boolean; errors: string[] }> {
-  const errors: string[] = [];
+  const errors: string[] = []
 
   try {
-    await esbuild.transform(code, { loader: 'tsx' });
+    await esbuild.transform(code, { loader: 'tsx' })
   } catch (e: any) {
-    errors.push(`Syntax error: ${e.message}`);
-    return { valid: false, errors };
+    errors.push(`Syntax error: ${e.message}`)
+    return { valid: false, errors }
   }
 
   if (rules.includes('noForbiddenImports')) {
-    const imports = getImports(code);
-    const bad = imports.filter(i => !allowed.includes(i));
-    if (bad.length) errors.push(`Forbidden imports: ${bad.join(', ')}`);
+    const imports = getImports(code)
+    const bad = imports.filter((i) => !allowed.includes(i))
+    if (bad.length) errors.push(`Forbidden imports: ${bad.join(', ')}`)
   }
 
   if (rules.includes('noDangerouslySetInnerHTML')) {
     if (code.includes('dangerouslySetInnerHTML')) {
-      errors.push('dangerouslySetInnerHTML is forbidden');
+      errors.push('dangerouslySetInnerHTML is forbidden')
     }
   }
 
   if (rules.includes('noInlineStyles')) {
-    if (code.includes('style={{')) errors.push('Inline styles detected');
+    if (code.includes('style={{')) errors.push('Inline styles detected')
   }
 
-  return { valid: errors.length === 0, errors };
+  return { valid: errors.length === 0, errors }
 }
 ```
 
@@ -533,13 +561,13 @@ async function validateComponent(
 
 ## 10. Cost Estimate
 
-| Step | Model | Tokens | Cost |
-|------|-------|--------|------|
-| Intent analysis | DeepSeek V3 (OpenRouter) | ~500 in / 200 out | $0.0003 |
-| Component gen (×6) | DeepSeek Coder (HF) | ~1000 in / 800 out × 6 | $0.0012 |
-| Validation retry | DeepSeek Coder (HF) | ~1200 in / 800 out | $0.0003 |
-| Layout assembly | DeepSeek V3 (OpenRouter) | ~2000 in / 500 out | $0.0005 |
-| **Total** | | | **~$0.002** |
+| Step               | Model                    | Tokens                 | Cost        |
+| ------------------ | ------------------------ | ---------------------- | ----------- |
+| Intent analysis    | DeepSeek V3 (OpenRouter) | ~500 in / 200 out      | $0.0003     |
+| Component gen (×6) | DeepSeek Coder (HF)      | ~1000 in / 800 out × 6 | $0.0012     |
+| Validation retry   | DeepSeek Coder (HF)      | ~1200 in / 800 out     | $0.0003     |
+| Layout assembly    | DeepSeek V3 (OpenRouter) | ~2000 in / 500 out     | $0.0005     |
+| **Total**          |                          |                        | **~$0.002** |
 
 ---
 

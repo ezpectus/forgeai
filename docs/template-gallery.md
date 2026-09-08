@@ -29,32 +29,32 @@ User: "I need a pitch deck"
 
 ### By Type
 
-| Type | Count | Examples |
-|------|-------|----------|
-| Websites | 5,000+ | Landing pages, portfolios, dashboards, blogs |
-| Presentations | 7,000+ | Pitch decks, sales, educational, reports |
-| Carousels | 3,000+ | Instagram, LinkedIn, X multi-slide posts |
-| Reports | 500+ | Research, analysis, summaries |
+| Type          | Count  | Examples                                     |
+| ------------- | ------ | -------------------------------------------- |
+| Websites      | 5,000+ | Landing pages, portfolios, dashboards, blogs |
+| Presentations | 7,000+ | Pitch decks, sales, educational, reports     |
+| Carousels     | 3,000+ | Instagram, LinkedIn, X multi-slide posts     |
+| Reports       | 500+   | Research, analysis, summaries                |
 
 ### By Topic
 
-| Topic | Examples |
-|-------|----------|
-| Portfolio | Photographer, designer, developer |
-| Pitch decks | Business pitch, SaaS pitch, seed round |
-| Landing pages | SaaS, app, product launch, waitlist |
-| Business | Company overview, quarterly review, SOP |
-| Education | Lesson plan, course outline, thesis |
-| Marketing | Strategy, content calendar, campaign |
-| Branding | Brand book, logo presentation, rebrand |
-| Technology | Product launch, tech stack, API docs |
-| Fashion & beauty | Lookbook, catalog, collection |
-| Food & drink | Menu, restaurant, recipe cards |
-| Real estate | Property listing, agent portfolio |
-| Finance | Financial report, budget, investment memo |
-| Photography | Gallery, wedding, travel blog |
-| Health | Clinic landing, wellness, fitness plan |
-| Productivity | Habits, time management, workflows |
+| Topic            | Examples                                  |
+| ---------------- | ----------------------------------------- |
+| Portfolio        | Photographer, designer, developer         |
+| Pitch decks      | Business pitch, SaaS pitch, seed round    |
+| Landing pages    | SaaS, app, product launch, waitlist       |
+| Business         | Company overview, quarterly review, SOP   |
+| Education        | Lesson plan, course outline, thesis       |
+| Marketing        | Strategy, content calendar, campaign      |
+| Branding         | Brand book, logo presentation, rebrand    |
+| Technology       | Product launch, tech stack, API docs      |
+| Fashion & beauty | Lookbook, catalog, collection             |
+| Food & drink     | Menu, restaurant, recipe cards            |
+| Real estate      | Property listing, agent portfolio         |
+| Finance          | Financial report, budget, investment memo |
+| Photography      | Gallery, wedding, travel blog             |
+| Health           | Clinic landing, wellness, fitness plan    |
+| Productivity     | Habits, time management, workflows        |
 
 ---
 
@@ -96,7 +96,12 @@ Each template is a JSON file with this structure:
   "aiPrompt": {
     "systemPrompt": "Fill this pitch deck template using the user's input. Keep the structure and design. Replace {{placeholders}} only.",
     "userPromptTemplate": "Fill this pitch deck for: {{userInput}}",
-    "placeholders": ["companyName", "tagline", "problemDescription", "solutionDescription"]
+    "placeholders": [
+      "companyName",
+      "tagline",
+      "problemDescription",
+      "solutionDescription"
+    ]
   },
 
   "customization": {
@@ -175,6 +180,7 @@ Returns the full template JSON with structure, placeholders, and AI prompt.
 ```
 
 Response is an SSE stream:
+
 ```
 event: analyzing
 data: {"extracted":{"company":"PayFlow"}}

@@ -20,74 +20,82 @@ Open `http://localhost:3000`.
 ## Ways to Contribute
 
 ### 1. Report Bugs
+
 - Open an issue with the `bug` label
 - Include: steps to reproduce, expected vs actual, browser/OS, console errors
 
 ### 2. Suggest Features
+
 - Open an issue with the `feature` label
 - Describe the use case, not just the solution
 
 ### 3. Add a Plugin
 
 #### AI Provider Plugin
+
 ```typescript
 // src/plugins/providers/my-provider.ts
-import type { AIProvider } from '@/types';
+import type { AIProvider } from '@/types'
 
 export const MyProvider: AIProvider = {
   name: 'my-provider',
   async generate(prompt: string, config: GenConfig): Promise<GenResult> {
     const res = await fetch('https://my-api.com/generate', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${config.apiKey}` },
-      body: JSON.stringify({ prompt, model: config.model })
-    });
-    return res.json();
+      headers: { Authorization: `Bearer ${config.apiKey}` },
+      body: JSON.stringify({ prompt, model: config.model }),
+    })
+    return res.json()
   },
   async health(): Promise<boolean> {
     try {
-      await fetch('https://my-api.com/health');
-      return true;
+      await fetch('https://my-api.com/health')
+      return true
     } catch {
-      return false;
+      return false
     }
-  }
-};
+  },
+}
 ```
 
 Register in `src/plugins/index.ts`:
+
 ```typescript
-import { MyProvider } from './providers/my-provider';
-export const providers = [OpenRouter, HuggingFace, MyProvider];
+import { MyProvider } from './providers/my-provider'
+export const providers = [OpenRouter, HuggingFace, MyProvider]
 ```
 
 #### Deployer Plugin
+
 ```typescript
 // src/plugins/deployers/my-deployer.ts
-import type { Deployer } from '@/types';
+import type { Deployer } from '@/types'
 
 export const MyDeployer: Deployer = {
   name: 'my-deployer',
   async deploy(files: Record<string, string>): Promise<DeployResult> {
     // deploy logic
-    return { url: 'https://...', deployId: '...' };
+    return { url: 'https://...', deployId: '...' }
   },
   async status(deployId: string): Promise<DeployStatus> {
-    return { status: 'ready', url: '...' };
-  }
-};
+    return { status: 'ready', url: '...' }
+  },
+}
 ```
 
 #### Template Plugin
+
 Create a JSON file in `configs/templates/` following the schema in `docs/templates.md`.
 
 ### 4. Add a Template
+
 - Create a JSON file in `public/templates/` following `docs/template-gallery.md`
 - Include thumbnail (1024x768 PNG)
 - Test with at least 3 different prompts
 - Submit PR with `template` label
 
 ### 5. Improve Docs
+
 - Fix typos, add examples, translate
 - Docs are in `docs/` folder
 - PR with `docs` label
@@ -105,6 +113,7 @@ Create a JSON file in `configs/templates/` following the schema in `docs/templat
 - Mobile-first responsive classes
 
 ### Linting
+
 ```bash
 npm run lint     # ESLint
 npm run typecheck # tsc --noEmit

@@ -16,20 +16,20 @@ Each function is defined by a JSON config in `configs/templates/`. AI does not g
 
 ### 2.1 Allowed Stack
 
-| Layer | Technology | Forbidden Alternatives |
-|-------|-----------|----------------------|
-| Frontend framework | Next.js 14 App Router | Nuxt, SvelteKit, Remix, CRA |
-| Styling | Tailwind CSS 3.4 | CSS-in-JS (styled-components, emotion), inline styles |
-| Components | React Server Components + shadcn/ui | Vue, Angular, Svelte |
-| State | Zustand | Redux, MobX, Jotai unless justified |
-| Icons | Lucide React | Any other icon library |
-| Animation | CSS transitions / Framer Motion (complex) | GSAP unless plugin |
-| Database | Supabase (PostgreSQL) | MongoDB, Firebase, MySQL unless plugin |
-| Auth | Supabase Auth | Auth0, NextAuth, Clerk unless plugin |
-| Payments | Stripe | PayPal unless plugin |
-| Forms | React controlled + shadcn/ui form | Formik, React Hook Form unless plugin |
-| Validation | Zod | Yup, Joi unless plugin |
-| Build | Next.js built-in | Vite, Parcel, Rollup |
+| Layer              | Technology                                | Forbidden Alternatives                                |
+| ------------------ | ----------------------------------------- | ----------------------------------------------------- |
+| Frontend framework | Next.js 14 App Router                     | Nuxt, SvelteKit, Remix, CRA                           |
+| Styling            | Tailwind CSS 3.4                          | CSS-in-JS (styled-components, emotion), inline styles |
+| Components         | React Server Components + shadcn/ui       | Vue, Angular, Svelte                                  |
+| State              | Zustand                                   | Redux, MobX, Jotai unless justified                   |
+| Icons              | Lucide React                              | Any other icon library                                |
+| Animation          | CSS transitions / Framer Motion (complex) | GSAP unless plugin                                    |
+| Database           | Supabase (PostgreSQL)                     | MongoDB, Firebase, MySQL unless plugin                |
+| Auth               | Supabase Auth                             | Auth0, NextAuth, Clerk unless plugin                  |
+| Payments           | Stripe                                    | PayPal unless plugin                                  |
+| Forms              | React controlled + shadcn/ui form         | Formik, React Hook Form unless plugin                 |
+| Validation         | Zod                                       | Yup, Joi unless plugin                                |
+| Build              | Next.js built-in                          | Vite, Parcel, Rollup                                  |
 
 ### 2.2 Forbidden Patterns (Global)
 
@@ -80,21 +80,21 @@ If any step fails, the component is retried with the exact error (max 2 retries)
 
 All function configs live in `configs/templates/`. Each config contains:
 
-| Field | Purpose |
-|-------|---------|
-| `id` | Unique function identifier |
-| `name` | Display name |
-| `scope.allowed` | What the AI can generate |
-| `scope.forbidden` | What the AI must not generate |
-| `stack` | Technologies to use |
-| `constraints` | Limits and rules |
-| `components` | Allowed component names |
-| `formConstraints` | Form rules (if applicable) |
-| `generation` | Pipeline settings |
-| `validation` | Auto-tests and static analysis rules |
-| `model` | Models and fallback chain |
-| `export` | Output formats |
-| `ui` | Default and example prompts |
+| Field             | Purpose                              |
+| ----------------- | ------------------------------------ |
+| `id`              | Unique function identifier           |
+| `name`            | Display name                         |
+| `scope.allowed`   | What the AI can generate             |
+| `scope.forbidden` | What the AI must not generate        |
+| `stack`           | Technologies to use                  |
+| `constraints`     | Limits and rules                     |
+| `components`      | Allowed component names              |
+| `formConstraints` | Form rules (if applicable)           |
+| `generation`      | Pipeline settings                    |
+| `validation`      | Auto-tests and static analysis rules |
+| `model`           | Models and fallback chain            |
+| `export`          | Output formats                       |
+| `ui`              | Default and example prompts          |
 
 ### 3.1 AI Website Builder
 
@@ -107,6 +107,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js 14, Tailwind, shadcn/ui, Supabase, Stripe checkout links, Lucide React.
 
 **Constraints:**
+
 - Max 10 sections per page
 - Max 5 forms per page
 - Max 20 components total
@@ -116,6 +117,7 @@ All function configs live in `configs/templates/`. Each config contains:
 - All images must have `alt`
 
 **Validation:**
+
 - `hasDefaultExport`
 - `noForbiddenImports`
 - `noServerSecrets`
@@ -137,6 +139,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js, Tailwind, shadcn/ui, Recharts, html2canvas, jsPDF, pptxgenjs.
 
 **Constraints:**
+
 - Max 15 slides
 - Max 6 elements per slide
 - Fixed color palette (1 primary, 1 secondary, 1 background, 1 text)
@@ -153,6 +156,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js API route, HTML5 Canvas, Replicate / HuggingFace.
 
 **Constraints:**
+
 - Max image size: 2048×2048
 - Max 4 images per batch
 - Formats: PNG, JPEG, WebP
@@ -169,6 +173,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js API route, HTML5 `<video>`, Replicate / Kling / Luma.
 
 **Constraints:**
+
 - Max duration: 60s
 - Max resolution: 1080p
 - Formats: MP4, WebM
@@ -184,6 +189,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js, Hono, OpenRouter, E2B sandbox, Supabase.
 
 **Constraints:**
+
 - Code runs only in E2B sandbox
 - Max 10 attachments, 25MB each
 - Tool calls visible to user
@@ -200,6 +206,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js, Tailwind, react-markdown, html2canvas, jsPDF, Tavily search, Supabase.
 
 **Constraints:**
+
 - Max 50 pages
 - All claims need `[source]`
 - Structure: Title, Summary, Introduction, Body, Conclusion, Sources
@@ -215,6 +222,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js, Tailwind, Fabric.js, Supabase Storage, Replicate.
 
 **Constraints:**
+
 - Max canvas size: 4096×4096
 - Max 50 layers
 - Auto-save every 30s
@@ -230,6 +238,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js, Tailwind, HTML5 Canvas/SVG, html2canvas.
 
 **Constraints:**
+
 - 3-15 slides
 - Fixed aspect ratio: 1:1, 4:5, or 16:9
 - Max 3 colors
@@ -246,6 +255,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js API route, HTML5 `<audio>`, ElevenLabs / Replicate.
 
 **Constraints:**
+
 - Max audio duration: 10 minutes
 - Transcription files max 100MB
 - Formats: MP3, WAV
@@ -261,6 +271,7 @@ All function configs live in `configs/templates/`. Each config contains:
 **Stack:** Next.js, Tailwind, xlsx library, Recharts, Zustand.
 
 **Constraints:**
+
 - Max 1000 rows, 50 columns
 - Allowed formulas: SUM, AVERAGE, IF, VLOOKUP, COUNT, MAX, MIN, ROUND, TODAY
 - Chart types: line, bar, pie, doughnut

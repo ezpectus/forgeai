@@ -8,7 +8,15 @@
   "order": 10,
 
   "scope": {
-    "allowed": ["cash-flow", "budget", "tracker", "formulas", "charts", "xlsx-export", "csv-export"],
+    "allowed": [
+      "cash-flow",
+      "budget",
+      "tracker",
+      "formulas",
+      "charts",
+      "xlsx-export",
+      "csv-export"
+    ],
     "forbidden": ["sql-queries", "macros", "vba", "real-time-collab"]
   },
 
@@ -25,7 +33,17 @@
   "constraints": {
     "maxRows": 1000,
     "maxCols": 50,
-    "allowedFormulas": ["SUM", "AVERAGE", "IF", "VLOOKUP", "COUNT", "MAX", "MIN", "ROUND", "TODAY"],
+    "allowedFormulas": [
+      "SUM",
+      "AVERAGE",
+      "IF",
+      "VLOOKUP",
+      "COUNT",
+      "MAX",
+      "MIN",
+      "ROUND",
+      "TODAY"
+    ],
     "allowedChartTypes": ["line", "bar", "pie", "doughnut"],
     "noCircularReferences": true,
     "allowInlineStyles": false,
@@ -42,12 +60,7 @@
       "zustand",
       "tailwindcss"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
   },
 
   "components": [
@@ -79,9 +92,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

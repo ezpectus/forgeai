@@ -8,8 +8,24 @@
   "order": 1,
 
   "scope": {
-    "allowed": ["landing", "multi-page", "portfolio", "dashboard", "forms", "ecommerce-front", "blog"],
-    "forbidden": ["backend-api", "websocket-chat", "video-streaming", "rbac-admin", "payment-backend", "crypto", "p2p"]
+    "allowed": [
+      "landing",
+      "multi-page",
+      "portfolio",
+      "dashboard",
+      "forms",
+      "ecommerce-front",
+      "blog"
+    ],
+    "forbidden": [
+      "backend-api",
+      "websocket-chat",
+      "video-streaming",
+      "rbac-admin",
+      "payment-backend",
+      "crypto",
+      "p2p"
+    ]
   },
 
   "stack": {
@@ -82,7 +98,17 @@
   ],
 
   "formConstraints": {
-    "allowedTypes": ["text", "email", "tel", "textarea", "select", "checkbox", "radio", "number", "date"],
+    "allowedTypes": [
+      "text",
+      "email",
+      "tel",
+      "textarea",
+      "select",
+      "checkbox",
+      "radio",
+      "number",
+      "date"
+    ],
     "maxFieldsPerForm": 12,
     "requiredAttributes": ["name", "type"],
     "submitHandling": "supabase-client",
@@ -100,7 +126,14 @@
   },
 
   "validation": {
-    "autoTest": ["build", "typecheck", "eslint", "ast-scan", "a11y-scan", "dead-code-scan"],
+    "autoTest": [
+      "build",
+      "typecheck",
+      "eslint",
+      "ast-scan",
+      "a11y-scan",
+      "dead-code-scan"
+    ],
     "staticAnalysisRules": [
       "hasDefaultExport",
       "noForbiddenImports",
@@ -114,10 +147,7 @@
       "buttonsHaveType",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit",
-      "next build"
-    ]
+    "buildCommands": ["tsc --noEmit", "next build"]
   },
 
   "model": {

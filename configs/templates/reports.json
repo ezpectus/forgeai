@@ -8,8 +8,19 @@
   "order": 6,
 
   "scope": {
-    "allowed": ["research-report", "executive-summary", "competitive-analysis", "swot", "market-sizing"],
-    "forbidden": ["plagiarism", "fabricated-citations", "long-form-above-50-pages", "unsourced-claims"]
+    "allowed": [
+      "research-report",
+      "executive-summary",
+      "competitive-analysis",
+      "swot",
+      "market-sizing"
+    ],
+    "forbidden": [
+      "plagiarism",
+      "fabricated-citations",
+      "long-form-above-50-pages",
+      "unsourced-claims"
+    ]
   },
 
   "stack": {
@@ -27,8 +38,20 @@
   "constraints": {
     "maxPages": 50,
     "maxSections": 12,
-    "requiredStructure": ["Title", "Summary", "Introduction", "Body", "Conclusion", "Sources"],
-    "requireCitationsFor": ["statistics", "quotes", "competitor-data", "market-size"],
+    "requiredStructure": [
+      "Title",
+      "Summary",
+      "Introduction",
+      "Body",
+      "Conclusion",
+      "Sources"
+    ],
+    "requireCitationsFor": [
+      "statistics",
+      "quotes",
+      "competitor-data",
+      "market-size"
+    ],
     "allowInlineStyles": false,
     "allowClientEnv": false,
     "componentStyle": "functional",
@@ -45,12 +68,7 @@
       "tailwindcss",
       "@supabase/supabase-js"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
   },
 
   "components": [
@@ -82,9 +100,7 @@
       "noUnusedImports",
       "noDangerousHtml"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

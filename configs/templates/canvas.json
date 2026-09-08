@@ -8,8 +8,19 @@
   "order": 7,
 
   "scope": {
-    "allowed": ["freeform-workspace", "image-upload", "image-generation", "arrange", "region-edit", "motion-control"],
-    "forbidden": ["copyright-infringement", "auto-public-share", "more-than-50-layers"]
+    "allowed": [
+      "freeform-workspace",
+      "image-upload",
+      "image-generation",
+      "arrange",
+      "region-edit",
+      "motion-control"
+    ],
+    "forbidden": [
+      "copyright-infringement",
+      "auto-public-share",
+      "more-than-50-layers"
+    ]
   },
 
   "stack": {
@@ -41,12 +52,7 @@
       "tailwindcss",
       "@supabase/supabase-js"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
   },
 
   "components": [
@@ -79,9 +85,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

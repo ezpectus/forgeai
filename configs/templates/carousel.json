@@ -8,8 +8,18 @@
   "order": 8,
 
   "scope": {
-    "allowed": ["instagram", "linkedin", "twitter", "social-posts", "brand-consistent"],
-    "forbidden": ["animated-carousels", "video-in-carousel", "more-than-15-slides"]
+    "allowed": [
+      "instagram",
+      "linkedin",
+      "twitter",
+      "social-posts",
+      "brand-consistent"
+    ],
+    "forbidden": [
+      "animated-carousels",
+      "video-in-carousel",
+      "more-than-15-slides"
+    ]
   },
 
   "stack": {
@@ -41,12 +51,7 @@
       "zustand",
       "tailwindcss"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
   },
 
   "components": [
@@ -78,9 +83,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

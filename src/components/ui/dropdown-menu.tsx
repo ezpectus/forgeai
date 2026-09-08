@@ -6,9 +6,8 @@ interface DropdownMenuContextValue {
   onOpenChange: (open: boolean) => void
 }
 
-const DropdownMenuContext = React.createContext<DropdownMenuContextValue | null>(
-  null
-)
+const DropdownMenuContext =
+  React.createContext<DropdownMenuContextValue | null>(null)
 
 function useDropdownMenu() {
   const ctx = React.useContext(DropdownMenuContext)
@@ -34,8 +33,7 @@ function DropdownMenu({ open, onOpenChange, children }: DropdownMenuProps) {
   )
 }
 
-interface DropdownMenuTriggerProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface DropdownMenuTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean
   children: React.ReactNode
 }
@@ -47,11 +45,14 @@ const DropdownMenuTrigger = React.forwardRef<
   const { open, onOpenChange } = useDropdownMenu()
   const handleClick = () => onOpenChange(!open)
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement, {
-      onClick: handleClick,
-      ref,
-      ...props,
-    } as React.Attributes)
+    return React.cloneElement(
+      children as React.ReactElement,
+      {
+        onClick: handleClick,
+        ref,
+        ...props,
+      } as React.Attributes
+    )
   }
   return (
     <button ref={ref} onClick={handleClick} {...props}>

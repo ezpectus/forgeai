@@ -8,8 +8,20 @@
   "order": 5,
 
   "scope": {
-    "allowed": ["chat", "code-execution", "web-search", "file-analysis", "multi-step-tasks", "plan"],
-    "forbidden": ["local-shell", "file-system-access", "infinite-autonomous-loop", "unauthorized-commands"]
+    "allowed": [
+      "chat",
+      "code-execution",
+      "web-search",
+      "file-analysis",
+      "multi-step-tasks",
+      "plan"
+    ],
+    "forbidden": [
+      "local-shell",
+      "file-system-access",
+      "infinite-autonomous-loop",
+      "unauthorized-commands"
+    ]
   },
 
   "stack": {
@@ -82,9 +94,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

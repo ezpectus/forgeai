@@ -9,7 +9,13 @@ export interface ToastProps extends React.HTMLAttributes<HTMLDivElement> {
   onClose?: () => void
 }
 
-function Toast({ className, title, description, onClose, ...props }: ToastProps) {
+function Toast({
+  className,
+  title,
+  description,
+  onClose,
+  ...props
+}: ToastProps) {
   return (
     <div
       className={cn(
@@ -20,9 +26,7 @@ function Toast({ className, title, description, onClose, ...props }: ToastProps)
     >
       <div className="grid gap-1">
         {title && <div className="text-sm font-semibold">{title}</div>}
-        {description && (
-          <div className="text-sm opacity-90">{description}</div>
-        )}
+        {description && <div className="text-sm opacity-90">{description}</div>}
       </div>
       {onClose && (
         <button

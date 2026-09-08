@@ -8,8 +8,20 @@
   "order": 2,
 
   "scope": {
-    "allowed": ["pitch-deck", "sales-presentation", "educational", "report-slides", "charts"],
-    "forbidden": ["games", "interactive-apps", "video", "real-time-collab", "websites"]
+    "allowed": [
+      "pitch-deck",
+      "sales-presentation",
+      "educational",
+      "report-slides",
+      "charts"
+    ],
+    "forbidden": [
+      "games",
+      "interactive-apps",
+      "video",
+      "real-time-collab",
+      "websites"
+    ]
   },
 
   "stack": {
@@ -95,9 +107,7 @@
       "noInlineStyles",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

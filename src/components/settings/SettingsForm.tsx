@@ -16,17 +16,50 @@ interface TestState {
 }
 
 const fields: {
-  key: keyof Omit<ReturnType<typeof useKeys.getState>, 'setKey' | 'deleteKey' | 'loadKeys'>
+  key: keyof Omit<
+    ReturnType<typeof useKeys.getState>,
+    'setKey' | 'deleteKey' | 'loadKeys'
+  >
   label: string
   type: 'password' | 'text'
   link: string
   provider?: Provider
 }[] = [
-  { key: 'openrouter', label: 'OpenRouter API Key', type: 'password', link: 'https://openrouter.ai/keys', provider: 'openrouter' },
-  { key: 'huggingface', label: 'HuggingFace Token', type: 'password', link: 'https://hf.co/settings/tokens', provider: 'huggingface' },
-  { key: 'supabaseUrl', label: 'Supabase URL', type: 'text', link: 'https://supabase.com', provider: 'supabase' },
-  { key: 'supabaseKey', label: 'Supabase Key', type: 'password', link: 'https://supabase.com', provider: 'supabase' },
-  { key: 'vercel', label: 'Vercel Token', type: 'password', link: 'https://vercel.com/account/tokens', provider: 'vercel' },
+  {
+    key: 'openrouter',
+    label: 'OpenRouter API Key',
+    type: 'password',
+    link: 'https://openrouter.ai/keys',
+    provider: 'openrouter',
+  },
+  {
+    key: 'huggingface',
+    label: 'HuggingFace Token',
+    type: 'password',
+    link: 'https://hf.co/settings/tokens',
+    provider: 'huggingface',
+  },
+  {
+    key: 'supabaseUrl',
+    label: 'Supabase URL',
+    type: 'text',
+    link: 'https://supabase.com',
+    provider: 'supabase',
+  },
+  {
+    key: 'supabaseKey',
+    label: 'Supabase Key',
+    type: 'password',
+    link: 'https://supabase.com',
+    provider: 'supabase',
+  },
+  {
+    key: 'vercel',
+    label: 'Vercel Token',
+    type: 'password',
+    link: 'https://vercel.com/account/tokens',
+    provider: 'vercel',
+  },
 ]
 
 export function SettingsForm() {
@@ -55,8 +88,8 @@ export function SettingsForm() {
 
     const token =
       provider === 'supabase'
-        ? keys.supabaseKey ?? ''
-        : values[provider as keyof typeof values] ?? ''
+        ? (keys.supabaseKey ?? '')
+        : (values[provider as keyof typeof values] ?? '')
 
     try {
       const res = await fetch(`/api/health?provider=${provider}`, {
@@ -85,10 +118,7 @@ export function SettingsForm() {
 
   async function handleSave() {
     setSaving(true)
-    const entries = Object.entries(values) as [
-      keyof typeof values,
-      string
-    ][]
+    const entries = Object.entries(values) as [keyof typeof values, string][]
 
     await Promise.all(
       entries.map(([key, value]) =>

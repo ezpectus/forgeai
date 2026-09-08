@@ -1,16 +1,19 @@
 # GitHub Repository Setup — ForgeAI
 
 ## Repo Name
+
 ```
 forgeai
 ```
 
 ## Short Description (for GitHub repo sidebar, max 350 chars)
+
 ```
 Open-source prompt-to-live-URL generator. Type a sentence → get a deployed website with database, forms, and custom domain in ~15 seconds. BYOK (Bring Your Own Keys), self-hostable, MIT licensed. ~$0.002 per generation. Next.js + Tailwind + Supabase + OpenRouter/HuggingFace.
 ```
 
 ## GitHub Topics (hashtags, max 20)
+
 ```
 ai, ai-agent, prompt-to-website, code-generation, nextjs, react, tailwindcss,
 shadcn-ui, open-source, byok, self-hosted, supabase, openrouter, huggingface,
@@ -32,9 +35,11 @@ deepseek, text-to-code, low-code, no-code, website-builder, typescript
 - **Plugin system** — Add your own AI models, deploy providers, templates, and components
 
 ### Stack
+
 Next.js 14 · Tailwind CSS · shadcn/ui · Zustand · Hono · Supabase · OpenRouter · HuggingFace · Vercel · E2B
 
 ### Links
+
 - 📖 [System Design](docs/system-design.md)
 - 🏗️ [Architecture Diagrams](docs/architecture.md)
 - 💡 [Idea & Vision](docs/vision.md)
@@ -47,6 +52,7 @@ Next.js 14 · Tailwind CSS · shadcn/ui · Zustand · Hono · Supabase · OpenRo
 ## Social Media Snippets
 
 ### Twitter/X (280 chars)
+
 ```
 ForgeAI — open-source prompt-to-live-URL generator.
 
@@ -60,21 +66,25 @@ Next.js + Tailwind + Supabase + OpenRouter.
 ```
 
 ### Reddit r/webdev title
+
 ```
 [Open Source] ForgeAI — prompt-to-live-URL generator. BYOK, ~$0.002/generation, full code ownership.
 ```
 
 ### Reddit r/selfhosted title
+
 ```
 ForgeAI — self-hostable AI website generator. Bring your own API keys, pay ~$0.002 per site, export full Next.js project.
 ```
 
 ### Hacker News title
+
 ```
 Show HN: ForgeAI – Open-source prompt-to-live-URL generator (BYOK, ~$0.002/generation)
 ```
 
 ### Product Hunt tagline
+
 ```
 ForgeAI — Open-source prompt-to-website generator. BYOK, self-hostable, ~$0.002 per generation.
 ```
@@ -82,12 +92,14 @@ ForgeAI — Open-source prompt-to-website generator. BYOK, self-hostable, ~$0.00
 ---
 
 ## README Badges (already in README.md)
+
 - MIT License
 - PRs Welcome
 - Made with Next.js
 - Powered by OpenRouter
 
 Add after first deploy:
+
 - Build Status (GitHub Actions)
 - npm version
 - Discord

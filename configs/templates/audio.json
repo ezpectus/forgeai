@@ -8,8 +8,19 @@
   "order": 9,
 
   "scope": {
-    "allowed": ["text-to-speech", "music", "voice-cloning", "sound-effects", "dubbing", "transcription"],
-    "forbidden": ["voice-cloning-without-consent", "nsfw-audio", "live-streaming-podcast"]
+    "allowed": [
+      "text-to-speech",
+      "music",
+      "voice-cloning",
+      "sound-effects",
+      "dubbing",
+      "transcription"
+    ],
+    "forbidden": [
+      "voice-cloning-without-consent",
+      "nsfw-audio",
+      "live-streaming-podcast"
+    ]
   },
 
   "stack": {
@@ -43,12 +54,7 @@
       "tailwindcss",
       "hono"
     ],
-    "forbiddenDependencies": [
-      "jquery",
-      "axios",
-      "lodash",
-      "moment"
-    ]
+    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
   },
 
   "components": [
@@ -79,9 +85,7 @@
       "noForbiddenImports",
       "noUnusedImports"
     ],
-    "buildCommands": [
-      "tsc --noEmit"
-    ]
+    "buildCommands": ["tsc --noEmit"]
   },
 
   "model": {

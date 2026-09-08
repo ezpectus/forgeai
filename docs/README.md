@@ -21,6 +21,7 @@ Welcome to the ForgeAI docs. These documents are intended for contributors, deve
 ## For End Users
 
 If you just want to use ForgeAI, start with the [README](../README.md). It covers:
+
 - What ForgeAI does
 - How to install and run it
 - Where to get API keys
@@ -32,6 +33,7 @@ If you just want to use ForgeAI, start with the [README](../README.md). It cover
 ## For Contributors
 
 If you want to contribute, read:
+
 1. [vision.md](vision.md) — understand the project
 2. [system-design.md](system-design.md) — understand the architecture
 3. [CONTRIBUTING.md](../CONTRIBUTING.md) — setup, code style, PR rules
