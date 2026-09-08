@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { SSEClient } from '@/lib/sse'
+import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
 
 const models = [
@@ -24,7 +26,17 @@ const models = [
 
 export function PromptInput() {
   const { openrouter, huggingface } = useKeys()
-  const { setPrompt, setStatus, setError, status } = useProject()
+  const {
+    setPrompt,
+    setStatus,
+    setError,
+    setIntent,
+    addComponent,
+    updateComponent,
+    setCost,
+    reset,
+    status,
+  } = useProject()
 
   const [prompt, setPromptLocal] = useState('')
   const [model, setModel] = useState(models[0].value)
@@ -40,25 +52,64 @@ export function PromptInput() {
   async function handleGenerate() {
     if (!prompt.trim() || !hasKeys) return
 
-    setPrompt(prompt.trim())
+    const trimmed = prompt.trim()
+    setPromptLocal(trimmed)
+    setPrompt(trimmed)
+    reset()
     setStatus('generating')
     setError(null)
 
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, model }),
-      })
+    const client = new SSEClient()
+    await client.connect(
+      '/api/generate',
+      {
+        prompt: trimmed,
+        model,
+        token: openrouter ?? '',
+      },
+      (event, data) => {
+        if (event === 'intent') {
+          setIntent(data as IntentResult)
+        }
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Unknown error' }))
-        throw new Error(data.error)
+        if (event === 'component') {
+          const component = data as ComponentState
+          const existing = useProject
+            .getState()
+            .components.find((c) => c.name === component.name)
+
+          if (existing) {
+            updateComponent(component.name, component)
+          } else {
+            addComponent(component)
+          }
+
+          if (component.status === 'ready' && component.cost) {
+            const current = useProject.getState().cost
+            setCost(current + component.cost)
+          }
+        }
+
+        if (event === 'done') {
+          setStatus('ready')
+        }
+
+        if (event === 'error') {
+          const { message } = data as { message: string }
+          setStatus('error')
+          setError(message)
+        }
+      },
+      (err) => {
+        setStatus('error')
+        setError(err.message)
+      },
+      () => {
+        if (useProject.getState().status === 'generating') {
+          setStatus('ready')
+        }
       }
-    } catch (err) {
-      setStatus('error')
-      setError(err instanceof Error ? err.message : 'Generation failed')
-    }
+    )
   }
 
   return (

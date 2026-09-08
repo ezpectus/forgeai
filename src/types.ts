@@ -18,6 +18,7 @@ export interface ComponentState {
   code: string
   status: ComponentStatus
   version: number
+  cost?: number
   error?: string
 }
 
@@ -28,6 +29,7 @@ export interface ProjectState {
   components: ComponentState[]
   status: ProjectStatus
   deployUrl: string | null
+  cost: number
   error: string | null
 }
 

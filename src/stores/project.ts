@@ -8,6 +8,7 @@ export type ProjectStore = ProjectState & {
   updateComponent: (name: string, updates: Partial<ComponentState>) => void
   setStatus: (status: ProjectState['status']) => void
   setDeployUrl: (url: string | null) => void
+  setCost: (cost: number) => void
   setError: (error: string | null) => void
   reset: () => void
 }
@@ -19,6 +20,7 @@ const initialState: ProjectState = {
   components: [],
   status: 'idle',
   deployUrl: null,
+  cost: 0,
   error: null,
 }
 
@@ -42,6 +44,8 @@ export const useProject = create<ProjectStore>((set, get) => ({
   setStatus: (status) => set({ status }),
 
   setDeployUrl: (deployUrl) => set({ deployUrl }),
+
+  setCost: (cost) => set({ cost }),
 
   setError: (error) => set({ error }),
 

@@ -98,5 +98,6 @@ export async function generateComponent(
     code: result.code,
     status: 'ready',
     version: 1,
+    cost: result.cost,
   }
 }

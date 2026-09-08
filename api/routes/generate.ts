@@ -102,6 +102,7 @@ app.post('/', async (c) => {
             name: componentName,
             code: result.code,
             status: result.status,
+            cost: result.cost,
             error: result.error,
           })
           components.push(result)

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
+import { GenerationProgress } from '@/components/generate/GenerationProgress'
 import { PromptInput } from '@/components/prompt/PromptInput'
+import { useProject } from '@/stores/project'
 import { cn } from '@/lib/utils'
 
 export function MainArea({
@@ -9,6 +11,8 @@ export function MainArea({
   children?: ReactNode
   className?: string
 }) {
+  const { status } = useProject()
+
   return (
     <main
       className={cn(
@@ -16,7 +20,8 @@ export function MainArea({
         className
       )}
     >
-      {children ?? <PromptInput />}
+      {children ??
+        (status === 'generating' ? <GenerationProgress /> : <PromptInput />)}
     </main>
   )
 }
