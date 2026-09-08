@@ -1,6 +1,13 @@
 import { Hono } from 'hono'
+import type { AIProvider } from '@/types'
+import { HuggingFace } from '@/plugins/providers/huggingface'
 import { OpenRouter } from '@/plugins/providers/openrouter'
 import type { AppEnv } from '../lib/env'
+
+const PROVIDERS: Record<string, AIProvider> = {
+  openrouter: OpenRouter,
+  huggingface: HuggingFace,
+}
 
 const app = new Hono<AppEnv>()
 
@@ -12,7 +19,9 @@ app.get('/', async (c) => {
     return c.json({ status: 'ok' })
   }
 
-  if (provider !== 'openrouter') {
+  const service = PROVIDERS[provider]
+
+  if (!service) {
     return c.json({ status: 'error', error: 'Provider not available' }, 503)
   }
 
@@ -23,7 +32,7 @@ app.get('/', async (c) => {
     )
   }
 
-  const ok = await OpenRouter.health(auth)
+  const ok = await service.health(auth)
 
   if (!ok) {
     return c.json(
