@@ -30,6 +30,28 @@ app.use(corsMiddleware)
 app.use(rateLimitMiddleware)
 app.use(authMiddleware)
 
+app.get('/', (c) =>
+  c.json({
+    message: 'ForgeAI API',
+    version: '1.0.0',
+    endpoints: {
+      health: 'GET /api/health',
+      models: 'GET /api/models?provider=openrouter|gemini|huggingface',
+      templates: 'GET /api/templates',
+      generate: 'POST /api/generate',
+      component: 'POST /api/generate/component',
+      export: 'POST /api/export',
+      dbBind: 'POST /api/db/bind',
+      deploy: 'POST /api/deploy',
+      deployStatus: 'GET /api/deploy/:id/status?provider=vercel|e2b',
+    },
+  })
+)
+
+app.notFound((c) =>
+  c.json({ error: 'Not Found', path: c.req.path }, 404)
+)
+
 app.route('/api/health', healthRoute)
 app.route('/api/models', modelsRoute)
 app.route('/api/templates', templatesRoute)
