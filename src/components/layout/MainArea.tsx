@@ -1,13 +1,40 @@
+'use client'
+
 import type { ReactNode } from 'react'
-import { EditorOverlay } from '@/components/editor/EditorOverlay'
-import { CustomizePanel } from '@/components/gallery/CustomizePanel'
-import { GalleryView } from '@/components/gallery/GalleryView'
-import { GenerationProgress } from '@/components/generate/GenerationProgress'
-import { LivePreview } from '@/components/preview/LivePreview'
+import dynamic from 'next/dynamic'
 import { PromptInput } from '@/components/prompt/PromptInput'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { cn } from '@/lib/utils'
+
+const CustomizePanel = dynamic(
+  () =>
+    import('@/components/gallery/CustomizePanel').then((m) => m.CustomizePanel)
+)
+const GalleryView = dynamic(
+  () =>
+    import('@/components/gallery/GalleryView').then((mod) => ({
+      default: mod.GalleryView,
+    }))
+)
+const GenerationProgress = dynamic(
+  () =>
+    import('@/components/generate/GenerationProgress').then((mod) => ({
+      default: mod.GenerationProgress,
+    }))
+)
+const LivePreview = dynamic(
+  () =>
+    import('@/components/preview/LivePreview').then((mod) => ({
+      default: mod.LivePreview,
+    }))
+)
+const EditorOverlay = dynamic(
+  () =>
+    import('@/components/editor/EditorOverlay').then((mod) => ({
+      default: mod.EditorOverlay,
+    }))
+)
 
 export function MainArea({
   children,

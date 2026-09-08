@@ -143,6 +143,8 @@ export default config
 const nextConfig = {
   output: 'export',
   distDir: 'dist',
+  images: { unoptimized: true },
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig
@@ -234,6 +236,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

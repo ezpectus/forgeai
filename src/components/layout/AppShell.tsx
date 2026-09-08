@@ -1,10 +1,24 @@
 import type { ReactNode } from 'react'
-import { EditPanel } from '@/components/editor/EditPanel'
-import { SettingsDialog } from '@/components/settings/SettingsDialog'
+import dynamic from 'next/dynamic'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { MainArea } from './MainArea'
 import { StatusBar } from './StatusBar'
+
+const EditPanel = dynamic(
+  () =>
+    import('@/components/editor/EditPanel').then((mod) => ({
+      default: mod.EditPanel,
+    })),
+  { ssr: false }
+)
+const SettingsDialog = dynamic(
+  () =>
+    import('@/components/settings/SettingsDialog').then((mod) => ({
+      default: mod.SettingsDialog,
+    })),
+  { ssr: false }
+)
 
 export function AppShell({ children }: { children?: ReactNode }) {
   return (
