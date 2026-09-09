@@ -1,4 +1,50 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import type { ComponentState, DeployFiles, IntentResult } from '@/types'
+
+function getHostVersions() {
+  try {
+    const raw = readFileSync(join(process.cwd(), 'package.json'), 'utf-8')
+    const pkg = JSON.parse(raw) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+    const deps = pkg.dependencies ?? {}
+    const devDeps = pkg.devDependencies ?? {}
+
+    return {
+      next: deps.next ?? '16.3.4',
+      react: deps.react ?? '^18.3.1',
+      'react-dom': deps['react-dom'] ?? '^18.3.1',
+      'lucide-react': deps['lucide-react'] ?? '^0.439.0',
+      zustand: deps.zustand ?? '^4.5.0',
+      '@supabase/supabase-js': deps['@supabase/supabase-js'] ?? '^2.45.0',
+      '@types/node': devDeps['@types/node'] ?? '^20.14.0',
+      '@types/react': devDeps['@types/react'] ?? '^18.3.0',
+      '@types/react-dom': devDeps['@types/react-dom'] ?? '^18.3.0',
+      typescript: devDeps.typescript ?? '^5.5.0',
+      tailwindcss: devDeps.tailwindcss ?? '^3.4.10',
+      postcss: devDeps.postcss ?? '^8.4.40',
+      autoprefixer: devDeps.autoprefixer ?? '^10.4.20',
+    }
+  } catch {
+    return {
+      next: '16.3.4',
+      react: '^18.3.1',
+      'react-dom': '^18.3.1',
+      'lucide-react': '^0.439.0',
+      zustand: '^4.5.0',
+      '@supabase/supabase-js': '^2.45.0',
+      '@types/node': '^20.14.0',
+      '@types/react': '^18.3.0',
+      '@types/react-dom': '^18.3.0',
+      typescript: '^5.5.0',
+      tailwindcss: '^3.4.10',
+      postcss: '^8.4.40',
+      autoprefixer: '^10.4.20',
+    }
+  }
+}
 
 /**
  * Turn the analyzed intent and validated component code into a complete,
@@ -11,6 +57,7 @@ export function assembleProject(
   projectId: string
 ): DeployFiles {
   const files: DeployFiles = {}
+  const versions = getHostVersions()
 
   const sectionComponents = intent.sections
     .map((section) => {
@@ -44,21 +91,21 @@ export function assembleProject(
         start: 'next start',
       },
       dependencies: {
-        next: '14.2.5',
-        react: '^18.3.1',
-        'react-dom': '^18.3.1',
-        'lucide-react': '^0.439.0',
-        zustand: '^4.5.0',
-        '@supabase/supabase-js': '^2.45.0',
+        next: versions.next,
+        react: versions.react,
+        'react-dom': versions['react-dom'],
+        'lucide-react': versions['lucide-react'],
+        zustand: versions.zustand,
+        '@supabase/supabase-js': versions['@supabase/supabase-js'],
       },
       devDependencies: {
-        '@types/node': '^20.14.0',
-        '@types/react': '^18.3.0',
-        '@types/react-dom': '^18.3.0',
-        typescript: '^5.5.0',
-        tailwindcss: '^3.4.10',
-        postcss: '^8.4.40',
-        autoprefixer: '^10.4.20',
+        '@types/node': versions['@types/node'],
+        '@types/react': versions['@types/react'],
+        '@types/react-dom': versions['@types/react-dom'],
+        typescript: versions.typescript,
+        tailwindcss: versions.tailwindcss,
+        postcss: versions.postcss,
+        autoprefixer: versions.autoprefixer,
       },
     },
     null,
