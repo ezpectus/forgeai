@@ -54,7 +54,6 @@ export function ProjectsDialog() {
     })
     const data = (await res.json()) as { url?: string; error?: string }
     if (!res.ok || !data.url) {
-      // eslint-disable-next-line no-console
       console.error(data.error ?? 'Deploy failed')
       return
     }

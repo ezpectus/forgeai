@@ -12,8 +12,6 @@
  *   // security-scan:ignore <reason>
  */
 
-/* eslint-disable no-console */
-
 import { readFile, readdir } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 

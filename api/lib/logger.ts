@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 export const log = {
   info(...args: unknown[]) {
     if (process.env.NODE_ENV === 'test') return

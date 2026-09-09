@@ -44,7 +44,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -62,11 +62,11 @@
     "@supabase/supabase-js": "^2.45.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "esbuild": "^0.23.0",
+    "esbuild": "^0.25.0",
     "hono": "^4.5.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.439.0",
-    "next": "14.2.5",
+    "next": "16.3.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.0",
@@ -77,18 +77,28 @@
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
     "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.3.4",
     "estree-walker": "^2.0.2",
     "lighthouse": "^13.4.1",
-    "postcss": "^8.4.40",
+    "postcss": "^8.5.23",
     "prettier": "^3.3.0",
     "tailwindcss": "^3.4.10",
     "tsx": "^4.17.0",
     "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.23"
+    },
+    "@next/eslint-plugin-next": {
+      "glob": "^10.5.0"
+    },
+    "vitest": {
+      "vite": "^6.4.3"
+    }
   },
   "engines": {
     "node": ">=18.18.0",
