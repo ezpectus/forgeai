@@ -3,6 +3,43 @@ import { regenerateComponent } from '@/lib/generate-component'
 import type { AppEnv } from '../lib/env'
 import type { ComponentSpec } from '@/types'
 
+async function loadTemplateConfig(templateId: string): Promise<ComponentSpec> {
+  const { readFile } = await import('fs/promises')
+  const { join } = await import('path')
+
+  const configPath = join(process.cwd(), 'configs/templates', `${templateId}.json`)
+  try {
+    const raw = await readFile(configPath, 'utf-8')
+    return JSON.parse(raw) as ComponentSpec
+  } catch {
+    // Not in the built-in config directory; try the public gallery index.
+  }
+
+  try {
+    const indexRaw = await readFile(
+      join(process.cwd(), 'public/templates/index.json'),
+      'utf-8'
+    )
+    const index = JSON.parse(indexRaw) as Array<{
+      id: string
+      path: string
+    }>
+    const item = index.find((i) => i.id === templateId)
+    if (item) {
+      const raw = await readFile(join(process.cwd(), 'public', item.path), 'utf-8')
+      return JSON.parse(raw) as ComponentSpec
+    }
+  } catch {
+    // Index missing or unreadable; fall through to the default website config.
+  }
+
+  const raw = await readFile(
+    join(process.cwd(), 'configs/templates/website.json'),
+    'utf-8'
+  )
+  return JSON.parse(raw) as ComponentSpec
+}
+
 const app = new Hono<AppEnv>()
 
 app.post('/', async (c) => {
@@ -24,13 +61,7 @@ app.post('/', async (c) => {
   const templateId = body.templateId ?? 'website'
 
   try {
-    const { readFile } = await import('fs/promises')
-    const { join } = await import('path')
-    const raw = await readFile(
-      join(process.cwd(), 'configs/templates', `${templateId}.json`),
-      'utf-8'
-    )
-    const config = JSON.parse(raw) as ComponentSpec
+    const config = await loadTemplateConfig(templateId)
 
     const result = await regenerateComponent(
       config,

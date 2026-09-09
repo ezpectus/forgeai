@@ -24,6 +24,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     addComponent,
     updateComponent,
     setProjectId,
+    setTemplateId,
     setCost,
     setGenerationClient,
     reset,
@@ -48,6 +49,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     if (!prompt.trim()) return
 
     reset()
+    setTemplateId(templateId)
     setStatus('generating')
     setError(null)
     setLoading(true)

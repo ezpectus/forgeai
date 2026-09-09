@@ -10,7 +10,10 @@ import {
   ChevronUp,
   Copy,
   Check,
+  RefreshCw,
 } from 'lucide-react'
+import { useProject } from '@/stores/project'
+import { useKeys } from '@/stores/keys'
 import type { ComponentState } from '@/types'
 
 const statusIcons = {
@@ -36,6 +39,9 @@ export function ComponentStatusRow({
 }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [retrying, setRetrying] = useState(false)
+  const { projectId, prompt, templateId, updateComponent } = useProject()
+  const { openrouter, huggingface, gemini } = useKeys()
   const Icon = statusIcons[component.status]
   const isSpinning = component.status === 'generating'
 
@@ -44,6 +50,58 @@ export function ComponentStatusRow({
     await navigator.clipboard.writeText(component.code)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  async function handleRetry() {
+    if (!projectId || retrying) return
+
+    setRetrying(true)
+    updateComponent(component.name, {
+      status: 'generating',
+      error: undefined,
+    })
+
+    try {
+      const instruction = `Original request: ${prompt}. Regenerate the ${component.name} section to fix: ${component.error || 'unknown error'}.`
+      const res = await fetch('/api/generate/component', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          componentName: component.name,
+          currentCode: component.code,
+          instruction,
+          templateId: templateId || 'website',
+          auth: { openrouter, huggingface, gemini },
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Retry failed')
+      }
+
+      const updated = data.component as ComponentState
+      updateComponent(component.name, {
+        ...updated,
+        status: updated.status,
+        cost: updated.cost,
+        error: updated.error,
+      })
+
+      if (updated.cost !== undefined) {
+        const current = useProject.getState().cost
+        const oldCost = component.cost ?? 0
+        useProject.getState().setCost(current - oldCost + updated.cost)
+      }
+    } catch (err) {
+      updateComponent(component.name, {
+        status: 'error',
+        error: err instanceof Error ? err.message : String(err),
+      })
+    } finally {
+      setRetrying(false)
+    }
   }
 
   return (
@@ -62,36 +120,54 @@ export function ComponentStatusRow({
             </span>
           )}
         </div>
-        {component.code && (
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1">
+          {component.status === 'error' && projectId && (
             <button
               type="button"
-              onClick={handleCopy}
-              title="Copy code"
-              aria-label="Copy code"
-              className="text-muted-foreground hover:text-foreground"
+              onClick={handleRetry}
+              disabled={retrying}
+              title="Retry this component"
+              aria-label="Retry this component"
+              className="text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
-              {copied ? (
-                <Check className="h-4 w-4 text-success" />
+              {retrying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Copy className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
               )}
             </button>
-            <button
-              type="button"
-              onClick={() => setOpen(!open)}
-              title={open ? 'Hide code' : 'Show code'}
-              aria-label={open ? 'Hide code' : 'Show code'}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {open ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-        )}
+          )}
+          {component.code && (
+            <>
+              <button
+                type="button"
+                onClick={handleCopy}
+                title="Copy code"
+                aria-label="Copy code"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-success" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(!open)}
+                title={open ? 'Hide code' : 'Show code'}
+                aria-label={open ? 'Hide code' : 'Show code'}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {open ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </div>
       {component.error && (
         <p className="mt-1 text-sm text-destructive">{component.error}</p>

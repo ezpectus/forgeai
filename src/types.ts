@@ -38,6 +38,8 @@ export interface ProjectState {
   generationClient: Cancellable | null
   /** Timestamp used by GenerationError to request a regeneration in PromptInput. */
   regenerateAt: number
+  /** Template / mode used to generate the project (e.g. 'website', 'slides'). */
+  templateId: string | null
 }
 
 export interface ProjectRecord {

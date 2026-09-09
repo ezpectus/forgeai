@@ -7,6 +7,7 @@ export type ProjectStore = ProjectState & {
   addComponent: (component: ComponentState) => void
   updateComponent: (name: string, updates: Partial<ComponentState>) => void
   setProjectId: (id: string | null) => void
+  setTemplateId: (templateId: string | null) => void
   setStatus: (status: ProjectState['status']) => void
   setDeployUrl: (url: string | null) => void
   setCost: (cost: number) => void
@@ -27,6 +28,7 @@ const initialState: ProjectState = {
   error: null,
   generationClient: null,
   regenerateAt: 0,
+  templateId: null,
 }
 
 // Zustand store that holds the current generation's state: prompt, intent,
@@ -49,6 +51,8 @@ export const useProject = create<ProjectStore>((set, get) => ({
     }),
 
   setProjectId: (projectId) => set({ projectId }),
+
+  setTemplateId: (templateId) => set({ templateId }),
 
   setStatus: (status) => set({ status }),
 

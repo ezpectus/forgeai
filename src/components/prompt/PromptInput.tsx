@@ -36,6 +36,7 @@ export function PromptInput() {
     addComponent,
     updateComponent,
     setProjectId,
+    setTemplateId,
     setCost,
     setGenerationClient,
     reset,
@@ -88,6 +89,7 @@ export function PromptInput() {
     setPromptLocal(trimmed)
     setPrompt(trimmed)
     reset()
+    setTemplateId(activeMode)
     setStatus('generating')
     setError(null)
     setChecking(true)
