@@ -71,7 +71,13 @@ export function MainArea({
 
   let content = <PromptInput />
 
-  if (status === 'generating') {
+  // Navigation (gallery / customize) must take priority over a ready project,
+  // otherwise the user can never start a new template after generation.
+  if (customizeTemplateId) {
+    content = <CustomizePanel templateId={customizeTemplateId} />
+  } else if (galleryOpen) {
+    content = <GalleryView onSelect={(id) => openCustomize(id)} />
+  } else if (status === 'generating') {
     content = <GenerationProgress />
   } else if (status === 'ready' && deployUrl) {
     content = (
@@ -85,10 +91,6 @@ export function MainArea({
     )
   } else if (status === 'ready') {
     content = <GenerationSuccess />
-  } else if (customizeTemplateId) {
-    content = <CustomizePanel templateId={customizeTemplateId} />
-  } else if (galleryOpen) {
-    content = <GalleryView onSelect={(id) => openCustomize(id)} />
   }
 
   return (
