@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings Test button is now hidden for Supabase and Vercel since `/api/health` only supports AI providers.
 - Settings Test uses the same cached `checkProviderHealth()` as the generation flow, so rapid test clicks and Generate share results.
 - Model dropdown preserves the selected model when switching providers if that model also exists in the new list; otherwise it selects the first available model.
+- `MainArea` now prioritizes the gallery and customize panel over the ready/success state so users can start a new template after generation.
 
 ### Changed
 
