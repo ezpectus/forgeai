@@ -61,3 +61,6 @@ test-results/
 # Misc
 *.zip
 *.tar.gz
+
+# Runtime reference docs (extracted for local use)
+runtime-docs/
