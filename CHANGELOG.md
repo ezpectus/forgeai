@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ComponentStatusRow` copy and expand buttons now have `title` and `aria-label`.
 - `ModelSelector` provider and model dropdowns now have `aria-label`.
 - `ProjectsDialog` empty state now shows a friendly icon and message; delete button has `aria-label`.
+- `GalleryView` template cards, rating stars, search input and type filter now have `aria-label`.
 - `SettingsForm` help links and clear-key buttons now have `aria-label`.
 - `MainArea` announces view changes via a dedicated screen-reader-only `aria-live` region.
 - Last prompt draft is persisted in `localStorage` and restored in `PromptInput`.
