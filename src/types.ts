@@ -96,6 +96,7 @@ export interface SectionIntent {
   priority: number
   requiresForm?: boolean
   requiresImages?: boolean
+  page?: string
 }
 
 // ------------------------------------------------------------------------

@@ -15,7 +15,8 @@ Schema: {
       "description": "...",
       "priority": 1,
       "requiresForm": false,
-      "requiresImages": false
+      "requiresImages": false,
+      "page": "index"
     }
   ],
   "palette": "...",
@@ -50,6 +51,8 @@ function asSection(raw: unknown): SectionIntent | null {
     priority: typeof r.priority === 'number' ? r.priority : 0,
     requiresForm: r.requiresForm === true,
     requiresImages: r.requiresImages === true,
+    page:
+      typeof r.page === 'string' && r.page ? (r.page as string) : 'index',
   }
 }
 
@@ -61,18 +64,21 @@ const DEFAULT_INTENT: IntentResult = {
       type: 'hero',
       description: 'Main headline and call to action',
       priority: 1,
+      page: 'index',
     },
     {
       name: 'features',
       type: 'features',
       description: 'Key selling points',
       priority: 2,
+      page: 'index',
     },
     {
       name: 'pricing',
       type: 'pricing',
       description: 'Pricing plans',
       priority: 3,
+      page: 'index',
     },
     {
       name: 'contact-form',
@@ -80,12 +86,14 @@ const DEFAULT_INTENT: IntentResult = {
       description: 'Contact or booking form',
       priority: 4,
       requiresForm: true,
+      page: 'index',
     },
     {
       name: 'footer',
       type: 'footer',
       description: 'Footer with links and copyright',
       priority: 5,
+      page: 'index',
     },
   ],
   palette: 'slate-blue',

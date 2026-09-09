@@ -19,6 +19,7 @@ export function assembleProject(
       if (!component || component.status !== 'ready') return null
       return {
         name,
+        page: section.page ?? 'index',
         code: component.code.replace(
           /<img\b([^>]*)>/gi,
           (_match: string, attrs: string) => {
@@ -30,7 +31,7 @@ export function assembleProject(
         ),
       }
     })
-    .filter(Boolean) as { name: string; code: string }[]
+    .filter(Boolean) as { name: string; page: string; code: string }[]
 
   files['package.json'] = JSON.stringify(
     {
@@ -218,6 +219,7 @@ module.exports = nextConfig
 
   files['src/app/layout.tsx'] = `import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Nav } from '@/components/Nav'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -263,28 +265,76 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Nav />
+        {children}
+      </body>
     </html>
   )
 }
 `
 
-  const imports = sectionComponents
-    .map((c) => `import ${c.name} from './components/sections/${c.name}'`)
-    .join('\n')
+  const pages = Array.from(new Set([...(intent.pages ?? []), ...sectionComponents.map((c) => c.page)]))
 
-  const rendered = sectionComponents
-    .map(
-      (c) =>
-        `      <div data-component="${c.name}" onClick={() => window.parent.postMessage({ action: 'select', component: '${c.name}' }, '*')}>\n        <${c.name} />\n      </div>`
-    )
-    .join('\n')
+  function pagePath(page: string) {
+    return page === 'index' ? 'src/app/page.tsx' : `src/app/${page}/page.tsx`
+  }
+
+  function pageRoute(page: string) {
+    return page === 'index' ? '/' : `/${page}`
+  }
+
+  files['src/components/Nav.tsx'] = `'use client'
+
+export function Nav() {
+  const pages = ${JSON.stringify(pages)}
+  const labels: Record<string, string> = { index: 'Home' }
+  for (const page of pages) {
+    if (page !== 'index') labels[page] = page.charAt(0).toUpperCase() + page.slice(1)
+  }
+
+  return (
+    <nav className="border-b bg-background px-6 py-3">
+      <ul className="flex gap-4">
+        {pages.map((page) => (
+          <li key={page}>
+            <a
+              href={page === 'index' ? '/' : \`/\${page}\`}
+              className="text-sm font-medium text-foreground hover:text-primary"
+            >
+              {labels[page] ?? page}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+`
 
   const formHandler = intent.dbRequired
     ? "\nimport { FormHandler } from '@/components/FormHandler'\n"
     : ''
 
   const formHandlerNode = intent.dbRequired ? '      <FormHandler />\n' : ''
+
+  function buildImports(sections: typeof sectionComponents) {
+    return sections
+      .map((c) => `import ${c.name} from '../components/sections/${c.name}'`)
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .join('\n')
+  }
+
+  function buildRendered(sections: typeof sectionComponents) {
+    return sections
+      .map(
+        (c) =>
+          `      <div data-component="${c.name}" onClick={() => window.parent.postMessage({ action: 'select', component: '${c.name}' }, '*')}>
+        <${c.name} />
+      </div>`
+      )
+      .join('\n')
+  }
 
   files['src/lib/analytics.ts'] = `export interface AnalyticsEvent {
   id: string
@@ -325,19 +375,35 @@ export function trackFormSubmit(formName: string) {
 }
 `
 
-  files['src/app/page.tsx'] =
-    `'use client'\n\nimport { useEffect } from 'react'\n${imports}${formHandler}\nimport { trackPageView, trackFormSubmit } from '@/lib/analytics'\n\nexport default function HomePage() {\n  useEffect(() => {\n    trackPageView('/')\n  }, [])\n\n  function handleFormSubmit(name: string) {\n    trackFormSubmit(name)\n  }\n\n  return (\n    <main className="min-h-screen" onSubmit={(e) => {\n      const form = e.target as HTMLFormElement\n      if (form.dataset.form) handleFormSubmit(form.dataset.form)\n    }}>\n${rendered}${formHandlerNode}    </main>\n  )\n}\n`
+  for (const page of pages) {
+    const sectionsForPage = sectionComponents.filter((c) => c.page === page)
+    const pageImports = buildImports(sectionsForPage)
+    const pageRendered = buildRendered(sectionsForPage)
+    const path = pagePath(page)
+    const route = pageRoute(page)
+    const pageName =
+      page === 'index' ? 'HomePage' : `${page.charAt(0).toUpperCase() + page.slice(1)}Page`
+
+    files[path] =
+      `'use client'\n\nimport { useEffect } from 'react'\n${pageImports}${formHandler}\nimport { trackPageView, trackFormSubmit } from '@/lib/analytics'\n\nexport default function ${pageName}() {\n  useEffect(() => {\n    trackPageView('${route}')\n  }, [])\n\n  function handleFormSubmit(name: string) {\n    trackFormSubmit(name)\n  }\n\n  return (\n    <main className="min-h-screen" onSubmit={(e) => {\n      const form = e.target as HTMLFormElement\n      if (form.dataset.form) handleFormSubmit(form.dataset.form)\n    }}>\n${pageRendered}${formHandlerNode}    </main>\n  )\n}\n`
+  }
+
+  const sitemapEntries = pages
+    .map(
+      (page) => `    {
+      url: '${siteUrl}${pageRoute(page)}',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: ${page === 'index' ? 1 : 0.8},
+    }`
+    )
+    .join(',\n')
 
   files['src/app/sitemap.ts'] = `import type { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
-    {
-      url: '${siteUrl}',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
+${sitemapEntries}
   ]
 }
 `
