@@ -73,7 +73,8 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
       setModels(list)
 
       const first = list[0]?.id
-      if (first && (!model || provider !== 'auto')) {
+      const currentValid = list.some((m) => m.id === model)
+      if (first && !currentValid && provider !== 'auto') {
         onChange(provider, first)
       }
     } catch (err) {
