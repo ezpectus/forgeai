@@ -8,8 +8,9 @@
 
 ```mermaid
 flowchart TB
-    subgraph Browser["Browser (Next.js 14 + Tailwind)"]
+    subgraph Browser["Browser (Next.js 16 + Tailwind)"]
         UI["Prompt Input, Settings, Template Gallery"]
+        Progress["Live Progress (steps + elapsed time)"]
         Preview["Live Preview (iframe)"]
         Editor["Visual Editor Overlay"]
         Export["ZIP Export"]

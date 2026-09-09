@@ -64,6 +64,9 @@ The agent follows a three-phase workflow:
 | Modern dark mode            | ✅ Done    | Reworked dark palette with a brand accent                                                        |
 | Cancel generation           | ✅ Done    | Stop a running stream from the progress UI                                                       |
 | Post-generation success     | ✅ Done    | Summary, component list, export, deploy and "new project" in one screen                         |
+| Prompt validation           | ✅ Done    | Live character count, min-length hint and 2000-character limit                                  |
+| Example prompt cards        | ✅ Done    | Clickable mini-cards with mode-aware suggestions                                                |
+| Generation progress steps   | ✅ Done    | Live step label (Analyzing → Building → Assembling) and elapsed timer                           |
 | Health check cache          | ✅ Done    | Caches provider health results for 30s so repeated clicks do not waste quota                     |
 | Visual editor overlay       | ✅ v1.0    | Live preview iframe with selection and edit triggers                                             |
 | Differential prompting      | ✅ v1.0    | Sends only the changed component on re-generation                                              |
@@ -98,14 +101,14 @@ Step 2: Component Generation (parallel, each from its own config spec)
 Step 3: Validation
   → esbuild parses each component
   → AST check: default export? no forbidden imports? no XSS? has Tailwind classes?
-  → If any fail → auto-retry with the exact error message (max 2 retries)
 
-Step 4: Assembly
-  → All components → page.tsx with imports
-  → package.json, tailwind.config, tsconfig, globals.css
+Step 4: Live Progress
+  → Browser shows the current step, elapsed time and per-component status in real time via SSE.
 
-Step 5: Deploy
+Step 5: Assembly & Deploy
+  → All components → page.tsx, package.json, tailwind.config, tsconfig, globals.css
   → Vercel Build API or E2B sandbox → live URL
+  → If any component fails → auto-retry with the exact error message
 
 Step 6: DB Binding (if forms detected)
   → SQL schema generated → Supabase tables created → form wired up

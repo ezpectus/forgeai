@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- No unreleased changes yet.
+- `PromptInput` now shows a benefit-first headline, a richer placeholder, live character count with a 2000-character limit and a minimum-length hint.
+- `ExampleChips` are now rendered as clickable mini-cards with a Sparkles icon and accessible `aria-label`.
+- `GenerationProgress` now displays the current step label (`Analyzing`, `Generating <component>`, `Assembling project`) and an elapsed timer.
 
 ## [1.1.0] - 2026-09-09
 

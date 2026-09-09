@@ -2,6 +2,8 @@
 
 Полный список фич, которые должны быть в проекте. Всё что есть у закрытых конкурентов — но open-source, с BYOK.
 
+> **v1.1 status:** Multi-model fallback, pre-generation health check, My Projects history, Reports dashboard, multi-page generation, prompt validation, example prompt cards and live generation progress are already shipped. See `internal/roadmap-v1.2.md` for the 50-task plan toward v1.2.
+
 ---
 
 ## 1. Output Types (Что генерирует агент)
