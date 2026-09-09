@@ -181,9 +181,25 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         className="min-h-[120px] resize-none"
       />
 
-      <p id="customize-hint" className="text-xs text-muted-foreground">
-        Ctrl / Cmd + Enter to customize
-      </p>
+      <div
+        id="customize-hint"
+        className="flex items-center justify-between text-xs text-muted-foreground"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setPromptLocal('')
+            setPrompt('')
+          }}
+          disabled={!prompt}
+          aria-label="Clear customization prompt"
+          className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-0"
+        >
+          <X className="h-3 w-3" />
+          Clear
+        </button>
+        <span>Ctrl / Cmd + Enter to customize</span>
+      </div>
 
       <ModelSelector
         provider={provider}
