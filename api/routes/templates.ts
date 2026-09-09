@@ -137,6 +137,7 @@ app.post('/:id/customize', async (c) => {
             config,
             componentName,
             auth,
+            intent,
             preferred
           )
 
@@ -159,7 +160,8 @@ app.post('/:id/customize', async (c) => {
                 componentName,
                 result.code,
                 validation.errors,
-                auth
+                auth,
+                intent
               )
             }
           }

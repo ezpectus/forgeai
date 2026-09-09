@@ -111,6 +111,7 @@ app.post('/', async (c) => {
             config,
             componentName,
             auth,
+            intent,
             preferred
           )
 
@@ -133,7 +134,8 @@ app.post('/', async (c) => {
                 componentName,
                 result.code,
                 validation.errors,
-                auth
+                auth,
+                intent
               )
             }
           }

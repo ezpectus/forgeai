@@ -1,6 +1,5 @@
 import { readFile } from 'fs/promises'
 import { join } from 'path'
-import { analyzeIntent } from './intent'
 import { callWithFallback } from './fallback'
 import { buildSystemPrompt, buildUserPrompt } from './prompt-builder'
 import { HuggingFace } from '@/plugins/providers/huggingface'
@@ -46,40 +45,6 @@ function buildChain(
   return chain
 }
 
-const DEFAULT_INTENT: IntentResult = {
-  type: 'landing',
-  sections: [
-    { name: 'hero', type: 'hero', description: 'Hero section', priority: 1 },
-    {
-      name: 'features',
-      type: 'features',
-      description: 'Features section',
-      priority: 2,
-    },
-    {
-      name: 'pricing',
-      type: 'pricing',
-      description: 'Pricing section',
-      priority: 3,
-    },
-    {
-      name: 'contact-form',
-      type: 'contact-form',
-      description: 'Contact form',
-      priority: 4,
-      requiresForm: true,
-    },
-    { name: 'footer', type: 'footer', description: 'Footer', priority: 5 },
-  ],
-  palette: 'slate-blue',
-  dbRequired: true,
-  dbForms: ['contact-form'],
-  pages: ['index'],
-  audience: 'general',
-  tone: 'professional',
-  style: 'modern',
-}
-
 /**
  * Generate a single component (e.g. Hero, Features) from a template config,
  * using the user's fallback chain of AI providers.
@@ -89,6 +54,7 @@ export async function generateComponent(
   config: ComponentSpec,
   componentName: string,
   auth: Record<string, string>,
+  intent: IntentResult,
   preferred?: { provider: string; model: string }
 ): Promise<ComponentState> {
   const filePath = join(process.cwd(), 'configs/templates', `${config.id}.json`)
@@ -96,11 +62,6 @@ export async function generateComponent(
   const template = JSON.parse(raw) as ComponentSpec
 
   const systemPrompt = buildSystemPrompt(template, componentName)
-  const hasAnyKey =
-    Boolean(auth.openrouter) ||
-    Boolean(auth.huggingface) ||
-    Boolean(auth.gemini)
-  const intent = hasAnyKey ? await analyzeIntent(prompt, auth) : DEFAULT_INTENT
 
   const userPrompt = buildUserPrompt(intent, componentName, prompt)
   const chain = buildChain(auth, preferred)

@@ -1,6 +1,6 @@
 import { generateComponent } from './generate-component'
 import { validateComponent } from './validate'
-import type { ComponentSpec, ComponentState } from '@/types'
+import type { ComponentSpec, ComponentState, IntentResult } from '@/types'
 
 /**
  * Re-generate a component that failed validation, feeding the exact errors back
@@ -13,6 +13,7 @@ export async function retryComponent(
   currentCode: string,
   validationErrors: string[],
   auth: Record<string, string>,
+  intent: IntentResult,
   attempt = 0
 ): Promise<ComponentState> {
   if (attempt >= 2) {
@@ -29,7 +30,13 @@ export async function retryComponent(
     '\n'
   )}\n\nReturn only the fixed component code. Do not explain.`
 
-  const result = await generateComponent(fixPrompt, config, componentName, auth)
+  const result = await generateComponent(
+    fixPrompt,
+    config,
+    componentName,
+    auth,
+    intent
+  )
 
   if (result.status === 'error') {
     return result
@@ -66,6 +73,7 @@ export async function retryComponent(
     result.code,
     validation.errors,
     auth,
+    intent,
     attempt + 1
   )
 }
