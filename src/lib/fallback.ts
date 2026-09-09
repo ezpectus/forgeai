@@ -42,7 +42,15 @@ export async function callWithFallback(
       const status = err instanceof ProviderError ? err.status : 500
       const message = err instanceof Error ? err.message : String(err)
 
-      if (status === 429 || status >= 500) {
+      // Retry on auth/missing-model errors and rate limits / server errors so
+      // a bad key or removed model on one provider does not kill generation.
+      if (
+        status === 401 ||
+        status === 403 ||
+        status === 404 ||
+        status === 429 ||
+        status >= 500
+      ) {
         const delay = Math.min(2 ** i * 1000, 8000)
         await sleep(delay)
         errors.push(`${provider.name}: ${message}`)
