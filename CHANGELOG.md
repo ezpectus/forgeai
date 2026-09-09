@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client-side 30-second cache on provider health checks (`/api/health`) to avoid hammering providers.
 - Shared, cached `fetchModels()` helper used by the model dropdown and by `loadFirstModel` so `/api/models` is not fetched multiple times in a row.
 - Copy code button on each `ComponentStatusRow` so generated component code can be copied to the clipboard.
+- `Escape` key closes Settings, Projects, Gallery and Customize panels.
 
 ### Fixed
 
