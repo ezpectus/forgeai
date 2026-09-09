@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Ctrl/Cmd + Enter` submits the prompt from `PromptInput` and `CustomizePanel`.
 - `Ctrl/Cmd + Enter` shortcut hint shown under the prompt and customize textareas.
 - Last used provider and model are persisted in `localStorage` via `src/lib/prefs.ts` and restored in `PromptInput` and `CustomizePanel`.
+- `Textarea` supports `autoResize` and prompt/customize textareas now grow with content up to 300px.
 
 ### Fixed
 
