@@ -92,6 +92,7 @@ app.post('/', async (c) => {
   const stream = new ReadableStream({
     async start(controller) {
       let closed = false
+      let heartbeat: ReturnType<typeof setInterval> | undefined
 
       function send(event: string, data: unknown) {
         if (closed) return
@@ -101,6 +102,10 @@ app.post('/', async (c) => {
           )
         } catch (err) {
           closed = true
+          if (heartbeat) {
+            clearInterval(heartbeat)
+            heartbeat = undefined
+          }
           console.error('[generate] send failed, stream already closed:', err)
         }
       }
@@ -108,6 +113,10 @@ app.post('/', async (c) => {
       function close() {
         if (closed) return
         closed = true
+        if (heartbeat) {
+          clearInterval(heartbeat)
+          heartbeat = undefined
+        }
         try {
           controller.close()
         } catch {
@@ -120,6 +129,10 @@ app.post('/', async (c) => {
         // timeout. Some providers (e.g. Gemini) take a long time to start
         // responding, and the UI would otherwise abort after 30s.
         send('ping', {})
+
+        // Keep sending a ping every 10s while generation runs. This prevents
+        // the client's read timeout (now 5min) from firing on slow free models.
+        heartbeat = setInterval(() => send('ping', {}), 10_000)
 
         const preferred =
           body.provider && body.model
