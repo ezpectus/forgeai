@@ -205,16 +205,27 @@ export async function resolveGenerationProvider(
   }
 
   const resolvedProvider = health.provider ?? provider
-  const resolvedModel =
-    resolvedProvider === provider && model
-      ? model
-      : await loadFirstModel(resolvedProvider, keys)
 
   let token = ''
   if (resolvedProvider === 'openrouter') token = keys.openrouter ?? ''
   else if (resolvedProvider === 'gemini') token = keys.gemini ?? ''
   else if (resolvedProvider === 'huggingface') token = keys.huggingface ?? ''
   else token = keys.openrouter || keys.gemini || keys.huggingface || ''
+
+  // Respect the user's model selection. If the model is not in the provider's
+  // live list (e.g. stale id or belongs to a different provider), fall back
+  // to the provider's default. This also fixes the `auto` provider ignoring
+  // the selected model.
+  let resolvedModel = ''
+  if (model) {
+    const models = await fetchModels(resolvedProvider, token)
+    if (models.some((m) => m.id === model)) {
+      resolvedModel = model
+    }
+  }
+  if (!resolvedModel) {
+    resolvedModel = await loadFirstModel(resolvedProvider, keys)
+  }
 
   return { ok: true, provider: resolvedProvider, model: resolvedModel, token }
 }

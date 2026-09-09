@@ -2,6 +2,14 @@ import { describe, expect, it, vi, afterEach } from 'vitest'
 import { OpenRouter } from '@/plugins/providers/openrouter'
 import { ProviderError } from '@/types'
 
+// Stable test fallback list. OpenRouter.supportedModels is now intentionally
+// empty in production, so tests provide their own fallback.
+const fallbackList = [
+  'deepseek/deepseek-chat',
+  'qwen/qwen-2.5-coder-32b-instruct',
+  'google/gemma-2-9b-it:free',
+]
+
 function makeSuccessResponse(text: string) {
   return {
     ok: true,
@@ -36,7 +44,7 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
       'key'
     )
 
@@ -57,7 +65,7 @@ describe('OpenRouter.generate', () => {
     await expect(
       OpenRouter.generate(
         'hero',
-        { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+        { model: 'deepseek/deepseek-chat', fallback: fallbackList },
         'key'
       )
     ).rejects.toThrow('Rate limit exceeded')
@@ -74,12 +82,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('Qwen/Qwen2.5-Coder')
+    expect(result.model).toBe('qwen/qwen-2.5-coder-32b-instruct')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -92,12 +100,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('Qwen/Qwen2.5-Coder')
+    expect(result.model).toBe('qwen/qwen-2.5-coder-32b-instruct')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -110,7 +118,7 @@ describe('OpenRouter.generate', () => {
     await expect(
       OpenRouter.generate(
         'hero',
-        { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+        { model: 'deepseek/deepseek-chat', fallback: fallbackList },
         'key'
       )
     ).rejects.toThrow('Invalid API key')
@@ -127,12 +135,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('free model ok')
-    expect(result.model).toBe('google/gemma-4-31b-it:free')
+    expect(result.model).toBe('google/gemma-2-9b-it:free')
     expect(result.cost).toBe(0)
     expect(fetch).toHaveBeenCalledTimes(2)
   })
@@ -147,7 +155,7 @@ describe('OpenRouter.generate', () => {
     try {
       await OpenRouter.generate(
         'hero',
-        { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+        { model: 'deepseek/deepseek-chat', fallback: fallbackList },
         'key'
       )
     } catch (e) {
@@ -161,18 +169,33 @@ describe('OpenRouter.generate', () => {
   it('skips 400 "invalid model" and falls back', async () => {
     const fetch = vi
       .fn()
-      .mockResolvedValueOnce(makeErrorResponse(400, 'Qwen/Qwen2.5-Coder is not a valid model ID'))
+      .mockResolvedValueOnce(makeErrorResponse(400, 'deepseek/deepseek-chat is not a valid model ID'))
       .mockResolvedValueOnce(makeSuccessResponse('ok'))
     vi.stubGlobal('fetch', fetch)
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'Qwen/Qwen2.5-Coder', fallback: ['deepseek/deepseek-chat', 'Qwen/Qwen2.5-Coder'] },
+      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+      'key'
+    )
+
+    expect(result.code).toBe('ok')
+    expect(result.model).toBe('qwen/qwen-2.5-coder-32b-instruct')
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('skips a requested model that is not in the fallback list without a network call', async () => {
+    const fetch = vi.fn().mockResolvedValue(makeSuccessResponse('ok'))
+    vi.stubGlobal('fetch', fetch)
+
+    const result = await OpenRouter.generate(
+      'hero',
+      { model: 'stale/unknown-model', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('ok')
     expect(result.model).toBe('deepseek/deepseek-chat')
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })

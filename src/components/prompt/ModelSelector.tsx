@@ -22,22 +22,15 @@ const providers = [
 ]
 
 const fallbackModels: Record<string, ModelSummary[]> = {
-  openrouter: [
-    { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', free: false },
-    { id: 'Qwen/Qwen2.5-Coder', name: 'Qwen 2.5 Coder', free: false },
-    { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', free: false },
-    { id: 'google/gemma-4-31b-it:free', name: 'Gemma 4 31B (free)', free: true },
-    { id: 'cohere/north-mini-code:free', name: 'Cohere North Mini Code (free)', free: true },
-    { id: 'nvidia/nemotron-3.5-lightning:free', name: 'Nemotron 3.5 (free)', free: true },
-  ],
+  // OpenRouter model IDs change constantly. The live list from
+  // /api/v1/models is the source of truth, so the hardcoded fallback is
+  // intentionally empty. The user must refresh the list if the API call fails.
+  openrouter: [],
   gemini: [
     { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', free: true },
     { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash 8B', free: true },
     { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', free: true },
     { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', free: true },
-    { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', free: true },
-    { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', free: true },
-    { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', free: true },
     { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', free: true },
     { id: 'gemini-pro', name: 'Gemini Pro', free: true },
   ],

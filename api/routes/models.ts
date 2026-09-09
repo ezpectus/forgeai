@@ -10,6 +10,22 @@ import { OpenRouter } from '@/plugins/providers/openrouter'
 import { HuggingFace } from '@/plugins/providers/huggingface'
 import { Gemini } from '@/plugins/providers/gemini'
 
+function pickDefault(
+  models: ModelOption[],
+  defaultId: string
+): ModelOption | undefined {
+  // Exact match first.
+  const exact = models.find((m) => m.id === defaultId)
+  if (exact) return exact
+
+  // Fuzzy fallback: use the model family (provider prefix and base name).
+  // For `deepseek/deepseek-chat` we look for any `deepseek/...`,
+  // for `gemini-1.5-flash` any `gemini-1.5-...`.
+  const parts = defaultId.split('/')
+  const family = parts.length > 1 ? parts[0] : defaultId.split('-').slice(0, 2).join('-')
+  return models.find((m) => m.id.startsWith(`${family}/`) || m.id.startsWith(`${family}-`))
+}
+
 function sortByDefault(
   provider: string,
   models: ModelOption[]
@@ -25,10 +41,10 @@ function sortByDefault(
 
   if (!defaultId) return models
 
-  const first = models.find((m) => m.id === defaultId)
+  const first = pickDefault(models, defaultId)
   if (!first) return models
 
-  return [first, ...models.filter((m) => m.id !== defaultId)]
+  return [first, ...models.filter((m) => m.id !== first.id)]
 }
 
 const app = new Hono<AppEnv>()

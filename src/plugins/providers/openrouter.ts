@@ -54,14 +54,9 @@ function stripMarkdownCodeBlock(text: string): string {
 
 export const OpenRouter: AIProvider = {
   name: 'openrouter',
-  supportedModels: [
-    'deepseek/deepseek-chat',
-    'Qwen/Qwen2.5-Coder',
-    'meta-llama/llama-3.1-70b-instruct',
-    'google/gemma-4-31b-it:free',
-    'cohere/north-mini-code:free',
-    'nvidia/nemotron-3.5-lightning:free',
-  ],
+  // Hardcoded fallback is intentionally empty. OpenRouter model IDs change
+  // often and the live list from /api/v1/models is the source of truth.
+  supportedModels: [],
   defaultModel: 'deepseek/deepseek-chat',
 
   async generate(
@@ -79,25 +74,43 @@ export const OpenRouter: AIProvider = {
 
     messages.push({ role: 'user', content: prompt })
 
-    // Build the fallback chain. If the caller gives an explicit fallback list
-    // (e.g. tests), use it. Otherwise pull the live model list from OpenRouter
-    // and fall back through it. The live list is much more reliable than any
-    // hardcoded list, which goes stale quickly.
-    let fallback = (config.fallback ?? []).filter((m) => m !== requestedModel)
-    if (fallback.length === 0) {
-      const live = await getOpenRouterModels()
-      fallback = live.filter((m) => m !== requestedModel).slice(0, 15)
-    }
-    if (fallback.length === 0) {
-      fallback = this.supportedModels.filter((m) => m !== requestedModel)
-    }
-
-    const candidates = [requestedModel, ...fallback]
-
+    // Source of truth for model IDs. Tests can pass config.fallback; in
+    // production we fetch the live model list from OpenRouter.
     const errors: string[] = []
+    let modelList: string[] = []
+    if (config.fallback?.length) {
+      modelList = config.fallback
+    } else {
+      const live = await getOpenRouterModels()
+      if (live.length) modelList = live
+    }
+    if (modelList.length === 0) {
+      modelList = this.supportedModels
+    }
+
+    // Build candidates: requested model first, then up to 15 fallbacks.
+    // If the requested model is not in the source list, it is skipped
+    // without a network call (B).
+    const unique = new Set<string>()
+    const candidates: string[] = []
+    for (const m of [requestedModel, ...modelList]) {
+      if (!m || unique.has(m)) continue
+      if (modelList.length > 0 && !modelList.includes(m)) {
+        // Requested/fallback model not in the provider list — skip without a request.
+        if (m === requestedModel) {
+          errors.push(`${m}: not in OpenRouter model list`)
+        }
+        continue
+      }
+      unique.add(m)
+      candidates.push(m)
+    }
+
+    // Limit fallback depth to avoid long chains.
+    const finalCandidates = candidates.slice(0, 16)
     let hit402 = false
 
-    for (const model of candidates) {
+    for (const model of finalCandidates) {
       if (hit402 && !model.endsWith(':free')) continue
 
       try {
