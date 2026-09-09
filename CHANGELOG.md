@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pre-generation provider health check in `src/lib/health.ts`.
+  - Validates the selected or auto-detected provider before starting generation.
+  - Returns exact HTTP status and provider error message (e.g. `[400] API key not valid`).
+  - In `Auto` mode, picks the first healthy key and passes it to intent analysis and component generation.
+- My Projects history now persists generated files (`ProjectRecord.files`) and supports:
+  - Downloading the project ZIP from the history list.
+  - Redeploying a saved project to Vercel.
+  - Opening the previously deployed URL.
+- Featured templates on the home prompt screen (`HomeTemplates`).
+- Benefit-driven hero, feature cards, and a modern dark mode palette.
+
+### Fixed
+
+- TopBar deploy button now sends the Vercel token as an `Authorization: Bearer` header.
+- Sidebar active state now only highlights one top-level nav item at a time.
+
 ### Changed
 
-- Updated package and README repository URLs to `https://github.com/ezpectus/forgeai`.
+- Updated README and docs to reflect the new health check, history, templates and dark mode features.
+- README FAQ now explains why a provider dashboard may show `0/60 RPM` while the key still fails.
 - Updated public docs (README, docs/README, docs/features) to reflect actual v1.0 feature set and roadmap status.
 - Added human-readable comments to core functions in `src/lib/`, `src/stores/`, `api/` and `src/components/providers/`.
 - CONTRIBUTING.md clone URL and comment style guideline updated.

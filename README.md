@@ -57,15 +57,19 @@ The agent follows a three-phase workflow:
 | ------------------------ | ---------- | ---------------------------------------------------------------------------------------------- |
 | Prompt-to-Live-URL       | ✅ v1.0    | Type a sentence → get a deployed URL (mocked in tests, needs real keys for full run)          |
 | Config-driven generation | ✅ v1.0    | Components are generated from strict specs and validation rules                               |
-| Multi-model fallback     | ✅ v1.0    | OpenRouter, HuggingFace, Gemini with dynamic model list and automatic fallback                |
-| Visual editor overlay    | ✅ v1.0    | Live preview iframe with selection and edit triggers                                          |
-| Differential prompting   | ✅ v1.0    | Sends only the changed component on re-generation                                             |
-| ZIP export               | ✅ v1.0    | Download the full Next.js project as a ZIP                                                    |
-| Auto-database binding    | ✅ v1.0    | Detects forms and generates Supabase SQL schema                                               |
-| Template library         | ✅ v1.0    | Basic template gallery + customization panel                                                  |
-| Security & validation    | ✅ v1.0    | esbuild parse, AST scan, prompt-injection tests, CSP, rate limiting                           |
-| Unit + E2E tests         | ✅ v1.0    | Vitest + Playwright with mocked API                                                           |
-| Multi-page generation    | 🔄 Roadmap | Home, About, Contact, Blog with navigation                                                    |
+| Multi-model fallback        | ✅ v1.0    | OpenRouter, HuggingFace, Gemini with dynamic model list and automatic fallback                     |
+| Pre-generation health check | ✅ Done    | Validates API keys before spending tokens, shows exact provider error, auto-picks a working key    |
+| My Projects history         | ✅ Done    | Saves generations locally; download ZIP or redeploy to Vercel from the history list              |
+| Home template preview       | ✅ Done    | Featured template cards on the prompt screen for one-click start                                 |
+| Modern dark mode            | ✅ Done    | Reworked dark palette with a brand accent                                                        |
+| Visual editor overlay       | ✅ v1.0    | Live preview iframe with selection and edit triggers                                             |
+| Differential prompting      | ✅ v1.0    | Sends only the changed component on re-generation                                              |
+| ZIP export                  | ✅ v1.0    | Download the full Next.js project as a ZIP                                                       |
+| Auto-database binding       | ✅ v1.0    | Detects forms and generates Supabase SQL schema                                                  |
+| Template library            | ✅ v1.0    | Template gallery with search, filter and customization panel                                     |
+| Security & validation       | ✅ v1.0    | esbuild parse, AST scan, prompt-injection tests, CSP, rate limiting                              |
+| Unit + E2E tests            | ✅ v1.0    | Vitest + Playwright with mocked API                                                              |
+| Multi-page generation       | 🔄 Roadmap | Home, About, Contact, Blog with navigation                                                       |
 | Plugin system            | 🔄 Roadmap | Add custom AI models, deployers, templates (interface exists, sample in README)               |
 | Grow layer               | 🔄 Roadmap | SEO, analytics, email automation, A/B testing after deployment                                |
 | AI voice agent           | 🔄 Future  | Add a voice agent to any deployed site                                                        |
@@ -405,7 +409,7 @@ forgeai/
 | **v0.2**   | ✅ **Done**        | Prompt → live URL + multi-model fallback                                                                              |
 | **v0.3**   | ✅ **Done**        | Visual editor overlay + differential prompting                                                                        |
 | **v0.4**   | ✅ **Done**        | ZIP export + Supabase auto-binding (schema generation)                                                                |
-| **v0.5**   | 🔄 **Roadmap**     | Template gallery with search, filter and community templates                                                          |
+| **v0.5**   | ✅ **Done**        | Template gallery with search, filter and community templates                                                          |
 | **v0.6**   | 🔄 **Roadmap**     | Multi-page generation with navigation                                                                                 |
 | **v0.7**   | 🔄 **Roadmap**     | Plugin system for custom providers, deployers, templates                                                              |
 | **v1.0**   | ✅ **Done**        | Core pipeline + security, performance, tests, and open-source release                                                 |
@@ -425,7 +429,12 @@ forgeai/
 - ✅ BYOK + security model documented
 - ✅ Unit + integration + E2E tests (Vitest + Playwright)
 - ✅ Performance + security hardening for v1.0 release
-- 🔄 Roadmap: Template gallery expansion, multi-page generation, plugin system, Grow layer
+- ✅ Pre-generation provider health check with exact status-code diagnostics and auto-fallback
+- ✅ My Projects history with local IndexedDB storage, ZIP download and Vercel redeploy
+- ✅ Featured templates on the home prompt screen
+- ✅ Reworked dark mode palette and benefit-driven hero
+- ✅ API key onboarding help, rate-limit links and health diagnostics in Settings
+- 🔄 Roadmap: Multi-page generation, plugin system, Grow layer
 
 ### Release
 
@@ -452,6 +461,9 @@ MIT licensed. PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 **How much does it cost?**
 ~$0.002 per generation. You pay the AI provider directly. $1 of OpenRouter credit = ~500 generations.
+
+**Why does my API key fail even though the provider dashboard shows 0 usage?**
+Dashboards like Google AI Studio show quota for the selected project. `0/60 RPM` means no requests were counted for that project in the last 28 days — it does not guarantee the key is active, attached to that project, or that the Generative Language API is enabled. ForgeAI runs a `/api/health` check before every generation and shows the exact error (e.g. `[400] API key not valid`). See `internal/bug-report.md` for a full diagnostic guide.
 
 **Can I use GPT-4 or Claude?**
 Yes. OpenRouter supports GPT-4o, Claude, Llama, and 200+ other models. Gemini has a free tier and works out of the box. Just change the provider/model in the dropdown. Cost will be higher (~$0.15-0.30 per generation with GPT-4o).
