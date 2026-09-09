@@ -216,16 +216,16 @@ function EmailPreviewPanel() {
 
         {active === 'welcome' && (
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="email-name">Name</label>
-            <Input id="email-name" value={name} onChange={(e) => setName(e.target.value)} />
+            <label className="text-sm font-medium" htmlFor="email-name-welcome">Name</label>
+            <Input id="email-name-welcome" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
         )}
 
         {active === 'reminder' && (
           <>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email-name">Name</label>
-              <Input id="email-name" value={name} onChange={(e) => setName(e.target.value)} />
+              <label className="text-sm font-medium" htmlFor="email-name-reminder">Name</label>
+              <Input id="email-name-reminder" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email-date">Date</label>

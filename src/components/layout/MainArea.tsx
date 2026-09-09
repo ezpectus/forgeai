@@ -81,14 +81,15 @@ export function MainArea({
         ? 'error'
         : 'building'
 
-  let content = activeMode === 'reports' ? <ReportsView /> : <PromptInput />
-
-  // Navigation (gallery / customize) must take priority over a ready project,
-  // otherwise the user can never start a new template after generation.
+  // Navigation (gallery / customize / reports) must take priority over a ready project,
+  // otherwise the user can never switch modes or start a new template after generation.
+  let content: ReactNode = <PromptInput />
   if (customizeTemplateId) {
     content = <CustomizePanel templateId={customizeTemplateId} />
   } else if (galleryOpen) {
     content = <GalleryView onSelect={(id) => openCustomize(id)} />
+  } else if (activeMode === 'reports') {
+    content = <ReportsView />
   } else if (status === 'generating') {
     content = <GenerationProgress />
   } else if (status === 'ready' && deployUrl) {
@@ -107,11 +108,13 @@ export function MainArea({
     content = <GenerationSuccess />
   }
 
-  let viewLabel = activeMode === 'reports' ? 'Growth dashboard' : 'Prompt input'
+  let viewLabel = 'Prompt input'
   if (customizeTemplateId) {
     viewLabel = 'Customizing template'
   } else if (galleryOpen) {
     viewLabel = 'Template gallery'
+  } else if (activeMode === 'reports') {
+    viewLabel = 'Growth dashboard'
   } else if (status === 'generating') {
     viewLabel = 'Generating project'
   } else if (status === 'error') {
