@@ -94,7 +94,9 @@ export const OpenRouter: AIProvider = {
   },
 
   async health(apiKey: string): Promise<HealthResult> {
-    const res = await fetch(`${API_BASE}/auth`, {
+    // OpenRouter's /auth path is not valid; /api/v1/key is the documented
+    // endpoint for validating an API key and reading remaining credits.
+    const res = await fetch(`${API_BASE}/key`, {
       headers: { Authorization: `Bearer ${apiKey}` },
     })
 
@@ -106,7 +108,9 @@ export const OpenRouter: AIProvider = {
         data.error?.message ??
         (res.status === 429
           ? 'OpenRouter rate limit exceeded. Try a different model or wait.'
-          : `OpenRouter error ${res.status}`)
+          : res.status === 402
+            ? 'OpenRouter account has no credits. Add credits or use a free model.'
+            : `OpenRouter error ${res.status}`)
       return { ok: false, status: res.status, error: message }
     }
 
