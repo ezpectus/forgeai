@@ -414,49 +414,13 @@ forgeai/
 
 ---
 
-## Roadmap
+## Status
 
-| Version    | Status             | Deliverable                                                                                                           |
-| ---------- | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| **v0.0**   | ✅ **Done**        | System design, docs, brand, `package.json`, types, repo setup                                                         |
-| **v0.1**   | ✅ **Done**        | Prompt → generated code + config-driven generation                                                                    |
-| **v0.2**   | ✅ **Done**        | Prompt → live URL + multi-model fallback                                                                              |
-| **v0.3**   | ✅ **Done**        | Visual editor overlay + differential prompting                                                                        |
-| **v0.4**   | ✅ **Done**        | ZIP export + Supabase auto-binding (schema generation)                                                                |
-| **v0.5**   | ✅ **Done**        | Template gallery with search, filter and community templates                                                          |
-| **v0.6**   | 🔄 **Roadmap**     | Multi-page generation with navigation                                                                                 |
-| **v0.7**   | 🔄 **Roadmap**     | Plugin system for custom providers, deployers, templates                                                              |
-| **v1.0**   | ✅ **Done**        | Core pipeline + security, performance, tests, and open-source release                                                 |
-| **Future** | 💡 **Idea**        | Grow layer (SEO, analytics, email, A/B), AI voice agent, messaging, image/video generation, canvas, audio             |
+ForgeAI v1.0.0 is released and stable. See [CHANGELOG.md](CHANGELOG.md) for the full feature list and [GitHub issues](https://github.com/ezpectus/forgeai/issues) for open tasks.
 
-### What's Done So Far
+The core pipeline is complete: prompt → intent → multi-provider code generation → validation → ZIP export → Vercel deploy, with security scanning, rate limiting, provider health checks, and local project history.
 
-- ✅ Core system design (`docs/system-design.md`) — architecture, API, data flow, security model
-- ✅ Public docs: `docs/vision.md`, `docs/features.md`, `docs/system-design.md`, `docs/templates.md`, `docs/template-gallery.md`, `docs/architecture.md`
-- ✅ Internal docs in `internal/` (gitignored) for core maintainers
-- ✅ Feature spec (`docs/features.md`)
-- ✅ Template constraint configs (`configs/templates/*.json`)
-- ✅ GitHub setup, README, CONTRIBUTING, LICENSE
-- ✅ `package.json` with minimal production deps
-- ✅ TypeScript interfaces (`src/types.ts`)
-- ✅ `.env.example`, `Dockerfile`, `docker-compose.yml`
-- ✅ BYOK + security model documented
-- ✅ Unit + integration + E2E tests (Vitest + Playwright)
-- ✅ Performance + security hardening for v1.0 release
-- ✅ Pre-generation provider health check with exact status-code diagnostics and auto-fallback
-- ✅ My Projects history with local IndexedDB storage, ZIP download and Vercel redeploy
-- ✅ Featured templates on the home prompt screen
-- ✅ Reworked dark mode palette and benefit-driven hero
-- ✅ API key onboarding help, rate-limit links and health diagnostics in Settings
-- ✅ Cancel a running generation from the progress UI
-- ✅ Post-generation success screen with summary, export, deploy and "new project"
-- ✅ 30-second cache on provider health checks to avoid hammering APIs
-- 🔄 Roadmap: Multi-page generation, plugin system, Grow layer
-
-### Release
-
-- v1.0.0 is released. See [CHANGELOG.md](CHANGELOG.md) for the full feature list.
-- Roadmap and open tasks are tracked in [GitHub issues](https://github.com/ezpectus/forgeai/issues).
+Current focus areas are multi-page generation, a plugin system for custom providers/deployers, and the Grow layer (SEO, analytics, email, A/B).
 
 ---
 
