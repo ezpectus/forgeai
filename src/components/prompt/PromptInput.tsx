@@ -188,6 +188,7 @@ export function PromptInput() {
       </div>
 
       <Textarea
+        id="prompt-input"
         placeholder="Describe the website you want..."
         value={prompt}
         onChange={(e) => {
@@ -201,10 +202,14 @@ export function PromptInput() {
           }
         }}
         autoResize
+        aria-describedby="prompt-hint"
         className="min-h-[120px] resize-none text-base"
       />
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div
+        id="prompt-hint"
+        className="flex items-center justify-between text-xs text-muted-foreground"
+      >
         <span>{prompt.length} characters</span>
         <div className="flex items-center gap-2">
           <button

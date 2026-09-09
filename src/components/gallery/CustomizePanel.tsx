@@ -163,6 +163,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
       </p>
 
       <Textarea
+        id="customize-input"
         placeholder="Make it bold, minimal, with a dark theme..."
         value={prompt}
         onChange={(e) => {
@@ -176,10 +177,11 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
           }
         }}
         autoResize
+        aria-describedby="customize-hint"
         className="min-h-[120px] resize-none"
       />
 
-      <p className="text-xs text-muted-foreground">
+      <p id="customize-hint" className="text-xs text-muted-foreground">
         Ctrl / Cmd + Enter to customize
       </p>
 
