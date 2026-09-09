@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Copy code button on each `ComponentStatusRow` so generated component code can be copied to the clipboard.
 - `Escape` key closes Settings, Projects, Gallery and Customize panels.
 - `Ctrl/Cmd + Enter` submits the prompt from `PromptInput` and `CustomizePanel`.
+- `Ctrl/Cmd + Enter` shortcut hint shown under the prompt and customize textareas.
 
 ### Fixed
 
