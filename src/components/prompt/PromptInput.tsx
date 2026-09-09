@@ -190,8 +190,10 @@ export function PromptInput() {
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{prompt.length} characters</span>
-        <ExampleChips onSelect={handleSelect} />
+        <span>Ctrl / Cmd + Enter to generate</span>
       </div>
+
+      <ExampleChips onSelect={handleSelect} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <ModelSelector

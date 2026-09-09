@@ -171,6 +171,10 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         className="min-h-[120px] resize-none"
       />
 
+      <p className="text-xs text-muted-foreground">
+        Ctrl / Cmd + Enter to customize
+      </p>
+
       <ModelSelector
         provider={provider}
         model={model}
