@@ -99,7 +99,14 @@ export function DeployButton() {
       </Button>
 
       {deployUrl && (
-        <Button variant="outline" size="sm" onClick={copyUrl} className="gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={copyUrl}
+          className="gap-2"
+          title="Copy deploy URL"
+          aria-label="Copy deploy URL"
+        >
           {copied ? (
             <Check className="h-4 w-4" />
           ) : (
@@ -186,6 +193,8 @@ function GalleryButton() {
           : openGallery
       }
       className="gap-2"
+      title={isOpen ? 'Close templates' : 'Browse templates'}
+      aria-label={isOpen ? 'Close templates' : 'Browse templates'}
     >
       <LayoutGrid className="h-4 w-4" />
       <span className="hidden sm:inline">{isOpen ? 'Home' : 'Templates'}</span>
@@ -221,6 +230,7 @@ function MobileMenu() {
       size="icon"
       onClick={toggleMobileSidebar}
       className="md:hidden"
+      title="Open menu"
       aria-label="Open menu"
     >
       <Menu className="h-5 w-5" />
@@ -270,6 +280,8 @@ export function TopBar() {
           size="sm"
           onClick={openSettings}
           className="gap-2"
+          title="Open settings"
+          aria-label="Open settings"
         >
           <Settings className="h-4 w-4" />
           <span className="hidden sm:inline">Settings</span>
