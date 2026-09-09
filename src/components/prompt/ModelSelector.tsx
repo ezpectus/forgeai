@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
+import { fetchModels, type ModelSummary } from '@/lib/health'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -12,12 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-interface ModelOption {
-  id: string
-  name: string
-  free?: boolean
-}
-
 const providers = [
   { id: 'auto', label: 'Auto (any key)' },
   { id: 'openrouter', label: 'OpenRouter' },
@@ -25,7 +20,7 @@ const providers = [
   { id: 'huggingface', label: 'HuggingFace' },
 ]
 
-const fallbackModels: Record<string, ModelOption[]> = {
+const fallbackModels: Record<string, ModelSummary[]> = {
   openrouter: [
     { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', free: true },
     { id: 'Qwen/Qwen2.5-Coder', name: 'Qwen 2.5 Coder', free: false },
@@ -51,7 +46,7 @@ interface ModelSelectorProps {
 
 export function ModelSelector({ provider, model, onChange }: ModelSelectorProps) {
   const { openrouter, huggingface, gemini } = useKeys()
-  const [models, setModels] = useState<ModelOption[]>([])
+  const [models, setModels] = useState<ModelSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -72,22 +67,12 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
     setLoading(true)
     setError(null)
 
-    const headers: Record<string, string> = {}
-    if (providerKey) {
-      headers.Authorization = `Bearer ${providerKey}`
-    }
-
     try {
-      const res = await fetch(`/api/models?provider=${provider}`, { headers })
-      const data = (await res.json()) as { models?: ModelOption[]; error?: string }
+      const fetched = await fetchModels(provider, providerKey)
+      const list = fetched.length > 0 ? fetched : (fallbackModels[provider] ?? [])
+      setModels(list)
 
-      if (!res.ok || !data.models) {
-        throw new Error(data.error ?? `Failed to load ${provider} models`)
-      }
-
-      setModels(data.models)
-
-      const first = data.models[0]?.id
+      const first = list[0]?.id
       if (first && (!model || provider !== 'auto')) {
         onChange(provider, first)
       }

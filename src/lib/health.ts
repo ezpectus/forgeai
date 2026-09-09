@@ -106,16 +106,9 @@ export async function loadFirstModel(
   const key = keys[provider as keyof ProviderKeys]
   if (!key) return ''
 
-  try {
-    const res = await fetch(`/api/models?provider=${provider}`, {
-      headers: { Authorization: `Bearer ${key.trim()}` },
-    })
-    const data = (await res.json()) as { models?: { id: string }[]; error?: string }
-    if (res.ok && data.models && data.models.length > 0) {
-      return data.models[0].id
-    }
-  } catch {
-    // ignore, use default
+  const models = await fetchModels(provider, key)
+  if (models.length > 0) {
+    return models[0].id
   }
 
   const defaults: Record<ProviderKey, string> = {
@@ -125,6 +118,49 @@ export async function loadFirstModel(
   }
 
   return defaults[provider as ProviderKey] ?? ''
+}
+
+export interface ModelSummary {
+  id: string
+  name: string
+  free?: boolean
+}
+
+const MODEL_CACHE_TTL = 60_000
+interface ModelCacheEntry {
+  models: ModelSummary[]
+  ts: number
+}
+const modelCache = new Map<string, ModelCacheEntry>()
+
+/**
+ * Fetch the list of models for a provider. Results are cached for 60 seconds
+ * so opening the dropdown or auto-resolving a model does not hit the API repeatedly.
+ */
+export async function fetchModels(
+  provider: string,
+  token?: string | null
+): Promise<ModelSummary[]> {
+  const cacheKey = `${provider}:${token ?? ''}`
+  const cached = modelCache.get(cacheKey)
+  if (cached && Date.now() - cached.ts < MODEL_CACHE_TTL) {
+    return cached.models
+  }
+
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers.Authorization = `Bearer ${token.trim()}`
+  }
+
+  try {
+    const res = await fetch(`/api/models?provider=${provider}`, { headers })
+    const data = (await res.json()) as { models?: ModelSummary[]; error?: string }
+    const models = res.ok && data.models ? data.models : []
+    modelCache.set(cacheKey, { models, ts: Date.now() })
+    return models
+  } catch {
+    return []
+  }
 }
 
 interface ResolvedProvider {
