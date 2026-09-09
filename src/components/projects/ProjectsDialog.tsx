@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Trash2, Folder, Download, Rocket } from 'lucide-react'
+import { Trash2, Folder, Inbox, Download, Rocket } from 'lucide-react'
 
 export function ProjectsDialog() {
   const { projectsOpen, closeProjects } = useUI()
@@ -78,9 +78,11 @@ export function ProjectsDialog() {
           {!loaded && <p className="text-sm text-muted-foreground">Loading...</p>}
 
           {loaded && projects.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              No projects yet. Generate something and it will appear here.
-            </p>
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground">
+              <Inbox className="h-8 w-8" />
+              <p>No projects yet.</p>
+              <p>Generate something and it will appear here.</p>
+            </div>
           )}
 
           {projects.length > 0 && (
@@ -99,6 +101,8 @@ export function ProjectsDialog() {
                       size="icon"
                       className="h-7 w-7 shrink-0"
                       onClick={() => remove(project.id)}
+                      title="Delete project"
+                      aria-label="Delete project"
                     >
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
