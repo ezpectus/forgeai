@@ -102,15 +102,31 @@ export function MainArea({
     content = <GenerationSuccess />
   }
 
+  let viewLabel = 'Prompt input'
+  if (customizeTemplateId) {
+    viewLabel = 'Customizing template'
+  } else if (galleryOpen) {
+    viewLabel = 'Template gallery'
+  } else if (status === 'generating') {
+    viewLabel = 'Generating project'
+  } else if (status === 'error') {
+    viewLabel = 'Generation failed'
+  } else if (status === 'ready' && deployUrl) {
+    viewLabel = 'Live preview'
+  } else if (status === 'ready') {
+    viewLabel = 'Project ready'
+  }
+
   return (
     <main
-      aria-live="polite"
-      aria-atomic="true"
       className={cn(
         'flex min-h-0 flex-1 flex-col items-center justify-center overflow-auto p-6',
         className
       )}
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {viewLabel}
+      </div>
       {children ?? content}
     </main>
   )
