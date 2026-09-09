@@ -1,0 +1,10 @@
+{
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        { "name": "forgeai_welcome_seen", "value": "true" }
+      ]
+    }
+  ]
+}

@@ -23,6 +23,13 @@ const SettingsDialog = dynamic(
     })),
   { ssr: false }
 )
+const OnboardingDialog = dynamic(
+  () =>
+    import('@/components/onboarding/OnboardingDialog').then((mod) => ({
+      default: mod.OnboardingDialog,
+    })),
+  { ssr: false }
+)
 const ProjectsDialog = dynamic(
   () =>
     import('@/components/projects/ProjectsDialog').then((mod) => ({
@@ -54,6 +61,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
       <TopBar />
       <MainArea className="md:col-start-2">{children}</MainArea>
       <StatusBar />
+      <OnboardingDialog />
       <EditPanel />
       <SettingsDialog />
       <ProjectsDialog />

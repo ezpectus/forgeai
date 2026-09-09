@@ -15,6 +15,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
+    storageState: 'tests/e2e/storageState.json',
   },
 
   projects: [
