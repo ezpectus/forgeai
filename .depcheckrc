@@ -1,0 +1,10 @@
+{
+  "ignores": [
+    "@types/react-dom",
+    "autoprefixer",
+    "postcss"
+  ],
+  "ignoreMatches": [
+    "@types/*"
+  ]
+}
