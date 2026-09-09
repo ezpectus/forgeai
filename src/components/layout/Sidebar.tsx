@@ -95,7 +95,7 @@ export function Sidebar({ className }: { className?: string }) {
         const Icon = item.icon
         const isActive =
           item.id === 'home'
-            ? !isInGallery
+            ? !isInGallery && !projectsOpen && activeMode !== 'reports'
             : item.id === 'projects'
               ? projectsOpen
               : isInGallery
@@ -108,6 +108,9 @@ export function Sidebar({ className }: { className?: string }) {
                 closeGallery()
                 closeCustomize()
                 closeProjects()
+                if (activeMode === 'reports') {
+                  setActiveMode('website')
+                }
               } else if (item.id === 'projects') {
                 openProjects()
               } else {

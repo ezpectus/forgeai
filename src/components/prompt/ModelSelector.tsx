@@ -102,6 +102,13 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
     [openrouter, gemini, huggingface]
   )
 
+  // If the saved provider is no longer available (key removed), fall back to auto
+  useEffect(() => {
+    if (provider !== 'auto' && !availableProviders.some((p) => p.id === provider)) {
+      onChange('auto', '')
+    }
+  }, [provider, availableProviders, onChange])
+
   const selectedProviderLabel = useMemo(
     () => availableProviders.find((p) => p.id === provider)?.label ?? provider,
     [availableProviders, provider]
@@ -172,6 +179,7 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
             disabled={loading}
             onClick={loadModels}
             title="Refresh models"
+            aria-label="Refresh models"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -69,7 +69,7 @@ export function PromptInput() {
   }
 
   async function handleGenerate() {
-    if (!prompt.trim() || !hasKeys) return
+    if (isBusy || !prompt.trim() || !hasKeys) return
 
     const trimmed = prompt.trim()
     setPromptLocal(trimmed)
