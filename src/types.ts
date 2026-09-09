@@ -43,6 +43,8 @@ export interface ProjectRecord {
   componentCount: number
   status: ProjectStatus
   createdAt: string
+  files?: Record<string, string>
+  deployUrl?: string
 }
 
 export interface KeysState {

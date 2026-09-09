@@ -94,7 +94,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         if (event === 'done') {
           setStatus('ready')
           setLoading(false)
-          const done = data as { projectId?: string }
+          const done = data as { projectId?: string; files?: Record<string, string> }
           if (done.projectId) {
             setProjectId(done.projectId)
           }
@@ -110,6 +110,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
               componentCount: state.components.length,
               status: 'ready',
               createdAt: new Date().toISOString(),
+              files: done.files,
             })
           }
         }

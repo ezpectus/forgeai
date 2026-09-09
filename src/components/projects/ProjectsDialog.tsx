@@ -2,6 +2,8 @@
 
 import { useHistory } from '@/stores/history'
 import { useUI } from '@/stores/ui'
+import { useKeys } from '@/stores/keys'
+import type { ProjectRecord } from '@/types'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,11 +13,52 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Trash2, Folder } from 'lucide-react'
+import { Trash2, Folder, Download, Rocket } from 'lucide-react'
 
 export function ProjectsDialog() {
   const { projectsOpen, closeProjects } = useUI()
-  const { projects, remove, loaded } = useHistory()
+  const { projects, remove, add, loaded } = useHistory()
+  const { vercel } = useKeys()
+
+  async function handleDownload(project: ProjectRecord) {
+    if (!project.files) return
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: project.files }),
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `forgeai-${project.id.slice(0, 8)}.zip`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  async function handleRedeploy(project: ProjectRecord) {
+    if (!project.files || !vercel) return
+    const res = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${vercel}`,
+      },
+      body: JSON.stringify({
+        projectId: project.id,
+        provider: 'vercel',
+        files: project.files,
+      }),
+    })
+    const data = (await res.json()) as { url?: string; error?: string }
+    if (!res.ok || !data.url) {
+      // eslint-disable-next-line no-console
+      console.error(data.error ?? 'Deploy failed')
+      return
+    }
+    await add({ ...project, deployUrl: data.url })
+  }
 
   return (
     <Dialog open={projectsOpen} onOpenChange={closeProjects}>
@@ -44,7 +87,7 @@ export function ProjectsDialog() {
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="flex flex-col gap-1 rounded border p-3"
+                  className="flex flex-col gap-2 rounded border p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="line-clamp-2 text-sm font-medium">
@@ -69,6 +112,38 @@ export function ProjectsDialog() {
                     <span>
                       {new Date(project.createdAt).toLocaleString()}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 text-xs"
+                      disabled={!project.files}
+                      onClick={() => handleDownload(project)}
+                    >
+                      <Download className="h-3 w-3" />
+                      Download
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 text-xs"
+                      disabled={!project.files || !vercel}
+                      onClick={() => handleRedeploy(project)}
+                    >
+                      <Rocket className="h-3 w-3" />
+                      Redeploy
+                    </Button>
+                    {project.deployUrl && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-xs"
+                        onClick={() => window.open(project.deployUrl, '_blank')}
+                      >
+                        Open URL
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

@@ -47,7 +47,10 @@ function DeployButton() {
     try {
       const res = await fetch('/api/deploy', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${vercel}`,
+        },
         body: JSON.stringify({
           projectId: 'forgeai',
           provider: 'vercel',

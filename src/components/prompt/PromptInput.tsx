@@ -110,7 +110,7 @@ export function PromptInput() {
 
         if (event === 'done') {
           setStatus('ready')
-          const done = data as { projectId?: string }
+          const done = data as { projectId?: string; files?: Record<string, string> }
           if (done.projectId) {
             setProjectId(done.projectId)
           }
@@ -127,6 +127,7 @@ export function PromptInput() {
               componentCount: state.components.length,
               status: 'ready',
               createdAt: new Date().toISOString(),
+              files: done.files,
             })
           }
         }
