@@ -64,6 +64,7 @@ The agent follows a three-phase workflow:
 | Modern dark mode            | ✅ Done    | Reworked dark palette with a brand accent                                                        |
 | Cancel generation           | ✅ Done    | Stop a running stream from the progress UI                                                       |
 | Post-generation success     | ✅ Done    | Summary, component list, export, deploy and "new project" in one screen                         |
+| Health check cache          | ✅ Done    | Caches provider health results for 30s so repeated clicks do not waste quota                     |
 | Visual editor overlay       | ✅ v1.0    | Live preview iframe with selection and edit triggers                                             |
 | Differential prompting      | ✅ v1.0    | Sends only the changed component on re-generation                                              |
 | ZIP export                  | ✅ v1.0    | Download the full Next.js project as a ZIP                                                       |
@@ -438,6 +439,7 @@ forgeai/
 - ✅ API key onboarding help, rate-limit links and health diagnostics in Settings
 - ✅ Cancel a running generation from the progress UI
 - ✅ Post-generation success screen with summary, export, deploy and "new project"
+- ✅ 30-second cache on provider health checks to avoid hammering APIs
 - 🔄 Roadmap: Multi-page generation, plugin system, Grow layer
 
 ### Release
