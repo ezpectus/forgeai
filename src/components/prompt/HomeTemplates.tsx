@@ -45,9 +45,14 @@ export function HomeTemplates() {
   return (
     <div className="flex w-full flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Start from a template
-        </h2>
+        <div className="space-y-0.5">
+          <h2 className="text-base font-semibold text-foreground">
+            Start from a template
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Pick a starting point and customize it
+          </p>
+        </div>
         <Button variant="link" size="sm" onClick={openGallery}>
           Browse all
         </Button>

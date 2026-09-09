@@ -191,6 +191,8 @@ export function PromptInput() {
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-6">
+      <HomeTemplates />
+
       <div className="space-y-2 text-center">
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
           Generate a website, deck or report from one sentence.
@@ -316,8 +318,6 @@ export function PromptInput() {
           <span>Your API keys, your machine</span>
         </div>
       </div>
-
-      <HomeTemplates />
 
       <FaqSection />
     </div>
