@@ -1,20 +1,26 @@
 'use client'
 
-import { AlertCircle, RotateCcw, Plus } from 'lucide-react'
+import { AlertCircle, Pencil, RotateCcw, Plus } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
 /**
  * Dedicated error view shown when a generation fails. Gives the user a clear
- * summary and quick actions to retry with the same prompt or start fresh.
+ * summary and quick actions to edit the prompt, regenerate with the same prompt,
+ * or start fresh.
  */
 export function GenerationError() {
-  const { error, setStatus, setError, reset } = useProject()
+  const { error, setStatus, setError, reset, regenerate } = useProject()
 
-  function handleRetry() {
+  function handleEditPrompt() {
     setStatus('idle')
     setError(null)
+  }
+
+  function handleRegenerate() {
+    setError(null)
+    regenerate()
   }
 
   function handleNewProject() {
@@ -38,9 +44,13 @@ export function GenerationError() {
         </p>
       )}
       <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
-        <Button onClick={handleRetry} className="gap-2">
+        <Button onClick={handleEditPrompt} className="gap-2">
+          <Pencil className="h-4 w-4" />
+          Edit prompt
+        </Button>
+        <Button onClick={handleRegenerate} className="gap-2">
           <RotateCcw className="h-4 w-4" />
-          Try again
+          Regenerate
         </Button>
         <Button variant="outline" onClick={handleNewProject} className="gap-2">
           <Plus className="h-4 w-4" />

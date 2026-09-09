@@ -40,6 +40,7 @@ export function PromptInput() {
     reset,
     status,
     error,
+    regenerateAt,
   } = useProject()
 
   const {
@@ -180,6 +181,13 @@ export function PromptInput() {
       }
     )
   }
+
+  useEffect(() => {
+    if (regenerateAt && canGenerate) {
+      handleGenerate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regenerateAt])
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-6">

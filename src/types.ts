@@ -36,6 +36,8 @@ export interface ProjectState {
   cost: number
   error: string | null
   generationClient: Cancellable | null
+  /** Timestamp used by GenerationError to request a regeneration in PromptInput. */
+  regenerateAt: number
 }
 
 export interface ProjectRecord {

@@ -13,6 +13,7 @@ export type ProjectStore = ProjectState & {
   setError: (error: string | null) => void
   setGenerationClient: (client: Cancellable | null) => void
   reset: () => void
+  regenerate: () => void
 }
 
 const initialState: ProjectState = {
@@ -25,6 +26,7 @@ const initialState: ProjectState = {
   cost: 0,
   error: null,
   generationClient: null,
+  regenerateAt: 0,
 }
 
 // Zustand store that holds the current generation's state: prompt, intent,
@@ -62,4 +64,11 @@ export const useProject = create<ProjectStore>((set, get) => ({
     get().generationClient?.disconnect()
     set(initialState)
   },
+
+  regenerate: () =>
+    set({
+      status: 'idle',
+      error: null,
+      regenerateAt: Date.now(),
+    }),
 }))
