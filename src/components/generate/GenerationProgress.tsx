@@ -102,6 +102,12 @@ export function GenerationProgress() {
           <p>
             <span className="font-medium">Style:</span> {intent.style}
           </p>
+
+          {intent.warning && (
+            <p className="mt-2 rounded bg-yellow-500/10 p-2 text-xs text-yellow-700">
+              {intent.warning}
+            </p>
+          )}
         </div>
       )}
 

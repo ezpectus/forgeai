@@ -91,6 +91,8 @@ export interface IntentResult {
   audience?: string
   tone?: string
   style?: string
+  /** Set when the intent was built from defaults due to a provider or parse failure. */
+  warning?: string
 }
 
 export interface SectionIntent {

@@ -150,7 +150,7 @@ export async function analyzeIntent(
   const chain = buildChain(auth, preferred)
 
   if (chain.length === 0) {
-    return DEFAULT_INTENT
+    return { ...DEFAULT_INTENT, warning: 'No API keys configured. Using a default plan.' }
   }
 
   try {
@@ -169,17 +169,23 @@ export async function analyzeIntent(
     const parsed = JSON.parse(cleaned) as unknown
 
     if (!parsed || typeof parsed !== 'object') {
-      return DEFAULT_INTENT
+      return { ...DEFAULT_INTENT, warning: 'Could not parse AI response. Using a default plan.' }
     }
 
     const data = parsed as Record<string, unknown>
+    let usedDefaults = false
 
-    const sections = Array.isArray(data.sections)
-      ? (data.sections.map(asSection).filter(Boolean) as SectionIntent[])
+    const rawSections = data.sections
+    const sections = Array.isArray(rawSections)
+      ? (rawSections.map(asSection).filter(Boolean) as SectionIntent[])
       : DEFAULT_INTENT.sections
+    usedDefaults =
+      usedDefaults ||
+      !Array.isArray(rawSections) ||
+      (Array.isArray(rawSections) && rawSections.length !== sections.length)
 
     if (sections.length === 0) {
-      return DEFAULT_INTENT
+      return { ...DEFAULT_INTENT, warning: 'AI returned no valid sections. Using a default plan.' }
     }
 
     const dbForms = Array.isArray(data.dbForms)
@@ -189,27 +195,53 @@ export async function analyzeIntent(
             : `${(f as Record<string, unknown>).name}: ${Array.isArray((f as Record<string, unknown>).fields) ? ((f as Record<string, unknown>).fields as string[]).join(', ') : ''}`
         )
       : DEFAULT_INTENT.dbForms
+    usedDefaults = usedDefaults || !Array.isArray(data.dbForms)
 
-    return {
-      type: typeof data.type === 'string' ? data.type : DEFAULT_INTENT.type,
+    const type = typeof data.type === 'string' ? data.type : DEFAULT_INTENT.type
+    usedDefaults = usedDefaults || typeof data.type !== 'string'
+
+    const palette =
+      typeof data.palette === 'string'
+        ? data.palette
+        : DEFAULT_INTENT.palette
+    usedDefaults = usedDefaults || typeof data.palette !== 'string'
+
+    const pages = Array.isArray(data.pages)
+      ? data.pages.map((p) => String(p))
+      : DEFAULT_INTENT.pages
+    usedDefaults = usedDefaults || !Array.isArray(data.pages)
+
+    const audience =
+      typeof data.audience === 'string'
+        ? data.audience
+        : DEFAULT_INTENT.audience
+    usedDefaults = usedDefaults || typeof data.audience !== 'string'
+
+    const tone = typeof data.tone === 'string' ? data.tone : DEFAULT_INTENT.tone
+    usedDefaults = usedDefaults || typeof data.tone !== 'string'
+
+    const style =
+      typeof data.style === 'string' ? data.style : DEFAULT_INTENT.style
+    usedDefaults = usedDefaults || typeof data.style !== 'string'
+
+    const intent: IntentResult = {
+      type,
       sections,
-      palette:
-        typeof data.palette === 'string'
-          ? data.palette
-          : DEFAULT_INTENT.palette,
+      palette,
       dbRequired: data.dbRequired === true,
       dbForms,
-      pages: Array.isArray(data.pages)
-        ? data.pages.map((p) => String(p))
-        : DEFAULT_INTENT.pages,
-      audience:
-        typeof data.audience === 'string'
-          ? data.audience
-          : DEFAULT_INTENT.audience,
-      tone: typeof data.tone === 'string' ? data.tone : DEFAULT_INTENT.tone,
-      style: typeof data.style === 'string' ? data.style : DEFAULT_INTENT.style,
+      pages,
+      audience,
+      tone,
+      style,
     }
+
+    if (usedDefaults) {
+      intent.warning = 'Some preferences could not be parsed and were filled with defaults.'
+    }
+
+    return intent
   } catch {
-    return DEFAULT_INTENT
+    return { ...DEFAULT_INTENT, warning: 'Intent analysis failed. Using a default plan.' }
   }
 }
