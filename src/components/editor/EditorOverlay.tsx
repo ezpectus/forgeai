@@ -2,12 +2,28 @@
 
 import { useEffect, type ReactNode } from 'react'
 import { useUI } from '@/stores/ui'
+import { useProject } from '@/stores/project'
+
+function getAllowedOrigin(): string | null {
+  const deployUrl = useProject.getState().deployUrl
+  if (!deployUrl) return null
+  try {
+    return new URL(deployUrl).origin
+  } catch {
+    return null
+  }
+}
 
 export function EditorOverlay({ children }: { children: ReactNode }) {
   const { selectComponent, openEditor } = useUI()
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
+      const allowed = getAllowedOrigin()
+      if (allowed && event.origin !== allowed) {
+        return
+      }
+
       if (
         event.data?.action === 'select' &&
         typeof event.data.component === 'string'
