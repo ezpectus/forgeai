@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ComponentState, IntentResult, ProjectState } from '@/types'
+import type { Cancellable, ComponentState, IntentResult, ProjectState } from '@/types'
 
 export type ProjectStore = ProjectState & {
   setPrompt: (prompt: string) => void
@@ -11,6 +11,7 @@ export type ProjectStore = ProjectState & {
   setDeployUrl: (url: string | null) => void
   setCost: (cost: number) => void
   setError: (error: string | null) => void
+  setGenerationClient: (client: Cancellable | null) => void
   reset: () => void
 }
 
@@ -23,6 +24,7 @@ const initialState: ProjectState = {
   deployUrl: null,
   cost: 0,
   error: null,
+  generationClient: null,
 }
 
 // Zustand store that holds the current generation's state: prompt, intent,
@@ -54,5 +56,10 @@ export const useProject = create<ProjectStore>((set, get) => ({
 
   setError: (error) => set({ error }),
 
-  reset: () => set(initialState),
+  setGenerationClient: (client) => set({ generationClient: client }),
+
+  reset: () => {
+    get().generationClient?.disconnect()
+    set(initialState)
+  },
 }))

@@ -23,6 +23,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     updateComponent,
     setProjectId,
     setCost,
+    setGenerationClient,
     reset,
     error,
   } = useProject()
@@ -59,6 +60,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     closeCustomize()
 
     const client = new SSEClient()
+    setGenerationClient(client)
     await client.connect(
       `/api/templates/${templateId}/customize`,
       {
@@ -113,6 +115,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
               files: done.files,
             })
           }
+          setGenerationClient(null)
         }
 
         if (event === 'error') {
@@ -120,18 +123,21 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
           setStatus('error')
           setError(message)
           setLoading(false)
+          setGenerationClient(null)
         }
       },
       (err) => {
         setStatus('error')
         setError(err.message)
         setLoading(false)
+        setGenerationClient(null)
       },
       () => {
         if (useProject.getState().status === 'generating') {
           setStatus('ready')
         }
         setLoading(false)
+        setGenerationClient(null)
       }
     )
   }

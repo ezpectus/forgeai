@@ -33,6 +33,7 @@ export function PromptInput() {
     updateComponent,
     setProjectId,
     setCost,
+    setGenerationClient,
     reset,
     status,
     error,
@@ -77,6 +78,7 @@ export function PromptInput() {
     }
 
     const client = new SSEClient()
+    setGenerationClient(client)
     await client.connect(
       '/api/generate',
       {
@@ -131,6 +133,7 @@ export function PromptInput() {
               files: done.files,
             })
           }
+          setGenerationClient(null)
         }
 
         if (event === 'error') {
@@ -138,18 +141,21 @@ export function PromptInput() {
           setStatus('error')
           setError(message)
           setChecking(false)
+          setGenerationClient(null)
         }
       },
       (err) => {
         setStatus('error')
         setError(err.message)
         setChecking(false)
+        setGenerationClient(null)
       },
       () => {
         if (useProject.getState().status === 'generating') {
           setStatus('ready')
         }
         setChecking(false)
+        setGenerationClient(null)
       }
     )
   }

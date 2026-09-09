@@ -22,6 +22,10 @@ export interface ComponentState {
   error?: string
 }
 
+export interface Cancellable {
+  disconnect: () => void
+}
+
 export interface ProjectState {
   projectId: string | null
   prompt: string
@@ -31,6 +35,7 @@ export interface ProjectState {
   deployUrl: string | null
   cost: number
   error: string | null
+  generationClient: Cancellable | null
 }
 
 export interface ProjectRecord {

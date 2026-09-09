@@ -1,5 +1,7 @@
 import { useProject } from '@/stores/project'
+import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { X } from 'lucide-react'
 import { ComponentStatusRow } from './ComponentStatusRow'
 
 /**
@@ -7,7 +9,24 @@ import { ComponentStatusRow } from './ComponentStatusRow'
  * progress bar, estimated cost, and any error.
  */
 export function GenerationProgress() {
-  const { status, components, intent, cost, error } = useProject()
+  const {
+    status,
+    components,
+    intent,
+    cost,
+    error,
+    generationClient,
+    setStatus,
+    setError,
+    setGenerationClient,
+  } = useProject()
+
+  function handleCancel() {
+    generationClient?.disconnect()
+    setStatus('idle')
+    setError('Generation cancelled')
+    setGenerationClient(null)
+  }
 
   const done = components.filter(
     (c) => c.status === 'ready' || c.status === 'error'
@@ -17,7 +36,20 @@ export function GenerationProgress() {
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-4">
-      <h2 className="text-2xl font-bold tracking-tight">Generating...</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">Generating...</h2>
+        {status === 'generating' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCancel}
+            className="gap-1"
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </Button>
+        )}
+      </div>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{status}</span>
