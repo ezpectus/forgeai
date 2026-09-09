@@ -124,7 +124,8 @@ export async function validateComponent(
   }
 
   if (rules.includes('hasDefaultExport')) {
-    if (!/export\s+default\s+function/.test(code)) {
+    // Accept `export default function`, `export default () =>`, `export default Hero`, etc.
+    if (!/export\s+default\s+(?:function|class|\(|\w|<)/i.test(code)) {
       errors.push('component must have a default export')
     }
   }

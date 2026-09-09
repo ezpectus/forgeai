@@ -19,6 +19,10 @@ const PRICES: Record<string, { in: number; out: number }> = {
 // Keep this minimal and update as Google changes the model list.
 const DEPRECATED_MODELS = new Set(['gemini-2.5-flash'])
 
+// Only fall back to stable/cheap flash models — avoid expensive pro models
+// because they have lower rate limits and are more likely to hit 429.
+const GEMINI_FALLBACK_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash']
+
 function stripMarkdownCodeBlock(text: string): string {
   return text
     .replace(/^```[a-z]*\n?/i, '')
@@ -45,11 +49,11 @@ export const Gemini: AIProvider = {
 
     // Build a unique list of candidate models so a deprecated or rate-limited
     // model falls back to the next available one without leaving the provider.
+    // Only use stable/cheap flash models as fallbacks to keep call counts low.
     const seen = new Set<string>()
     const candidates = [
       requestedModel,
-      this.defaultModel,
-      ...this.supportedModels,
+      ...GEMINI_FALLBACK_MODELS,
     ].filter((m) => {
       if (!m || seen.has(m)) return false
       seen.add(m)
