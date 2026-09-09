@@ -30,7 +30,12 @@ export async function fetchOpenRouterModels(): Promise<ModelOption[]> {
     .map((m) => ({
       id: m.id,
       name: m.name ?? m.id,
-      free: (m.pricing?.prompt ?? 0) === 0 && (m.pricing?.completion ?? 0) === 0,
+      // OpenRouter uses the `:free` suffix for free models. Missing pricing
+      // also means zero cost, but we keep both checks for safety.
+      free:
+        m.id.endsWith(':free') ||
+        ((m.pricing?.prompt ?? 0) === 0 &&
+          (m.pricing?.completion ?? 0) === 0),
     }))
 }
 

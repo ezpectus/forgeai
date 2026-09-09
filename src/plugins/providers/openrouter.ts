@@ -27,6 +27,9 @@ export const OpenRouter: AIProvider = {
     'deepseek/deepseek-chat',
     'Qwen/Qwen2.5-Coder',
     'meta-llama/llama-3.1-70b-instruct',
+    'google/gemma-4-31b-it:free',
+    'cohere/north-mini-code:free',
+    'nvidia/nemotron-3.5-lightning:free',
   ],
   defaultModel: 'deepseek/deepseek-chat',
 
@@ -35,7 +38,8 @@ export const OpenRouter: AIProvider = {
     config: GenConfig,
     apiKey: string
   ): Promise<GenResult> {
-    const model = config.model ?? this.defaultModel
+    const requestedModel = config.model ?? this.defaultModel
+
     const messages = []
 
     if (config.systemPrompt) {
@@ -44,53 +48,84 @@ export const OpenRouter: AIProvider = {
 
     messages.push({ role: 'user', content: prompt })
 
-    const res = await fetch(`${API_BASE}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer':
-          process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
-        'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: config.temperature ?? 0.2,
-        max_tokens: config.maxTokens ?? 2048,
-      }),
-    })
+    // Try the requested model, then the other known models. If we hit a 402
+    // (no credits), only try `:free` models afterwards so we do not waste calls
+    // on paid models.
+    const candidates = [
+      requestedModel,
+      ...this.supportedModels.filter((m) => m !== requestedModel),
+    ]
 
-    if (!res.ok) {
-      const data = await res
-        .json()
-        .catch(() => ({ error: { message: 'Unknown OpenRouter error' } }))
-      throw new ProviderError(
-        data.error?.message ?? `OpenRouter error ${res.status}`,
-        res.status
-      )
+    const errors: string[] = []
+    let hit402 = false
+
+    for (const model of candidates) {
+      if (hit402 && !model.endsWith(':free')) continue
+
+      try {
+        const res = await fetch(`${API_BASE}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer':
+              process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
+            'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: config.temperature ?? 0.2,
+            max_tokens: config.maxTokens ?? 2048,
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res
+            .json()
+            .catch(() => ({ error: { message: 'Unknown OpenRouter error' } }))
+          const message =
+            res.status === 402
+              ? 'OpenRouter account has no credits. Add credits or switch to a `:free` model.'
+              : data.error?.message ?? `OpenRouter error ${res.status}`
+          throw new ProviderError(message, res.status)
+        }
+
+        const data = await res.json()
+        const content = data.choices?.[0]?.message?.content
+
+        if (!content || typeof content !== 'string') {
+          throw new ProviderError('OpenRouter returned empty content', 500)
+        }
+
+        const code = stripMarkdownCodeBlock(content)
+        const tokensIn = data.usage?.prompt_tokens ?? 0
+        const tokensOut = data.usage?.completion_tokens ?? 0
+        const cost = this.estimateCost?.(tokensIn, tokensOut, model)
+
+        return {
+          code,
+          model,
+          provider: 'openrouter',
+          tokensIn,
+          tokensOut,
+          cost,
+        }
+      } catch (err) {
+        const status = err instanceof ProviderError ? err.status : 500
+        const message = err instanceof Error ? err.message : String(err)
+
+        if (status === 404 || status === 429 || status === 402) {
+          if (status === 402) hit402 = true
+          errors.push(`${model}: ${message}`)
+          continue
+        }
+
+        throw err
+      }
     }
 
-    const data = await res.json()
-    const content = data.choices?.[0]?.message?.content
-
-    if (!content || typeof content !== 'string') {
-      throw new ProviderError('OpenRouter returned empty content', 500)
-    }
-
-    const code = stripMarkdownCodeBlock(content)
-    const tokensIn = data.usage?.prompt_tokens ?? 0
-    const tokensOut = data.usage?.completion_tokens ?? 0
-    const cost = this.estimateCost?.(tokensIn, tokensOut, model)
-
-    return {
-      code,
-      model,
-      provider: 'openrouter',
-      tokensIn,
-      tokensOut,
-      cost,
-    }
+    throw new ProviderError(`OpenRouter failed: ${errors.join('; ')}`, 503)
   },
 
   async health(apiKey: string): Promise<HealthResult> {
@@ -118,6 +153,8 @@ export const OpenRouter: AIProvider = {
   },
 
   estimateCost(tokensIn: number, tokensOut: number, model: string): number {
+    // OpenRouter models ending in `:free` cost $0.
+    if (model.endsWith(':free')) return 0
     // Use the default model's price for unknown models so the UI never
     // silently shows zero cost.
     const price = PRICES[model] ?? PRICES[this.defaultModel] ?? null

@@ -23,10 +23,12 @@ const providers = [
 
 const fallbackModels: Record<string, ModelSummary[]> = {
   openrouter: [
-    // These are suggestions, not free. OpenRouter free models use the `:free` suffix.
     { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', free: false },
     { id: 'Qwen/Qwen2.5-Coder', name: 'Qwen 2.5 Coder', free: false },
     { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', free: false },
+    { id: 'google/gemma-4-31b-it:free', name: 'Gemma 4 31B (free)', free: true },
+    { id: 'cohere/north-mini-code:free', name: 'Cohere North Mini Code (free)', free: true },
+    { id: 'nvidia/nemotron-3.5-lightning:free', name: 'Nemotron 3.5 (free)', free: true },
   ],
   gemini: [
     { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', free: true },
