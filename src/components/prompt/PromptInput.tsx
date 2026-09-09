@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { useUI } from '@/stores/ui'
+import { functions } from '@/components/layout/Sidebar'
 import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
 import { ModelSelector } from './ModelSelector'
@@ -67,6 +68,9 @@ export function PromptInput() {
   const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
   const isBusy = isGenerating || checking
+  const modeLabel =
+    functions.find((f) => f.id === activeMode)?.label.toLowerCase() ??
+    activeMode
   const promptTooShort = prompt.trim().length > 0 && prompt.trim().length < 10
   const promptTooLong = prompt.length > 2000
   const canGenerate =
@@ -203,7 +207,7 @@ export function PromptInput() {
 
       <div className="space-y-2 text-center">
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Generate a website, deck or report from one sentence.
+          Generate {modeLabel} from one sentence.
         </h1>
         <p className="text-lg text-muted-foreground">
           Type what you want, pick a model, and get a live URL. Open source,
@@ -216,7 +220,7 @@ export function PromptInput() {
       </Label>
       <Textarea
         id="prompt-input"
-        placeholder="Describe the website, slides or report you want..."
+        placeholder={`Describe the ${modeLabel} you want...`}
         value={prompt}
         onChange={(e) => {
           setPromptLocal(e.target.value)
@@ -259,7 +263,7 @@ export function PromptInput() {
             <X className="h-3 w-3" />
             Clear
           </button>
-          <span>Ctrl / Cmd + Enter</span>
+          <span>Mode: {modeLabel} · Ctrl / Cmd + Enter</span>
         </div>
       </div>
 

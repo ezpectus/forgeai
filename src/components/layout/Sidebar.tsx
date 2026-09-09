@@ -26,7 +26,7 @@ import {
   DialogContent,
 } from '@/components/ui/dialog'
 
-const functions = [
+export const functions = [
   { id: 'website', label: 'Website', icon: Globe },
   { id: 'slides', label: 'Slides', icon: Monitor },
   { id: 'images', label: 'Images', icon: Image },
