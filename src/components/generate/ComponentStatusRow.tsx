@@ -8,6 +8,8 @@ import {
   Circle,
   ChevronDown,
   ChevronUp,
+  Copy,
+  Check,
 } from 'lucide-react'
 import type { ComponentState } from '@/types'
 
@@ -33,8 +35,16 @@ export function ComponentStatusRow({
   component: ComponentState
 }) {
   const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
   const Icon = statusIcons[component.status]
   const isSpinning = component.status === 'generating'
+
+  async function handleCopy() {
+    if (!component.code) return
+    await navigator.clipboard.writeText(component.code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   return (
     <div className="rounded-md border p-3">
@@ -53,17 +63,31 @@ export function ComponentStatusRow({
           )}
         </div>
         {component.code && (
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            {open ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleCopy}
+              title="Copy code"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-success" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(!open)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {open ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         )}
       </div>
       {component.error && (
