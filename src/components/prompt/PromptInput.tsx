@@ -192,6 +192,7 @@ export function PromptInput() {
             handleGenerate()
           }
         }}
+        autoResize
         className="min-h-[120px] resize-none text-base"
       />
 

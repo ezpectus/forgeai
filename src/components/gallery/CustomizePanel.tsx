@@ -175,6 +175,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
             handleCustomize()
           }
         }}
+        autoResize
         className="min-h-[120px] resize-none"
       />
 
