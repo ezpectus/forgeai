@@ -62,6 +62,8 @@ The agent follows a three-phase workflow:
 | My Projects history         | ✅ Done    | Saves generations locally; download ZIP or redeploy to Vercel from the history list              |
 | Home template preview       | ✅ Done    | Featured template cards on the prompt screen for one-click start                                 |
 | Modern dark mode            | ✅ Done    | Reworked dark palette with a brand accent                                                        |
+| Cancel generation           | ✅ Done    | Stop a running stream from the progress UI                                                       |
+| Post-generation success     | ✅ Done    | Summary, component list, export, deploy and "new project" in one screen                         |
 | Visual editor overlay       | ✅ v1.0    | Live preview iframe with selection and edit triggers                                             |
 | Differential prompting      | ✅ v1.0    | Sends only the changed component on re-generation                                              |
 | ZIP export                  | ✅ v1.0    | Download the full Next.js project as a ZIP                                                       |
@@ -434,6 +436,8 @@ forgeai/
 - ✅ Featured templates on the home prompt screen
 - ✅ Reworked dark mode palette and benefit-driven hero
 - ✅ API key onboarding help, rate-limit links and health diagnostics in Settings
+- ✅ Cancel a running generation from the progress UI
+- ✅ Post-generation success screen with summary, export, deploy and "new project"
 - 🔄 Roadmap: Multi-page generation, plugin system, Grow layer
 
 ### Release
