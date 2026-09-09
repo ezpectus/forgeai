@@ -30,6 +30,9 @@ export async function fetchOpenRouterModels(): Promise<ModelOption[]> {
     }))
 }
 
+// Models that appear in the Google model list but are deprecated/unavailable for new users.
+const DEPRECATED_GEMINI_MODELS = new Set(['gemini-2.5-flash'])
+
 export async function fetchGeminiModels(apiKey: string): Promise<ModelOption[]> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
@@ -52,7 +55,8 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelOption[]> 
     .filter(
       (m) =>
         m.name &&
-        m.supportedGenerationMethods?.includes('generateContent')
+        m.supportedGenerationMethods?.includes('generateContent') &&
+        !DEPRECATED_GEMINI_MODELS.has(m.name.replace(/^models\//, ''))
     )
     .map((m) => ({
       id: m.name.replace(/^models\//, ''),
