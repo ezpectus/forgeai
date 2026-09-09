@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MainArea` announces view changes via a dedicated screen-reader-only `aria-live` region.
 - Last prompt draft is persisted in `localStorage` and restored in `PromptInput`.
 - Clear button next to the prompt textarea to quickly reset the draft.
+- Clear button next to the customize textarea to quickly reset the customization prompt.
 - Last selected active mode (website/landing/…) is persisted in `localStorage` and restored via `Sidebar`.
 
 ### Fixed
