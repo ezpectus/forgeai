@@ -2,6 +2,7 @@ const STORAGE_KEYS = {
   provider: 'forgeai:lastProvider',
   model: 'forgeai:lastModel',
   prompt: 'forgeai:lastPrompt',
+  activeMode: 'forgeai:lastActiveMode',
 }
 
 /**
@@ -13,15 +14,17 @@ export function getLastGenerationPrefs(): {
   provider: string
   model: string
   prompt: string
+  activeMode: string
 } {
   if (typeof window === 'undefined') {
-    return { provider: 'auto', model: '', prompt: '' }
+    return { provider: 'auto', model: '', prompt: '', activeMode: 'website' }
   }
 
   return {
     provider: localStorage.getItem(STORAGE_KEYS.provider) ?? 'auto',
     model: localStorage.getItem(STORAGE_KEYS.model) ?? '',
     prompt: localStorage.getItem(STORAGE_KEYS.prompt) ?? '',
+    activeMode: localStorage.getItem(STORAGE_KEYS.activeMode) ?? 'website',
   }
 }
 
@@ -30,6 +33,7 @@ export function setLastGenerationPrefs(
     provider: string
     model: string
     prompt: string
+    activeMode: string
   }>
 ) {
   if (typeof window === 'undefined') return
@@ -44,5 +48,9 @@ export function setLastGenerationPrefs(
 
   if (prefs.prompt !== undefined) {
     localStorage.setItem(STORAGE_KEYS.prompt, prefs.prompt)
+  }
+
+  if (prefs.activeMode !== undefined) {
+    localStorage.setItem(STORAGE_KEYS.activeMode, prefs.activeMode)
   }
 }

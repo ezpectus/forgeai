@@ -14,7 +14,12 @@ import {
   Table2,
   Video,
 } from 'lucide-react'
+import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import {
+  getLastGenerationPrefs,
+  setLastGenerationPrefs,
+} from '@/lib/prefs'
 import { useUI } from '@/stores/ui'
 import {
   Dialog,
@@ -59,6 +64,18 @@ export function Sidebar({ className }: { className?: string }) {
     closeProjects,
     projectsOpen,
   } = useUI()
+
+  const { activeMode: lastActiveMode } = getLastGenerationPrefs()
+
+  useEffect(() => {
+    if (lastActiveMode) {
+      setActiveMode(lastActiveMode)
+    }
+  }, [lastActiveMode, setActiveMode])
+
+  useEffect(() => {
+    setLastGenerationPrefs({ activeMode })
+  }, [activeMode])
 
   const isInGallery = galleryOpen || customizeTemplateId !== null
 
