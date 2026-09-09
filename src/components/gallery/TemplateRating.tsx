@@ -28,6 +28,7 @@ export function TemplateRating({
           onMouseEnter={() => setHover(value)}
           onMouseLeave={() => setHover(0)}
           className="p-0.5"
+          aria-label={`Rate ${value} star${value === 1 ? '' : 's'}`}
         >
           <Star
             className={`h-4 w-4 ${

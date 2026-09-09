@@ -37,7 +37,12 @@ export function TemplateCard({
         {template.description}
       </p>
       {onRate && <TemplateRating initialRating={rating} onRate={onRate} />}
-      <Button size="sm" className="mt-3" onClick={() => onSelect(template.id)}>
+      <Button
+        size="sm"
+        className="mt-3"
+        onClick={() => onSelect(template.id)}
+        aria-label={`Customize ${template.name}`}
+      >
         Customize
       </Button>
     </div>

@@ -85,6 +85,7 @@ export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search templates..."
+              aria-label="Search templates"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
@@ -99,6 +100,7 @@ export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
               setType(e.target.value)
               setPage(1)
             }}
+            aria-label="Filter by type"
             className="rounded border bg-background px-2 text-sm"
           >
             {TYPES.map((t) => (
