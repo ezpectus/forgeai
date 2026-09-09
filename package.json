@@ -55,6 +55,7 @@
     "validate": "npm run lint && npm run typecheck && npm run security && npm run test && npm run build",
     "api": "tsx api/main.ts",
     "api:dev": "tsx watch api/main.ts",
+    "dev:all": "concurrently \"npm run api\" \"npm run dev\"",
     "lighthouse": "lighthouse http://localhost:3000 --view"
   },
   "dependencies": {
@@ -78,6 +79,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.3.4",
     "lighthouse": "^13.4.1",

@@ -287,7 +287,15 @@ Start the Next.js frontend in another:
 npm run dev
 ```
 
+Or run both at once with:
+
+```bash
+npm run dev:all
+```
+
 Open `http://localhost:3000`, enter your API keys in Settings, type your idea, and hit Generate.
+
+> If you see `Failed to proxy http://localhost:3001/... ECONNREFUSED`, the API orchestrator is not running. Make sure `npm run api` is started, or use `npm run dev:all`.
 
 The frontend proxies `/api/*` requests to the orchestrator via `API_URL` (default `http://localhost:3001`).
 

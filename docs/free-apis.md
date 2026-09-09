@@ -22,7 +22,11 @@ You need at least one of these. ForgeAI will fall back automatically if one fail
 
 ## Quick setup (free)
 
-1. Start the API server and the Next.js dev server in two terminals:
+1. Start the app. You can either use one terminal:
+   ```bash
+   npm run dev:all  # starts both the API (3001) and the frontend (3000)
+   ```
+   Or run them in two terminals:
    ```bash
    npm run api      # terminal 1 — runs on http://localhost:3001
    npm run dev      # terminal 2 — runs on http://localhost:3000
