@@ -66,7 +66,7 @@ export function LivePreview({
       <iframe
         key={key}
         src={url}
-        sandbox="allow-scripts"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
         className="h-full w-full"
         title="Live preview"
         loading="lazy"
