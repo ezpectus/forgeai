@@ -41,6 +41,26 @@ app.post('/', async (c) => {
     return c.json({ error: 'Prompt is required', code: 'BAD_REQUEST' }, 400)
   }
 
+  const allowedProviders = ['openrouter', 'gemini', 'huggingface']
+  if (body.provider && !allowedProviders.includes(body.provider)) {
+    return c.json(
+      { error: `Unknown provider: ${body.provider}`, code: 'BAD_REQUEST' },
+      400
+    )
+  }
+  if (body.provider && (!body.model || typeof body.model !== 'string')) {
+    return c.json(
+      { error: 'Model is required when provider is set', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+  if (body.model && (!body.provider || typeof body.provider !== 'string')) {
+    return c.json(
+      { error: 'Provider is required when model is set', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+
   const auth: Record<string, string> = { ...(body.auth ?? {}) }
 
   if (!auth.openrouter && !auth.huggingface && !auth.gemini) {
@@ -85,6 +105,8 @@ app.post('/', async (c) => {
         const intent = await analyzeIntent(body.prompt, auth, preferred)
         send('intent', intent)
 
+        const generationPreferred = preferred
+
         const components: ComponentState[] = []
         const rules = [
           'syntax',
@@ -101,18 +123,13 @@ app.post('/', async (c) => {
           const componentName = section.name
           send('component', { name: componentName, status: 'generating' })
 
-          const preferred =
-            body.provider && body.model
-              ? { provider: body.provider, model: body.model }
-              : undefined
-
           let result = await generateComponent(
             body.prompt,
             config,
             componentName,
             auth,
             intent,
-            preferred
+            generationPreferred
           )
 
           if (result.status === 'ready') {
@@ -135,7 +152,8 @@ app.post('/', async (c) => {
                 result.code,
                 validation.errors,
                 auth,
-                intent
+                intent,
+                generationPreferred
               )
             }
           }

@@ -88,6 +88,26 @@ app.post('/:id/customize', async (c) => {
     return c.json({ error: 'Missing API key', code: 'UNAUTHORIZED' }, 401)
   }
 
+  const allowedProviders = ['openrouter', 'gemini', 'huggingface']
+  if (provider && !allowedProviders.includes(provider)) {
+    return c.json(
+      { error: `Unknown provider: ${provider}`, code: 'BAD_REQUEST' },
+      400
+    )
+  }
+  if (provider && (!model || typeof model !== 'string')) {
+    return c.json(
+      { error: 'Model is required when provider is set', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+  if (model && (!provider || typeof provider !== 'string')) {
+    return c.json(
+      { error: 'Provider is required when model is set', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+
   const index = await loadIndex()
   const item = index.find((t) => t.id === id)
 
@@ -161,7 +181,8 @@ app.post('/:id/customize', async (c) => {
                 result.code,
                 validation.errors,
                 auth,
-                intent
+                intent,
+                preferred
               )
             }
           }

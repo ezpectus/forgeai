@@ -14,6 +14,7 @@ export async function retryComponent(
   validationErrors: string[],
   auth: Record<string, string>,
   intent: IntentResult,
+  preferred?: { provider: string; model: string },
   attempt = 0
 ): Promise<ComponentState> {
   if (attempt >= 2) {
@@ -35,7 +36,8 @@ export async function retryComponent(
     config,
     componentName,
     auth,
-    intent
+    intent,
+    preferred
   )
 
   if (result.status === 'error') {
@@ -74,6 +76,7 @@ export async function retryComponent(
     validation.errors,
     auth,
     intent,
+    preferred,
     attempt + 1
   )
 }
