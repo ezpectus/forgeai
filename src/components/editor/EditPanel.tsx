@@ -27,7 +27,7 @@ function DiffView({ oldCode, newCode }: { oldCode: string; newCode: string }) {
 
 export function EditPanel() {
   const { selectedComponent, editorOpen, closeEditor } = useUI()
-  const { components, updateComponent } = useProject()
+  const { components, updateComponent, projectId } = useProject()
   const { openrouter, huggingface, gemini } = useKeys()
 
   const component = components.find((c) => c.name === selectedComponent)
@@ -48,7 +48,7 @@ export function EditPanel() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId: 'forgeai',
+          projectId: projectId ?? 'forgeai',
           componentName: component.name,
           currentCode: component.code,
           instruction: instruction.trim(),

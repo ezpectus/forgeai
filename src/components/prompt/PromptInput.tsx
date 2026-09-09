@@ -310,12 +310,6 @@ export function PromptInput() {
         </p>
       )}
 
-      {error && status === 'error' && (
-        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-
       <div className="grid grid-cols-1 gap-3 text-sm text-muted-foreground sm:grid-cols-3">
         <div className="flex items-center gap-2 rounded border p-3">
           <Rocket className="h-4 w-4 text-primary" />

@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function DeployButton() {
-  const { status, components, setDeployUrl, deployUrl, setError } = useProject()
+  const { status, components, setDeployUrl, deployUrl, setError, projectId } = useProject()
   const { deployStatus, setDeployStatus } = useUI()
   const { vercel } = useKeys()
   const [copied, setCopied] = useState(false)
@@ -52,7 +52,7 @@ export function DeployButton() {
           Authorization: `Bearer ${vercel}`,
         },
         body: JSON.stringify({
-          projectId: 'forgeai',
+          projectId: projectId ?? 'forgeai',
           provider: 'vercel',
           files,
         }),

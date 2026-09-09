@@ -40,7 +40,16 @@ export function HomeTemplates() {
     )
   }
 
-  if (templates.length === 0) return null
+  if (templates.length === 0) {
+    return (
+      <div className="flex w-full flex-col items-center justify-center gap-2 rounded border p-4 text-sm text-muted-foreground">
+        <p>No templates available.</p>
+        <Button variant="link" size="sm" onClick={openGallery}>
+          Browse all templates
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex w-full flex-col gap-3">

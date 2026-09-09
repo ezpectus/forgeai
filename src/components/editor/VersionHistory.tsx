@@ -48,13 +48,17 @@ export function VersionHistory({
         </Button>
       </div>
       <div className="mt-2 flex flex-col gap-2">
-        {visible.map((snapshot, index) => (
-          <div
-            key={snapshot.id}
-            className="flex items-center justify-between rounded border p-2 text-sm"
-          >
-            <div>
-              <span className="font-medium">v{index + 1}</span>
+        {visible.map((snapshot, index) => {
+          const version = showAll
+            ? index + 1
+            : history.length - visible.length + index + 1
+          return (
+            <div
+              key={snapshot.id}
+              className="flex items-center justify-between rounded border p-2 text-sm"
+            >
+              <div>
+                <span className="font-medium">v{version}</span>
               <span className="ml-2 text-xs text-muted-foreground">
                 {timeAgo(snapshot.timestamp)}
               </span>
@@ -72,7 +76,8 @@ export function VersionHistory({
               Restore
             </Button>
           </div>
-        ))}
+        )
+      })}
       </div>
       {history.length > 3 && (
         <Button

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { openUrl } from '@/lib/open-url'
+import { formatCost } from '@/lib/cost-estimate'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { DeployButton, ExportMenu } from '@/components/layout/TopBar'
@@ -49,7 +50,7 @@ export function GenerationSuccess() {
           Your project is ready
         </h2>
         <p className="text-sm text-muted-foreground">
-          {components.length} components · ${cost.toFixed(6)}
+          {components.length} components · {formatCost(cost)}
           {projectId && ` · ID ${projectId.slice(0, 8)}`}
         </p>
       </div>

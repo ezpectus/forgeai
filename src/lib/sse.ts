@@ -33,7 +33,7 @@ export class SSEClient {
     this.controller = new AbortController()
     this.clearTimers()
     this.connectTimer = setTimeout(() => {
-      this.abort(new Error('Connection timed out'))
+      this.abort(new DOMException('Connection timed out', 'AbortError'))
     }, CONNECTION_TIMEOUT_MS)
 
     try {
@@ -78,10 +78,13 @@ export class SSEClient {
     } catch (err) {
       this.clearTimers()
       if (err instanceof Error && err.name === 'AbortError') {
+        const cause = err.cause
+        const reason =
+          cause instanceof Error ? cause.message : err.message
         onError(
           this.cancelled
             ? new Error('Generation cancelled')
-            : new Error('Generation timed out')
+            : new Error(reason || 'Generation timed out')
         )
         return
       }
@@ -92,7 +95,7 @@ export class SSEClient {
   private resetReadTimeout() {
     if (this.readTimer) clearTimeout(this.readTimer)
     this.readTimer = setTimeout(() => {
-      this.abort(new Error('Read timed out'))
+      this.abort(new DOMException('Read timed out', 'AbortError'))
     }, READ_TIMEOUT_MS)
   }
 
@@ -147,7 +150,7 @@ export class SSEClient {
   disconnect(): void {
     this.cancelled = true
     this.clearTimers()
-    this.controller.abort(new Error('Generation cancelled'))
+    this.controller.abort(new DOMException('Generation cancelled', 'AbortError'))
     this.reader?.cancel()
   }
 }
