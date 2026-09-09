@@ -11,6 +11,7 @@ import { getLastGenerationPrefs, setLastGenerationPrefs } from '@/lib/prefs'
 import { SSEClient } from '@/lib/sse'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { useUI } from '@/stores/ui'
 import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
@@ -192,6 +193,9 @@ export function PromptInput() {
         </p>
       </div>
 
+      <Label htmlFor="prompt-input" className="sr-only">
+        What do you want to build?
+      </Label>
       <Textarea
         id="prompt-input"
         placeholder="Describe the website, slides or report you want..."

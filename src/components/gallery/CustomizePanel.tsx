@@ -10,6 +10,7 @@ import { resolveGenerationProvider } from '@/lib/health'
 import { getLastGenerationPrefs, setLastGenerationPrefs } from '@/lib/prefs'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { SSEClient } from '@/lib/sse'
 import { ModelSelector } from '@/components/prompt/ModelSelector'
 import type { ComponentState, IntentResult } from '@/types'
@@ -168,6 +169,9 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         Describe how you want this template customized.
       </p>
 
+      <Label htmlFor="customize-input" className="sr-only">
+        Customize this template
+      </Label>
       <Textarea
         id="customize-input"
         placeholder="Make it bold, minimal, with a dark theme..."
