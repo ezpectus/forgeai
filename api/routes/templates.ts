@@ -108,9 +108,12 @@ app.post('/:id/customize', async (c) => {
         )
       }
 
+      const preferred =
+        provider && model ? { provider, model } : undefined
+
       try {
         send('analyzing', { status: 'analyzing' })
-        const intent = await analyzeIntent(prompt, auth)
+        const intent = await analyzeIntent(prompt, auth, preferred)
         send('intent', intent)
 
         const components = []
@@ -124,9 +127,6 @@ app.post('/:id/customize', async (c) => {
           'formsHaveNames',
           'noForbiddenImports',
         ]
-
-        const preferred =
-          provider && model ? { provider, model } : undefined
 
         for (const section of intent.sections) {
           const componentName = section.name

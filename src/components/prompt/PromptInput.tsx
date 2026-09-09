@@ -5,6 +5,7 @@ import { Globe, Loader2, Rocket, Shield, Sparkles } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useHistory } from '@/stores/history'
+import { resolveGenerationProvider } from '@/lib/health'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
@@ -33,14 +34,17 @@ export function PromptInput() {
     setCost,
     reset,
     status,
+    error,
   } = useProject()
 
   const [prompt, setPromptLocal] = useState('')
   const [provider, setProvider] = useState('auto')
   const [model, setModel] = useState('')
+  const [checking, setChecking] = useState(false)
 
   const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
+  const isBusy = isGenerating || checking
 
   function handleSelect(text: string) {
     setPromptLocal(text)
@@ -56,17 +60,30 @@ export function PromptInput() {
     reset()
     setStatus('generating')
     setError(null)
+    setChecking(true)
+
+    const resolved = await resolveGenerationProvider(provider, model, {
+      openrouter,
+      huggingface,
+      gemini,
+    })
+
+    if (!resolved.ok) {
+      setChecking(false)
+      setStatus('error')
+      setError(resolved.error)
+      return
+    }
 
     const client = new SSEClient()
-    const token = openrouter || huggingface || gemini || ''
     await client.connect(
       '/api/generate',
       {
         prompt: trimmed,
-        provider,
-        model,
+        provider: resolved.provider,
+        model: resolved.model,
         auth: { openrouter, huggingface, gemini },
-        token,
+        token: resolved.token,
       },
       (event, data) => {
         if (event === 'intent') {
@@ -97,14 +114,15 @@ export function PromptInput() {
           if (done.projectId) {
             setProjectId(done.projectId)
           }
+          setChecking(false)
           const state = useProject.getState()
           if (state.projectId) {
             addToHistory({
               id: state.projectId,
               prompt: state.prompt,
               mode: activeMode,
-              provider,
-              model,
+              provider: resolved.provider,
+              model: resolved.model,
               cost: state.cost,
               componentCount: state.components.length,
               status: 'ready',
@@ -117,16 +135,19 @@ export function PromptInput() {
           const { message } = data as { message: string }
           setStatus('error')
           setError(message)
+          setChecking(false)
         }
       },
       (err) => {
         setStatus('error')
         setError(err.message)
+        setChecking(false)
       },
       () => {
         if (useProject.getState().status === 'generating') {
           setStatus('ready')
         }
+        setChecking(false)
       }
     )
   }
@@ -178,12 +199,12 @@ export function PromptInput() {
           </Button>
           <Button
             onClick={handleGenerate}
-            disabled={!prompt.trim() || !hasKeys || isGenerating}
+            disabled={!prompt.trim() || !hasKeys || isBusy}
             className="w-full gap-2 sm:w-auto"
           >
-            {isGenerating && <Loader2 className="h-4 w-4 animate-spin" />}
-            {!isGenerating && <Sparkles className="h-4 w-4" />}
-            Generate
+            {(isBusy || checking) && <Loader2 className="h-4 w-4 animate-spin" />}
+            {!isBusy && <Sparkles className="h-4 w-4" />}
+            {checking ? 'Checking key…' : 'Generate'}
           </Button>
         </div>
       </div>
@@ -191,6 +212,12 @@ export function PromptInput() {
       {!hasKeys && (
         <p className="text-sm text-destructive">
           Add an OpenRouter, HuggingFace, or Gemini key in Settings to generate.
+        </p>
+      )}
+
+      {error && status === 'error' && (
+        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
         </p>
       )}
 

@@ -31,6 +31,24 @@ test.describe('ForgeAI home', () => {
     await page.locator('#openrouter').fill('sk-or-test')
     await page.getByRole('button', { name: 'Save' }).click()
 
+    await page.route('/api/health*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'ok' }),
+      })
+    })
+
+    await page.route('/api/models*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          models: [{ id: 'deepseek/deepseek-chat', name: 'DeepSeek V3' }],
+        }),
+      })
+    })
+
     await page.route('/api/generate', async (route, request) => {
       if (request.method() !== 'POST') {
         await route.continue()

@@ -6,6 +6,7 @@ import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
 import { useHistory } from '@/stores/history'
+import { resolveGenerationProvider } from '@/lib/health'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
@@ -23,6 +24,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     setProjectId,
     setCost,
     reset,
+    error,
   } = useProject()
   const { closeCustomize, activeMode } = useUI()
   const { openrouter, huggingface, gemini } = useKeys()
@@ -41,18 +43,30 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     setError(null)
     setLoading(true)
 
+    const resolved = await resolveGenerationProvider(provider, model, {
+      openrouter,
+      huggingface,
+      gemini,
+    })
+
+    if (!resolved.ok) {
+      setLoading(false)
+      setStatus('error')
+      setError(resolved.error)
+      return
+    }
+
     closeCustomize()
 
     const client = new SSEClient()
-    const token = openrouter || huggingface || gemini || ''
     await client.connect(
       `/api/templates/${templateId}/customize`,
       {
         prompt: prompt.trim(),
-        provider,
-        model,
+        provider: resolved.provider,
+        model: resolved.model,
         auth: { openrouter, huggingface, gemini },
-        token,
+        token: resolved.token,
       },
       (event, data) => {
         if (event === 'intent') {
@@ -90,8 +104,8 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
               id: state.projectId,
               prompt: state.prompt,
               mode: activeMode,
-              provider,
-              model,
+              provider: resolved.provider,
+              model: resolved.model,
               cost: state.cost,
               componentCount: state.components.length,
               status: 'ready',
@@ -156,6 +170,12 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
       {!hasKeys && (
         <p className="text-sm text-destructive">
           Add an API key in Settings to customize this template.
+        </p>
+      )}
+
+      {error && status === 'error' && (
+        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
         </p>
       )}
 

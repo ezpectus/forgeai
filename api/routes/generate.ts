@@ -78,7 +78,11 @@ app.post('/', async (c) => {
       }
 
       try {
-        const intent = await analyzeIntent(body.prompt, auth)
+        const preferred =
+          body.provider && body.model
+            ? { provider: body.provider, model: body.model }
+            : undefined
+        const intent = await analyzeIntent(body.prompt, auth, preferred)
         send('intent', intent)
 
         const components: ComponentState[] = []

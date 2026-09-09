@@ -2,6 +2,7 @@ import { callWithFallback } from './fallback'
 import { OpenRouter } from '@/plugins/providers/openrouter'
 import { Gemini } from '@/plugins/providers/gemini'
 import { HuggingFace } from '@/plugins/providers/huggingface'
+import { providers } from '@/plugins/providers'
 import type { AIProvider, IntentResult, SectionIntent } from '@/types'
 
 const SYSTEM_PROMPT = `You analyze website requests. Return valid JSON only.
@@ -100,18 +101,30 @@ const DEFAULT_INTENT: IntentResult = {
  * Send the user's prompt to an AI model and convert the returned JSON into a
  * structured build plan: sections, palette, tone, and whether a database is needed.
  */
-function buildChain(auth: Record<string, string>) {
+function buildChain(
+  auth: Record<string, string>,
+  preferred?: { provider: string; model: string }
+) {
   const chain: { provider: AIProvider; model: string }[] = []
+  const seen = new Set<string>()
 
-  if (auth.openrouter) {
+  if (preferred && auth[preferred.provider]) {
+    const provider = providers.find((p) => p.name === preferred.provider)
+    if (provider) {
+      chain.push({ provider, model: preferred.model })
+      seen.add(provider.name)
+    }
+  }
+
+  if (auth.openrouter && !seen.has('openrouter')) {
     chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
   }
 
-  if (auth.gemini) {
+  if (auth.gemini && !seen.has('gemini')) {
     chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
   }
 
-  if (auth.huggingface) {
+  if (auth.huggingface && !seen.has('huggingface')) {
     chain.push({
       provider: HuggingFace,
       model: 'deepseek-ai/deepseek-coder-6.7b-instruct',
@@ -123,9 +136,10 @@ function buildChain(auth: Record<string, string>) {
 
 export async function analyzeIntent(
   prompt: string,
-  auth: Record<string, string>
+  auth: Record<string, string>,
+  preferred?: { provider: string; model: string }
 ): Promise<IntentResult> {
-  const chain = buildChain(auth)
+  const chain = buildChain(auth, preferred)
 
   if (chain.length === 0) {
     return DEFAULT_INTENT
