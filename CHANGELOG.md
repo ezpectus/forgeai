@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dedicated `GenerationError` view with error details, "Try again" and "New project" actions.
 - TopBar buttons now have `title` and `aria-label` tooltips for accessibility.
 - `PromptInput` and `CustomizePanel` textareas use `aria-describedby` to link the Ctrl/Cmd+Enter hint.
+- `ComponentStatusRow` copy and expand buttons now have `title` and `aria-label`.
 - `MainArea` announces view changes via a dedicated screen-reader-only `aria-live` region.
 - Last prompt draft is persisted in `localStorage` and restored in `PromptInput`.
 - Clear button next to the prompt textarea to quickly reset the draft.
