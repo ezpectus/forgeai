@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SettingsForm` help links and clear-key buttons now have `aria-label`.
 - `MainArea` announces view changes via a dedicated screen-reader-only `aria-live` region.
 - `GenerationSuccess` now shows real-time deploy status (`Deploying…` / `Deploy failed`) using the existing `deployStatus` state.
+- New `ReportsView` dashboard reachable via the **Reports** sidebar mode. Surfaces analytics summary, recent events, an A/B test playground and email template previews using the existing `src/lib/grow` libraries.
 - Playwright E2E now starts both the Next.js frontend and the Hono API server, and sets `RATE_LIMIT_RPM=1000` during tests to prevent the in-memory rate limiter from flaking the gallery test.
 - Last prompt draft is persisted in `localStorage` and restored in `PromptInput`.
 - Clear button next to the prompt textarea to quickly reset the draft.
