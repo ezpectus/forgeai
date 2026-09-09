@@ -33,10 +33,23 @@ async function checkOne(provider: string, key: string): Promise<HealthCheckResul
     const res = await fetch(`/api/health?provider=${provider}`, {
       headers: { Authorization: `Bearer ${key.trim()}` },
     })
-    const data = (await res.json()) as {
-      status: 'ok' | 'error'
-      error?: string
-      statusCode?: number
+
+    let raw: string | undefined
+    let data: { status: 'ok' | 'error'; error?: string; statusCode?: number }
+    try {
+      raw = await res.text()
+      data = JSON.parse(raw) as {
+        status: 'ok' | 'error'
+        error?: string
+        statusCode?: number
+      }
+    } catch {
+      const body = raw?.slice(0, 120).replace(/\s+/g, ' ') ?? ''
+      data = {
+        status: 'error',
+        error: `Server returned ${res.status} with non-JSON response. Is the API server (npm run api) running? ${body}`,
+        statusCode: res.status,
+      }
     }
 
     const result: HealthCheckResult =
@@ -154,7 +167,19 @@ export async function fetchModels(
 
   try {
     const res = await fetch(`/api/models?provider=${provider}`, { headers })
-    const data = (await res.json()) as { models?: ModelSummary[]; error?: string }
+
+    let raw: string | undefined
+    let data: { models?: ModelSummary[]; error?: string } = {}
+    try {
+      raw = await res.text()
+      data = JSON.parse(raw) as { models?: ModelSummary[]; error?: string }
+    } catch {
+      const body = raw?.slice(0, 120).replace(/\s+/g, ' ') ?? ''
+      data = {
+        error: `Server returned ${res.status} with non-JSON response. Is the API server (npm run api) running? ${body}`,
+      }
+    }
+
     const models = res.ok && data.models ? data.models : []
     modelCache.set(cacheKey, { models, ts: Date.now() })
     return models

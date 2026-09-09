@@ -22,9 +22,16 @@ You need at least one of these. ForgeAI will fall back automatically if one fail
 
 ## Quick setup (free)
 
-1. Get a Gemini API key at https://aistudio.google.com/app/apikey.
-2. Paste it in **Settings > Gemini API Key**.
-3. Click **Test**, then **Save**.
-4. Type a prompt and hit **Generate**.
+1. Start the API server and the Next.js dev server in two terminals:
+   ```bash
+   npm run api      # terminal 1 — runs on http://localhost:3001
+   npm run dev      # terminal 2 — runs on http://localhost:3000
+   ```
+2. Get a Gemini API key at https://aistudio.google.com/app/apikey.
+3. Paste it in **Settings > Gemini API Key**.
+4. Click **Test**, then **Save**.
+5. Type a prompt and hit **Generate**.
+
+If the API server is not running, the **Test** button will show a "non-JSON response" error. Make sure `npm run api` is started first.
 
 If you also add an OpenRouter or HuggingFace key, ForgeAI will try them in order if Gemini is rate-limited.

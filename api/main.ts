@@ -30,6 +30,12 @@ app.use(corsMiddleware)
 app.use(rateLimitMiddleware)
 app.use(authMiddleware)
 
+app.onError((err, c) => {
+  const message = err instanceof Error ? err.message : 'Internal server error'
+  log.error('Unhandled API error:', err)
+  return c.json({ status: 'error', error: message }, 500)
+})
+
 app.get('/', (c) =>
   c.json({
     message: 'ForgeAI API',
