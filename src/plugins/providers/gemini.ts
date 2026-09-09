@@ -8,6 +8,11 @@ import {
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
+// Generating a component (especially the first `intent` call) can take Gemini
+// 30-90s from some regions/keys, so the server should not abort too early.
+const GENERATE_TIMEOUT_MS = 120_000
+const HEALTH_TIMEOUT_MS = 30_000
+
 const PRICES: Record<string, { in: number; out: number }> = {
   'gemini-3.6-flash': { in: 0.075, out: 0.3 },
   'gemini-1.5-flash': { in: 0.075, out: 0.3 },
@@ -85,6 +90,7 @@ export const Gemini: AIProvider = {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
           body: JSON.stringify({
             contents,
             generationConfig: {
@@ -146,13 +152,27 @@ export const Gemini: AIProvider = {
           cost,
         }
       } catch (err) {
-        const status = err instanceof ProviderError ? err.status : 500
-        const message = err instanceof Error ? err.message : String(err)
+        let status = err instanceof ProviderError ? err.status : 500
+        let message = err instanceof Error ? err.message : String(err)
         const lower = message.toLowerCase()
+
+        const isTimeoutError =
+          lower.includes('the operation was aborted') ||
+          lower.includes('connection timed out') ||
+          lower.includes('etimedout') ||
+          lower.includes('econnreset') ||
+          lower.includes('socket') ||
+          lower.includes('network')
+
+        if (isTimeoutError && !(err instanceof ProviderError)) {
+          status = 503
+          message = `Gemini request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
+        }
 
         const isModelUnavailableError =
           status === 404 ||
           status === 429 ||
+          status === 503 ||
           (status === 400 &&
             (lower.includes('no longer available') ||
               lower.includes('not available') ||
@@ -166,7 +186,7 @@ export const Gemini: AIProvider = {
           continue
         }
 
-        throw err
+        throw new ProviderError(message, status)
       }
     }
 
@@ -176,6 +196,7 @@ export const Gemini: AIProvider = {
   async health(apiKey: string): Promise<HealthResult> {
     const res = await fetch(`${API_BASE}/models?key=${apiKey}`, {
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
     })
 
     if (!res.ok) {

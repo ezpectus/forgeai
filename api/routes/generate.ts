@@ -98,6 +98,11 @@ app.post('/', async (c) => {
       }
 
       try {
+        // Send an immediate keep-alive so the client clears its connection
+        // timeout. Some providers (e.g. Gemini) take a long time to start
+        // responding, and the UI would otherwise abort after 30s.
+        send('ping', {})
+
         const preferred =
           body.provider && body.model
             ? { provider: body.provider, model: body.model }
