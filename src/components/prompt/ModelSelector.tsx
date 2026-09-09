@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
-import { fetchModels, type ModelSummary } from '@/lib/health'
+import { fetchModels, checkProviderHealth, type ModelSummary } from '@/lib/health'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -57,6 +58,8 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
     return ''
   }, [provider, openrouter, huggingface, gemini])
 
+  const [health, setHealth] = useState<Record<string, 'ok' | 'error' | 'checking'>>({})
+
   async function loadModels() {
     if (provider === 'auto') {
       setModels([])
@@ -89,6 +92,42 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
     loadModels()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [provider, providerKey])
+
+  useEffect(() => {
+    let cancelled = false
+    async function checkAll() {
+      const next: Record<string, 'ok' | 'error' | 'checking'> = {}
+      for (const p of providers) {
+        if (p.id === 'auto') continue
+        const key =
+          p.id === 'openrouter'
+            ? openrouter
+            : p.id === 'gemini'
+              ? gemini
+              : p.id === 'huggingface'
+                ? huggingface
+                : ''
+        if (!key) {
+          next[p.id] = 'error'
+          continue
+        }
+        next[p.id] = 'checking'
+        const result = await checkProviderHealth(p.id, {
+          openrouter,
+          gemini,
+          huggingface,
+        })
+        if (!cancelled) {
+          next[p.id] = result.ok ? 'ok' : 'error'
+        }
+      }
+      if (!cancelled) setHealth(next)
+    }
+    checkAll()
+    return () => {
+      cancelled = true
+    }
+  }, [openrouter, gemini, huggingface])
 
   const availableProviders = useMemo(
     () =>
@@ -144,7 +183,22 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
           <SelectContent>
             {availableProviders.map((p) => (
               <SelectItem key={p.id} value={p.id}>
-                {p.label}
+                <span className="flex items-center gap-2">
+                  <span
+                    className={
+                      'h-2 w-2 rounded-full ' +
+                      (p.id === 'auto'
+                        ? 'bg-gray-400'
+                        : health[p.id] === 'ok'
+                          ? 'bg-green-500'
+                          : health[p.id] === 'error'
+                            ? 'bg-red-500'
+                            : 'bg-gray-400 animate-pulse')
+                    }
+                    aria-hidden="true"
+                  />
+                  {p.label}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -162,9 +216,21 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {shownModels.map((m) => (
+              {shownModels.map((m, index) => (
                 <SelectItem key={m.id} value={m.id}>
-                  {m.name} {m.free ? '(free)' : ''}
+                  <span className="flex items-center gap-2">
+                    {m.name}
+                    {m.free && (
+                      <Badge variant="secondary" className="text-[10px]">
+                        free
+                      </Badge>
+                    )}
+                    {index === 0 && (
+                      <Badge variant="outline" className="text-[10px]">
+                        recommended
+                      </Badge>
+                    )}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

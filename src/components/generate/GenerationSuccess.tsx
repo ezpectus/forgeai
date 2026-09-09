@@ -1,11 +1,12 @@
 'use client'
 
-import { Check, Plus, ExternalLink, Copy, Loader2, AlertCircle } from 'lucide-react'
+import { Check, Plus, ExternalLink, Copy, Loader2, AlertCircle, Download, Rocket } from 'lucide-react'
 import { useState } from 'react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { openUrl } from '@/lib/open-url'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { DeployButton, ExportMenu } from '@/components/layout/TopBar'
 import { ComponentStatusRow } from './ComponentStatusRow'
 
@@ -75,37 +76,41 @@ export function GenerationSuccess() {
       )}
 
       {deployUrl ? (
-        <div className="flex flex-col gap-2 rounded border p-4">
-          <p className="text-sm font-medium">Live URL</p>
-          <div className="flex items-center gap-2">
-            <a
-              href={deployUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 truncate text-sm text-primary underline"
-            >
-              {deployUrl}
-            </a>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={copyUrl}
-              title="Copy URL"
-              aria-label={copied ? 'URL copied' : 'Copy URL'}
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => openUrl(deployUrl)}
-              title="Open"
-              aria-label="Open in new tab"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Live URL</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <a
+                href={deployUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 truncate text-sm text-primary underline"
+              >
+                {deployUrl}
+              </a>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={copyUrl}
+                title="Copy URL"
+                aria-label={copied ? 'URL copied' : 'Copy URL'}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => openUrl(deployUrl)}
+                title="Open"
+                aria-label="Open in new tab"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : deployStatus === 'deploying' ? (
         <div className="flex items-center gap-2 rounded border p-4 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -117,9 +122,23 @@ export function GenerationSuccess() {
           <span>Deploy failed. Check your Vercel token and try again.</span>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          Export the code or deploy to Vercel to get a live URL.
-        </p>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">What&apos;s next?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+              <div className="flex items-start gap-2">
+                <Download className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Download the full project as a ZIP and run it locally.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Rocket className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Deploy to Vercel in one click if you have a token.</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {components.length > 0 && (
@@ -137,16 +156,21 @@ export function GenerationSuccess() {
         </p>
       )}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2">
-          <ExportMenu />
-          <DeployButton />
-        </div>
-        <Button variant="outline" onClick={handleNewProject} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New project
-        </Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Actions</CardTitle>
+        </CardHeader>
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-2">
+            <ExportMenu />
+            <DeployButton />
+          </div>
+          <Button variant="outline" onClick={handleNewProject} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New project
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
