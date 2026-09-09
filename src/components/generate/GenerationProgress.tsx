@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useProject } from '@/stores/project'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { X } from 'lucide-react'
+import { X, Clock } from 'lucide-react'
 import { ComponentStatusRow } from './ComponentStatusRow'
 
 /**
@@ -34,6 +35,27 @@ export function GenerationProgress() {
   const total = intent?.sections.length ?? 0
   const progress = total > 0 ? Math.round((done / total) * 100) : 0
 
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    if (status !== 'generating') return
+    const start = Date.now()
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000)
+    return () => clearInterval(id)
+  }, [status])
+
+  const generatingNow = components.find((c) => c.status === 'generating')
+  const stepLabel =
+    !intent && total === 0
+      ? 'Analyzing your request…'
+      : done < total
+        ? generatingNow
+          ? `Generating ${generatingNow.name}…`
+          : 'Building sections…'
+        : 'Assembling project…'
+
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+
   return (
     <div className="flex w-full max-w-2xl flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -51,8 +73,14 @@ export function GenerationProgress() {
         )}
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{status}</span>
+      <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between">
+          <span className="font-medium text-foreground">{stepLabel}</span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {formatTime(elapsed)}
+          </span>
+        </div>
         <span>
           {done}/{total} components
         </span>

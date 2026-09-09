@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Globe, Loader2, Rocket, Shield, Sparkles, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useHistory } from '@/stores/history'
@@ -62,6 +63,10 @@ export function PromptInput() {
   const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
   const isBusy = isGenerating || checking
+  const promptTooShort = prompt.trim().length > 0 && prompt.trim().length < 10
+  const promptTooLong = prompt.length > 2000
+  const canGenerate =
+    prompt.trim().length >= 10 && !promptTooLong && hasKeys && !isBusy
 
   function handleSelect(text: string) {
     setPromptLocal(text)
@@ -179,17 +184,17 @@ export function PromptInput() {
     <div className="flex w-full max-w-2xl flex-col gap-6">
       <div className="space-y-2 text-center">
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Build a website from one sentence.
+          Generate a website, deck or report from one sentence.
         </h1>
         <p className="text-lg text-muted-foreground">
-          Prompt → design → live URL. Open source, BYOK, and deployable in
-          seconds.
+          Type what you want, pick a model, and get a live URL. Open source,
+          BYOK, and deployable in seconds.
         </p>
       </div>
 
       <Textarea
         id="prompt-input"
-        placeholder="Describe the website you want..."
+        placeholder="Describe the website, slides or report you want..."
         value={prompt}
         onChange={(e) => {
           setPromptLocal(e.target.value)
@@ -203,14 +208,21 @@ export function PromptInput() {
         }}
         autoResize
         aria-describedby="prompt-hint"
-        className="min-h-[120px] resize-none text-base"
+        className={cn(
+          'min-h-[120px] resize-none text-base',
+          promptTooLong && 'border-destructive focus-visible:ring-destructive'
+        )}
       />
 
       <div
         id="prompt-hint"
         className="flex items-center justify-between text-xs text-muted-foreground"
       >
-        <span>{prompt.length} characters</span>
+        <span className={cn(promptTooLong && 'text-destructive')}>
+          {prompt.length}/2000 characters
+          {promptTooShort && ' — add a few more details'}
+          {promptTooLong && ' — too long'}
+        </span>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -225,7 +237,7 @@ export function PromptInput() {
             <X className="h-3 w-3" />
             Clear
           </button>
-          <span>Ctrl / Cmd + Enter to generate</span>
+          <span>Ctrl / Cmd + Enter</span>
         </div>
       </div>
 
@@ -251,12 +263,17 @@ export function PromptInput() {
           </Button>
           <Button
             onClick={handleGenerate}
-            disabled={!prompt.trim() || !hasKeys || isBusy}
+            disabled={!canGenerate}
             className="w-full gap-2 sm:w-auto"
+            aria-busy={isBusy}
           >
             {(isBusy || checking) && <Loader2 className="h-4 w-4 animate-spin" />}
             {!isBusy && <Sparkles className="h-4 w-4" />}
-            {checking ? 'Checking key…' : 'Generate'}
+            {isGenerating
+              ? 'Generating…'
+              : checking
+                ? 'Checking key…'
+                : 'Generate'}
           </Button>
         </div>
       </div>

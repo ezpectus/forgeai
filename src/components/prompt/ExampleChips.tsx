@@ -1,5 +1,8 @@
+'use client'
+
 import { useUI } from '@/stores/ui'
 import { cn } from '@/lib/utils'
+import { Sparkles } from 'lucide-react'
 
 const examplesByMode: Record<string, string[]> = {
   website: [
@@ -76,17 +79,20 @@ export function ExampleChips({ onSelect }: ExampleChipsProps) {
   const examples = examplesByMode[activeMode] ?? defaultExamples
 
   return (
-    <div className="scrollbar-hide flex w-full gap-2 overflow-x-auto pb-2">
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {examples.map((example) => (
         <button
           key={example}
           type="button"
           onClick={() => onSelect(example)}
+          title={`Try "${example}"`}
+          aria-label={`Try "${example}"`}
           className={cn(
-            'shrink-0 rounded-full border bg-background px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
+            'flex items-center gap-2 rounded border bg-background p-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
           )}
         >
-          {example}
+          <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
+          <span className="line-clamp-2">{example}</span>
         </button>
       ))}
     </div>

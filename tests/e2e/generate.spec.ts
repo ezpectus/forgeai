@@ -11,13 +11,13 @@ test.describe('ForgeAI home', () => {
   test('loads the prompt input page', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle(/ForgeAI/)
-    await expect(page.getByPlaceholder('Describe the website you want...')).toBeVisible()
-    await expect(page.getByText('Build a website from one sentence.')).toBeVisible()
+    await expect(page.getByPlaceholder('Describe the website, slides or report you want...')).toBeVisible()
+    await expect(page.getByText('Generate a website, deck or report from one sentence.')).toBeVisible()
   })
 
   test('prompt input accepts text and shows model selector', async ({ page }) => {
     await page.goto('/')
-    const input = page.getByPlaceholder('Describe the website you want...')
+    const input = page.getByPlaceholder('Describe the website, slides or report you want...')
     await input.fill('A landing page for a yoga studio')
     await expect(input).toHaveValue('A landing page for a yoga studio')
     await expect(page.getByText('Auto (any key)')).toBeVisible()
@@ -64,7 +64,7 @@ test.describe('ForgeAI home', () => {
       })
     })
 
-    await page.getByPlaceholder('Describe the website you want...').fill('A landing page for a yoga studio')
+    await page.getByPlaceholder('Describe the website, slides or report you want...').fill('A landing page for a yoga studio')
     await page.getByRole('button', { name: /^Generate$/ }).click()
 
     // Success screen appears after the stream finishes
