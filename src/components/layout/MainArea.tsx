@@ -50,6 +50,11 @@ const LivePreview = dynamic(
     import('@/components/preview/LivePreview').then((mod) => mod.LivePreview),
   { ssr: false, loading }
 )
+const ReportsView = dynamic(
+  () =>
+    import('@/components/reports/ReportsView').then((mod) => mod.ReportsView),
+  { ssr: false, loading }
+)
 const EditorOverlay = dynamic(
   () =>
     import('@/components/editor/EditorOverlay').then(
@@ -66,7 +71,7 @@ export function MainArea({
   className?: string
 }) {
   const { status, deployUrl, error } = useProject()
-  const { deployStatus, galleryOpen, customizeTemplateId, openCustomize } =
+  const { deployStatus, galleryOpen, customizeTemplateId, openCustomize, activeMode } =
     useUI()
 
   const previewStatus =
@@ -76,7 +81,7 @@ export function MainArea({
         ? 'error'
         : 'building'
 
-  let content = <PromptInput />
+  let content = activeMode === 'reports' ? <ReportsView /> : <PromptInput />
 
   // Navigation (gallery / customize) must take priority over a ready project,
   // otherwise the user can never start a new template after generation.
@@ -102,7 +107,7 @@ export function MainArea({
     content = <GenerationSuccess />
   }
 
-  let viewLabel = 'Prompt input'
+  let viewLabel = activeMode === 'reports' ? 'Growth dashboard' : 'Prompt input'
   if (customizeTemplateId) {
     viewLabel = 'Customizing template'
   } else if (galleryOpen) {
