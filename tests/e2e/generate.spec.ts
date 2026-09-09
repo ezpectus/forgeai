@@ -11,17 +11,20 @@ const sseError = [
   'event: error\ndata: {"message":"Provider refused the request"}',
 ].join('\n\n') + '\n\n'
 
+const promptPlaceholder = 'Describe the website you want...'
+const promptHeading = 'Generate website from one sentence.'
+
 test.describe('ForgeAI home', () => {
   test('loads the prompt input page', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle(/ForgeAI/)
-    await expect(page.getByPlaceholder('Describe the website, slides or report you want...')).toBeVisible()
-    await expect(page.getByText('Generate a website, deck or report from one sentence.')).toBeVisible()
+    await expect(page.getByPlaceholder(promptPlaceholder)).toBeVisible()
+    await expect(page.getByText(promptHeading)).toBeVisible()
   })
 
   test('prompt input accepts text and shows model selector', async ({ page }) => {
     await page.goto('/')
-    const input = page.getByPlaceholder('Describe the website, slides or report you want...')
+    const input = page.getByPlaceholder(promptPlaceholder)
     await input.fill('A landing page for a yoga studio')
     await expect(input).toHaveValue('A landing page for a yoga studio')
     await expect(page.getByText('Auto (any key)')).toBeVisible()
@@ -68,7 +71,7 @@ test.describe('ForgeAI home', () => {
       })
     })
 
-    await page.getByPlaceholder('Describe the website, slides or report you want...').fill('A landing page for a yoga studio')
+    await page.getByPlaceholder(promptPlaceholder).fill('A landing page for a yoga studio')
     await page.getByRole('button', { name: /^Generate$/ }).click()
 
     // Success screen appears after the stream finishes
@@ -142,7 +145,7 @@ test.describe('ForgeAI home', () => {
       }
     })
 
-    await page.getByPlaceholder('Describe the website, slides or report you want...').fill('A landing page for a yoga studio')
+    await page.getByPlaceholder(promptPlaceholder).fill('A landing page for a yoga studio')
     await page.getByRole('button', { name: /^Generate$/ }).click()
 
     // Wait for the progress screen
@@ -196,7 +199,7 @@ test.describe('ForgeAI home', () => {
       })
     })
 
-    await page.getByPlaceholder('Describe the website, slides or report you want...').fill('A landing page for a yoga studio')
+    await page.getByPlaceholder(promptPlaceholder).fill('A landing page for a yoga studio')
     await page.getByRole('button', { name: /^Generate$/ }).click()
 
     // Error screen appears
@@ -265,7 +268,7 @@ test.describe('ForgeAI home', () => {
       })
     })
 
-    await page.getByPlaceholder('Describe the website, slides or report you want...').fill('A landing page for a yoga studio')
+    await page.getByPlaceholder(promptPlaceholder).fill('A landing page for a yoga studio')
     await page.getByRole('button', { name: /^Generate$/ }).click()
 
     await expect(page.getByText('Your project is ready')).toBeVisible({ timeout: 5000 })
