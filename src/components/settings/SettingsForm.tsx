@@ -170,6 +170,7 @@ export function SettingsForm() {
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground"
               title={`Get ${label}`}
+              aria-label={`Get ${label}`}
             >
               <HelpCircle className="h-4 w-4" />
             </a>
@@ -196,6 +197,7 @@ export function SettingsForm() {
                   setValues((prev) => ({ ...prev, [key]: '' }))
                 }
                 title={`Clear ${label}`}
+                aria-label={`Clear ${label}`}
               >
                 <Trash2 className="h-4 w-4 text-muted-foreground" />
               </Button>
