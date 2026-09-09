@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Check, HelpCircle, Loader2, Trash2, X } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useUI } from '@/stores/ui'
+import { checkProviderHealth } from '@/lib/health'
+import type { ProviderKeys } from '@/lib/health'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -109,32 +111,25 @@ export function SettingsForm() {
   async function handleTest(provider: Provider) {
     setTests((prev) => ({ ...prev, [provider]: { status: 'testing' } }))
 
-    const token = (
-      provider === 'supabase'
-        ? (keys.supabaseKey ?? '')
-        : (values[provider as keyof typeof values] ?? '')
-    ).trim()
+    const token = (values[provider as keyof typeof values] ?? '').trim()
+
+    const testKeys: ProviderKeys = {}
+    if (provider === 'openrouter') testKeys.openrouter = token
+    if (provider === 'gemini') testKeys.gemini = token
+    if (provider === 'huggingface') testKeys.huggingface = token
 
     try {
-      const res = await fetch(`/api/health?provider=${provider}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const result = await checkProviderHealth(provider, testKeys)
 
-      if (res.ok) {
+      if (result.ok) {
         setTests((prev) => ({
           ...prev,
           [provider]: { status: 'ok' },
         }))
       } else {
-        const data = await res
-          .json()
-          .catch(() => ({ error: 'Unknown error', statusCode: res.status }))
-        const message = data.statusCode
-          ? `[${data.statusCode}] ${data.error}`
-          : data.error
         setTests((prev) => ({
           ...prev,
-          [provider]: { status: 'error', message },
+          [provider]: { status: 'error', message: result.error ?? 'Test failed' },
         }))
       }
     } catch (err) {
