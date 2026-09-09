@@ -104,6 +104,8 @@ export function MainArea({
 
   return (
     <main
+      aria-live="polite"
+      aria-atomic="true"
       className={cn(
         'flex min-h-0 flex-1 flex-col items-center justify-center overflow-auto p-6',
         className
