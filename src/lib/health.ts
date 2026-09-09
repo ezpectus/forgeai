@@ -12,9 +12,23 @@ interface HealthCheckResult {
 
 const HEALTH_ORDER = ['openrouter', 'gemini', 'huggingface'] as const
 
+// Cache health checks so rapid clicks / repeated Generate presses do not hammer the provider.
+const HEALTH_CACHE_TTL = 30_000
+interface CacheEntry {
+  result: HealthCheckResult
+  ts: number
+}
+const healthCache = new Map<string, CacheEntry>()
+
 type ProviderKey = 'openrouter' | 'gemini' | 'huggingface'
 
 async function checkOne(provider: string, key: string): Promise<HealthCheckResult> {
+  const cacheKey = `${provider}:${key}`
+  const cached = healthCache.get(cacheKey)
+  if (cached && Date.now() - cached.ts < HEALTH_CACHE_TTL) {
+    return cached.result
+  }
+
   try {
     const res = await fetch(`/api/health?provider=${provider}`, {
       headers: { Authorization: `Bearer ${key.trim()}` },
@@ -25,19 +39,25 @@ async function checkOne(provider: string, key: string): Promise<HealthCheckResul
       statusCode?: number
     }
 
-    if (data.status === 'ok') {
-      return { ok: true, provider }
-    }
+    const result: HealthCheckResult =
+      data.status === 'ok'
+        ? { ok: true, provider }
+        : {
+            ok: false,
+            provider,
+            error: `${provider}: [${data.statusCode ?? res.status}] ${data.error ?? 'Health check failed'}`,
+          }
 
-    const status = data.statusCode ?? res.status
-    const message = data.error ?? 'Health check failed'
-    return { ok: false, provider, error: `${provider}: [${status}] ${message}` }
+    healthCache.set(cacheKey, { result, ts: Date.now() })
+    return result
   } catch (err) {
-    return {
+    const result: HealthCheckResult = {
       ok: false,
       provider,
       error: `${provider}: ${err instanceof Error ? err.message : String(err)}`,
     }
+    healthCache.set(cacheKey, { result, ts: Date.now() })
+    return result
   }
 }
 
