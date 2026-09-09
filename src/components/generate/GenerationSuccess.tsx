@@ -1,8 +1,9 @@
 'use client'
 
-import { Check, Plus, ExternalLink, Copy } from 'lucide-react'
+import { Check, Plus, ExternalLink, Copy, Loader2, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useProject } from '@/stores/project'
+import { useUI } from '@/stores/ui'
 import { openUrl } from '@/lib/open-url'
 import { Button } from '@/components/ui/button'
 import { DeployButton, ExportMenu } from '@/components/layout/TopBar'
@@ -24,6 +25,7 @@ export function GenerationSuccess() {
   } = useProject()
 
   const [copied, setCopied] = useState(false)
+  const { deployStatus } = useUI()
 
   function handleNewProject() {
     reset()
@@ -96,6 +98,16 @@ export function GenerationSuccess() {
               <ExternalLink className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+      ) : deployStatus === 'deploying' ? (
+        <div className="flex items-center gap-2 rounded border p-4 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Deploying to Vercel...</span>
+        </div>
+      ) : deployStatus === 'failed' ? (
+        <div className="flex items-center gap-2 rounded border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4" />
+          <span>Deploy failed. Check your Vercel token and try again.</span>
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
