@@ -151,12 +151,12 @@
   },
 
   "model": {
-    "intentModel": "openrouter:deepseek/deepseek-chat",
-    "codeModel": "huggingface:deepseek-coder-7b",
+    "intentModel": "openrouter:openrouter/free",
+    "codeModel": "huggingface:deepseek-ai/DeepSeek-V4-Flash",
     "fallback": [
-      "openrouter:deepseek/deepseek-chat",
-      "openrouter:Qwen/Qwen2.5-Coder",
-      "openrouter:meta-llama/llama-3.1-70b-instruct"
+      "openrouter:openrouter/free",
+      "openrouter:poolside/laguna-s-2.1:free",
+      "openrouter:cohere/north-mini-code:free"
     ]
   },
 

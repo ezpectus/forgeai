@@ -203,7 +203,9 @@ test.describe('ForgeAI home', () => {
     await page.getByRole('button', { name: /^Generate$/ }).click()
 
     // Error screen appears
-    await expect(page.getByText('Generation failed')).toBeVisible({ timeout: 5000 })
+    await expect(
+      page.getByRole('heading', { name: 'Generation failed' })
+    ).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Provider refused the request')).toBeVisible()
 
     // Click Regenerate to run the same prompt again

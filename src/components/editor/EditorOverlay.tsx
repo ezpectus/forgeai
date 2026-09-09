@@ -20,7 +20,10 @@ export function EditorOverlay({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const allowed = getAllowedOrigin()
-      if (allowed && event.origin !== allowed) {
+      // Block messages from unrecognized origins. When deployUrl is not set
+      // (local preview), use the current window's origin as fallback.
+      const expectedOrigin = allowed ?? window.location.origin
+      if (event.origin !== expectedOrigin) {
         return
       }
 

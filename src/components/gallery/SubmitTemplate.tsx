@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 export function SubmitTemplate({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
-  const [type, setType] = useState('website')
+  const [type, setType] = useState('websites')
   const [topic, setTopic] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
@@ -63,10 +63,10 @@ export function SubmitTemplate({ onClose }: { onClose: () => void }) {
         onChange={(e) => setType(e.target.value)}
         className="rounded border bg-background px-3 py-2 text-sm"
       >
-        <option value="website">Website</option>
-        <option value="presentation">Presentation</option>
-        <option value="carousel">Carousel</option>
-        <option value="report">Report</option>
+        <option value="websites">Website</option>
+        <option value="presentations">Presentation</option>
+        <option value="carousels">Carousel</option>
+        <option value="reports">Report</option>
       </select>
       <Textarea
         placeholder="Description and structure..."

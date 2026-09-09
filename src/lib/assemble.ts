@@ -88,15 +88,16 @@ export function assembleProject(
       scripts: {
         dev: 'next dev',
         build: 'next build',
-        start: 'next start',
+        start: 'npx serve dist',
       },
       dependencies: {
         next: versions.next,
         react: versions.react,
         'react-dom': versions['react-dom'],
         'lucide-react': versions['lucide-react'],
-        zustand: versions.zustand,
-        '@supabase/supabase-js': versions['@supabase/supabase-js'],
+        ...(intent.dbRequired
+          ? { '@supabase/supabase-js': versions['@supabase/supabase-js'] }
+          : {}),
       },
       devDependencies: {
         '@types/node': versions['@types/node'],
@@ -303,7 +304,7 @@ export default function RootLayout({
       <head>
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;"
         />
         <script
           type="application/ld+json"
@@ -367,7 +368,7 @@ export function Nav() {
 
   function buildImports(sections: typeof sectionComponents) {
     return sections
-      .map((c) => `import ${c.name} from '../components/sections/${c.name}'`)
+      .map((c) => `import ${c.name} from '@/components/sections/${c.name}'`)
       .filter((value, index, self) => self.indexOf(value) === index)
       .join('\n')
   }
@@ -432,7 +433,7 @@ export function trackFormSubmit(formName: string) {
       page === 'index' ? 'HomePage' : `${page.charAt(0).toUpperCase() + page.slice(1)}Page`
 
     files[path] =
-      `'use client'\n\nimport { useEffect } from 'react'\n${pageImports}${formHandler}\nimport { trackPageView, trackFormSubmit } from '@/lib/analytics'\n\nexport default function ${pageName}() {\n  useEffect(() => {\n    trackPageView('${route}')\n  }, [])\n\n  function handleFormSubmit(name: string) {\n    trackFormSubmit(name)\n  }\n\n  return (\n    <main className="min-h-screen" onSubmit={(e) => {\n      const form = e.target as HTMLFormElement\n      if (form.dataset.form) handleFormSubmit(form.dataset.form)\n    }}>\n${pageRendered}${formHandlerNode}    </main>\n  )\n}\n`
+      `'use client'\n\nimport { useEffect } from 'react'\n${pageImports}${formHandler}\nimport { trackPageView, trackFormSubmit } from '@/lib/analytics'\n\nexport default function ${pageName}() {\n  useEffect(() => {\n    trackPageView('${route}')\n  }, [])\n\n  function handleFormSubmit(name: string) {\n    trackFormSubmit(name)\n  }\n\n  return (\n    <main className="min-h-screen" onSubmit={(e) => {\n      const form = e.target as HTMLFormElement\n      const name = form.dataset.form ?? form.getAttribute('name')\n      if (name) handleFormSubmit(name)\n    }}>\n${pageRendered}${formHandlerNode}    </main>\n  )\n}\n`
   }
 
   const sitemapEntries = pages
@@ -495,7 +496,7 @@ export function FormHandler() {
 
     const handler = async (event: SubmitEvent) => {
       const form = event.target as HTMLFormElement
-      const name = form.dataset.form
+      const name = form.dataset.form ?? form.getAttribute('name')
 
       if (!name) return
 
@@ -549,7 +550,7 @@ export function FormHandler() {
 );
 
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY allow_all ON submissions FOR ALL USING (true);
+CREATE POLICY "allow_inserts" ON submissions FOR INSERT TO anon WITH CHECK (true);
 `
   }
 

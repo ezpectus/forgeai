@@ -7,6 +7,7 @@ import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import { GenerationError } from '@/components/generate/GenerationError'
 
 const loading = () => (
   <div className="flex h-full w-full items-center justify-center p-6">
@@ -35,13 +36,6 @@ const GenerationSuccess = dynamic(
   () =>
     import('@/components/generate/GenerationSuccess').then(
       (mod) => mod.GenerationSuccess
-    ),
-  { ssr: false, loading }
-)
-const GenerationError = dynamic(
-  () =>
-    import('@/components/generate/GenerationError').then(
-      (mod) => mod.GenerationError
     ),
   { ssr: false, loading }
 )

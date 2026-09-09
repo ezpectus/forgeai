@@ -1,12 +1,11 @@
 import { randomUUID } from 'crypto'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
 import { Hono } from 'hono'
 import { analyzeIntent } from '@/lib/intent'
 import { generateComponent } from '@/lib/generate-component'
 import { validateComponent } from '@/lib/validate'
 import { retryComponent } from '@/lib/retry'
 import { assembleProject } from '@/lib/assemble'
+import { loadTemplateConfig } from '../lib/template-loader'
 import type { AppEnv } from '../lib/env'
 import type { ComponentSpec, ComponentState } from '@/types'
 
@@ -71,16 +70,10 @@ app.post('/', async (c) => {
   }
 
   const templateId = body.templateId ?? 'website'
-  const templatePath = join(
-    process.cwd(),
-    'configs/templates',
-    `${templateId}.json`
-  )
 
   let config: ComponentSpec
   try {
-    const raw = await readFile(templatePath, 'utf-8')
-    config = JSON.parse(raw) as ComponentSpec
+    config = await loadTemplateConfig(templateId)
   } catch {
     return c.json(
       { error: `Template config not found: ${templateId}`, code: 'NOT_FOUND' },
@@ -141,7 +134,7 @@ app.post('/', async (c) => {
         const intent = await analyzeIntent(body.prompt, auth, preferred)
         send('intent', intent)
 
-        const generationPreferred = preferred
+        let generationPreferred = preferred
 
         const components: ComponentState[] = []
         const rules = [
@@ -194,12 +187,21 @@ app.post('/', async (c) => {
             }
           }
 
+          if (result.status === 'ready' && result.provider && result.model) {
+            generationPreferred = {
+              provider: result.provider,
+              model: result.model,
+            }
+          }
+
           send('component', {
             name: componentName,
             code: result.code,
             status: result.status,
             cost: result.cost,
             error: result.error,
+            provider: result.provider,
+            model: result.model,
           })
           components.push(result)
         }

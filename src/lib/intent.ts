@@ -3,7 +3,8 @@ import { OpenRouter } from '@/plugins/providers/openrouter'
 import { Gemini } from '@/plugins/providers/gemini'
 import { HuggingFace } from '@/plugins/providers/huggingface'
 import { providers } from '@/plugins/providers'
-import type { AIProvider, IntentResult, SectionIntent } from '@/types'
+import { ProviderError } from '@/types'
+import type { AIProvider, IntentResult, SectionIntent, GenResult } from '@/types'
 
 const SYSTEM_PROMPT = `You analyze website requests. Return valid JSON only.
 Schema: {
@@ -33,8 +34,48 @@ function stripJsonBlock(text: string): string {
   return text
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
-    .replace(/\s*```\s*$/i, '')
+    .replace(/\n```\s*$/i, '')
     .trim()
+}
+
+// Remove trailing commas that are legal in JS but break JSON.parse.
+// Keeps commas inside strings untouched.
+function removeTrailingCommas(json: string): string {
+  let out = ''
+  let inString = false
+  let escape = false
+  for (let i = 0; i < json.length; i++) {
+    const c = json[i]
+    if (escape) {
+      out += c
+      escape = false
+      continue
+    }
+    if (c === '\\') {
+      out += c
+      escape = true
+      continue
+    }
+    if (c === '"') {
+      inString = !inString
+      out += c
+      continue
+    }
+    if (!inString && c === ',') {
+      let j = i + 1
+      while (j < json.length && /\s/.test(json[j])) j++
+      if (j < json.length && (json[j] === '}' || json[j] === ']')) {
+        continue
+      }
+    }
+    out += c
+  }
+  return out
+}
+
+function safeJsonParse(text: string): unknown {
+  const cleaned = removeTrailingCommas(stripJsonBlock(text))
+  return JSON.parse(cleaned)
 }
 
 // Normalize a raw section object into a typed `SectionIntent`, or reject it.
@@ -125,20 +166,17 @@ function buildChain(
   }
 
   if (auth.openrouter && !seen.has('openrouter')) {
-    chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
+    chain.push({ provider: OpenRouter, model: OpenRouter.defaultModel })
     seen.add('openrouter')
   }
 
   if (auth.gemini && !seen.has('gemini')) {
-    chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
+    chain.push({ provider: Gemini, model: Gemini.defaultModel })
     seen.add('gemini')
   }
 
   if (auth.huggingface && !seen.has('huggingface')) {
-    chain.push({
-      provider: HuggingFace,
-      model: 'deepseek-ai/deepseek-coder-6.7b-instruct',
-    })
+    chain.push({ provider: HuggingFace, model: HuggingFace.defaultModel })
     seen.add('huggingface')
   }
 
@@ -165,11 +203,16 @@ export async function analyzeIntent(
         maxTokens: 1024,
       },
       auth,
-      chain
+      chain,
+      (res: GenResult) => {
+        const parsed = safeJsonParse(res.code)
+        if (!parsed || typeof parsed !== 'object') {
+          throw new ProviderError('AI returned non-object JSON', 503)
+        }
+      }
     )
 
-    const cleaned = stripJsonBlock(result.code)
-    const parsed = JSON.parse(cleaned) as unknown
+    const parsed = safeJsonParse(result.code) as unknown
 
     if (!parsed || typeof parsed !== 'object') {
       return { ...DEFAULT_INTENT, warning: 'Could not parse AI response. Using a default plan.' }

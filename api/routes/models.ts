@@ -19,8 +19,8 @@ function pickDefault(
   if (exact) return exact
 
   // Fuzzy fallback: use the model family (provider prefix and base name).
-  // For `deepseek/deepseek-chat` we look for any `deepseek/...`,
-  // for `gemini-1.5-flash` any `gemini-1.5-...`.
+  // For `openrouter/free` we look for any `openrouter/...`,
+  // for `gemini-3.6-flash` any `gemini-3.6-...`.
   const parts = defaultId.split('/')
   const family = parts.length > 1 ? parts[0] : defaultId.split('-').slice(0, 2).join('-')
   return models.find((m) => m.id.startsWith(`${family}/`) || m.id.startsWith(`${family}-`))

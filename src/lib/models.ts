@@ -9,7 +9,7 @@ export async function fetchOpenRouterModels(): Promise<ModelOption[]> {
     headers: {
       'HTTP-Referer':
         process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
-      'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
+      'X-OpenRouter-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
     },
   })
 
@@ -27,25 +27,36 @@ export async function fetchOpenRouterModels(): Promise<ModelOption[]> {
 
   return (data.data ?? [])
     .filter((m) => m.id)
+    .filter((m) => {
+      // Free app — only show free models. OpenRouter uses the `:free` suffix
+      // for free models. Also check zero pricing as a fallback.
+      return (
+        m.id.endsWith(':free') ||
+        m.id === 'openrouter/free' ||
+        ((m.pricing?.prompt ?? 0) === 0 &&
+          (m.pricing?.completion ?? 0) === 0)
+      )
+    })
     .map((m) => ({
       id: m.id,
       name: m.name ?? m.id,
-      // OpenRouter uses the `:free` suffix for free models. Missing pricing
-      // also means zero cost, but we keep both checks for safety.
-      free:
-        m.id.endsWith(':free') ||
-        ((m.pricing?.prompt ?? 0) === 0 &&
-          (m.pricing?.completion ?? 0) === 0),
+      free: true,
     }))
 }
 
-// Models that appear in the Google model list but are deprecated/unavailable for new users.
-// gemini-2.0-flash* was shut down June 2026; 2.5/3.x flash models are current.
+// Models Google has flagged as deprecated/unavailable for new users.
+// gemini-2.0-flash* was shut down June 2026.
+// gemini-1.5-flash* is no longer available for v1beta generateContent.
+// gemini-2.5-flash* is no longer available to new users (Sep 2026).
 const DEPRECATED_GEMINI_MODELS = new Set([
   'gemini-2.0-flash',
   'gemini-2.0-flash-001',
   'gemini-2.0-flash-lite',
   'gemini-2.0-flash-lite-001',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
 ])
 
 export async function fetchGeminiModels(apiKey: string): Promise<ModelOption[]> {
@@ -81,32 +92,59 @@ export async function fetchGeminiModels(apiKey: string): Promise<ModelOption[]> 
 }
 
 export async function fetchHuggingFaceModels(): Promise<ModelOption[]> {
-  // These are known free-to-inference models on HuggingFace's serverless API.
-  return [
-    {
-      id: 'deepseek-ai/deepseek-coder-6.7b-instruct',
-      name: 'DeepSeek Coder 6.7B',
-      free: true,
-    },
-    {
-      id: 'THUDM/glm-4-9b-chat',
-      name: 'THUDM GLM-4 9B Chat',
-      free: true,
-    },
-    {
-      id: 'mistralai/Mistral-7B-Instruct-v0.3',
-      name: 'Mistral 7B Instruct',
-      free: true,
-    },
-    {
-      id: 'meta-llama/Llama-2-7b-chat-hf',
-      name: 'Llama 2 7B Chat',
-      free: true,
-    },
-    {
-      id: 'microsoft/DialoGPT-medium',
-      name: 'DialoGPT Medium',
-      free: true,
-    },
-  ]
+  // Fetch live model list from HuggingFace router. The /v1/models endpoint is
+  // public (no token required) and returns 135+ chat models across 14+ providers.
+  try {
+    const res = await fetch('https://router.huggingface.co/v1/models')
+    if (!res.ok) {
+      throw new Error(`HF models list failed: ${res.status}`)
+    }
+
+    const data = (await res.json()) as {
+      data?: {
+        id: string
+        providers?: {
+          status?: string
+          pricing?: { input?: number; output?: number }
+          is_free?: boolean
+        }[]
+      }[]
+    }
+
+    return (data.data ?? [])
+      .filter((m) => m.id)
+      .filter((m) =>
+        // Only show models with at least one live provider
+        m.providers?.some((p) => p.status === 'live')
+      )
+      .map((m) => {
+        // A model is "free" if any provider has $0 pricing or is_free flag
+        const hasFreeProvider = m.providers?.some(
+          (p) =>
+            p.is_free === true ||
+            ((p.pricing?.input ?? 0) === 0 &&
+             (p.pricing?.output ?? 0) === 0)
+        )
+        return {
+          id: m.id,
+          name: m.id.split('/').pop() ?? m.id,
+          free: hasFreeProvider ?? false,
+        }
+      })
+      .sort((a, b) => {
+        // Free models first, then alphabetical
+        if (a.free && !b.free) return -1
+        if (!a.free && b.free) return 1
+        return a.id.localeCompare(b.id)
+      })
+  } catch {
+    // Fallback to a small curated list if the live fetch fails
+    return [
+      { id: 'deepseek-ai/DeepSeek-V4-Flash', name: 'DeepSeek V4 Flash', free: false },
+      { id: 'Qwen/Qwen3.8-27B', name: 'Qwen 3.8 27B', free: false },
+      { id: 'openai/gpt-oss-120b', name: 'GPT-OSS 120B', free: false },
+      { id: 'zai-org/GLM-5.3-Flash', name: 'GLM 5.3 Flash', free: false },
+      { id: 'meta-llama/Llama-3.1-8B-Instruct', name: 'Llama 3.1 8B', free: false },
+    ]
+  }
 }

@@ -28,6 +28,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     setTemplateId,
     setCost,
     setGenerationClient,
+    setFiles,
     reset,
     error,
   } = useProject()
@@ -52,9 +53,11 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
   }, [provider, model])
 
   async function handleCustomize() {
-    if (!prompt.trim()) return
+    if (!prompt.trim() || !hasKeys || loading) return
 
+    const trimmed = prompt.trim()
     reset()
+    setPrompt(trimmed)
     setTemplateId(templateId)
     setStatus('generating')
     setError(null)
@@ -115,6 +118,9 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
           const done = data as { projectId?: string; files?: Record<string, string> }
           if (done.projectId) {
             setProjectId(done.projectId)
+          }
+          if (done.files) {
+            setFiles(done.files)
           }
           const state = useProject.getState()
           if (state.projectId) {

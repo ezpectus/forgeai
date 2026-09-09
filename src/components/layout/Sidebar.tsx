@@ -21,6 +21,7 @@ import {
   setLastGenerationPrefs,
 } from '@/lib/prefs'
 import { useUI } from '@/stores/ui'
+import { useProject } from '@/stores/project'
 import {
   Dialog,
   DialogContent,
@@ -64,14 +65,19 @@ export function Sidebar({ className }: { className?: string }) {
     closeProjects,
     projectsOpen,
   } = useUI()
+  const reset = useProject((state) => state.reset)
 
-  const { activeMode: lastActiveMode } = getLastGenerationPrefs()
-
+  // Restore last active mode once on mount, then persist changes.
+  // getState() avoids re-subscribing and prevents the infinite update loop
+  // that was caused by getLastGenerationPrefs() returning a new object
+  // reference on every render.
   useEffect(() => {
-    if (lastActiveMode) {
-      setActiveMode(lastActiveMode)
+    const { activeMode: saved } = getLastGenerationPrefs()
+    if (saved && saved !== useUI.getState().activeMode) {
+      setActiveMode(saved)
     }
-  }, [lastActiveMode, setActiveMode])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     setLastGenerationPrefs({ activeMode })
@@ -80,6 +86,9 @@ export function Sidebar({ className }: { className?: string }) {
   const isInGallery = galleryOpen || customizeTemplateId !== null
 
   function selectMode(id: string) {
+    if (id !== activeMode) {
+      reset()
+    }
     setActiveMode(id)
     closeProjects()
     if (isInGallery) {

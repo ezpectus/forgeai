@@ -150,7 +150,11 @@ export class SSEClient {
   disconnect(): void {
     this.cancelled = true
     this.clearTimers()
-    this.controller.abort(new DOMException('Generation cancelled', 'AbortError'))
-    this.reader?.cancel()
+    try {
+      this.controller.abort(new DOMException('Generation cancelled', 'AbortError'))
+    } catch {
+      // controller may already be aborted
+    }
+    this.reader?.cancel().catch(() => {})
   }
 }

@@ -51,7 +51,11 @@ export async function validateComponent(
 
     if (rules.includes('noForbiddenImports') && deps?.allowed) {
       for (const dep of imports) {
-        const pkg = dep.split('/')[0]
+        // For scoped packages like @supabase/supabase-js, take the first two
+        // segments. For non-scoped like react, take the first segment.
+        const pkg = dep.startsWith('@')
+          ? dep.split('/').slice(0, 2).join('/')
+          : dep.split('/')[0]
         if (!deps.allowed.includes(pkg)) {
           errors.push(`unallowed import: ${pkg}`)
         }

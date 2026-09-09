@@ -10,6 +10,8 @@ export interface FallbackTarget {
   model: string
 }
 
+export type ValidateResult = (result: GenResult) => void | Promise<void>
+
 // Simple delay helper used to wait before retrying the next fallback provider.
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -23,7 +25,8 @@ export async function callWithFallback(
   prompt: string,
   config: GenConfig,
   auth: Record<string, string>,
-  chain: FallbackTarget[]
+  chain: FallbackTarget[],
+  validate?: ValidateResult
 ): Promise<GenResult> {
   const errors: string[] = []
 
@@ -37,7 +40,11 @@ export async function callWithFallback(
     }
 
     try {
-      return await provider.generate(prompt, { ...config, model }, apiKey)
+      const result = await provider.generate(prompt, { ...config, model }, apiKey)
+      if (validate) {
+        await validate(result)
+      }
+      return result
     } catch (err) {
       const status = err instanceof ProviderError ? err.status : 500
       const message = err instanceof Error ? err.message : String(err)

@@ -43,6 +43,7 @@ export function PromptInput() {
     setTemplateId,
     setCost,
     setGenerationClient,
+    setFiles,
     reset,
     status,
     error,
@@ -96,7 +97,7 @@ export function PromptInput() {
   }
 
   async function handleGenerate() {
-    if (isBusy || !prompt.trim() || !hasKeys) return
+    if (isBusy || !prompt.trim() || !hasKeys || promptTooLong) return
 
     const trimmed = prompt.trim()
     setPromptLocal(trimmed)
@@ -126,6 +127,7 @@ export function PromptInput() {
       '/api/generate',
       {
         prompt: trimmed,
+        templateId: activeMode,
         provider: resolved.provider,
         model: resolved.model,
         auth: { openrouter, huggingface, gemini },
@@ -159,6 +161,9 @@ export function PromptInput() {
           const done = data as { projectId?: string; files?: Record<string, string> }
           if (done.projectId) {
             setProjectId(done.projectId)
+          }
+          if (done.files) {
+            setFiles(done.files)
           }
           setChecking(false)
           const state = useProject.getState()

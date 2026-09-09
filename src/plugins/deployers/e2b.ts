@@ -59,7 +59,7 @@ export const E2BDeployer: Deployer = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        command: 'npm install && npm run build && npm start',
+        command: 'npm install && npm run build && npx serve dist',
         timeout: 300000,
       }),
     })

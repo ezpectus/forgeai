@@ -37,7 +37,7 @@ export async function retryComponent(
     componentName,
     auth,
     intent,
-    preferred
+    attempt === 0 ? preferred : undefined
   )
 
   if (result.status === 'error') {

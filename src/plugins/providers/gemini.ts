@@ -15,28 +15,29 @@ const HEALTH_TIMEOUT_MS = 30_000
 
 const PRICES: Record<string, { in: number; out: number }> = {
   'gemini-3.6-flash': { in: 0.075, out: 0.3 },
-  'gemini-1.5-flash': { in: 0.075, out: 0.3 },
-  'gemini-1.5-pro': { in: 1.25, out: 5.0 },
-  'gemini-pro': { in: 0.5, out: 1.5 },
+  'gemini-3.5-flash': { in: 0.075, out: 0.3 },
+  'gemini-3.5-flash-lite': { in: 0.0375, out: 0.15 },
 }
 
 // Models Google has flagged as deprecated/unavailable for new users.
-// gemini-2.0-flash* was shut down June 2026; 2.5/3.x flash models are current.
+// gemini-2.0-flash* was shut down June 2026.
+// gemini-1.5-flash* is no longer available for v1beta generateContent.
+// gemini-2.5-flash* is no longer available to new users (Sep 2026).
 const DEPRECATED_MODELS = new Set([
   'gemini-2.0-flash',
   'gemini-2.0-flash-001',
   'gemini-2.0-flash-lite',
   'gemini-2.0-flash-lite-001',
-])
-
-// Only fall back to stable/cheap flash models — avoid expensive pro models
-// because they have lower rate limits and are more likely to hit 429.
-// Ordered from newest (best price/speed) to older/stable options.
-const GEMINI_FALLBACK_MODELS = [
   'gemini-1.5-flash',
   'gemini-1.5-flash-8b',
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
+])
+
+// Fallback order: newest cheap flash models first.
+// Deprecated models (2.0-flash, 1.5-flash, 2.5-flash) are excluded —
+// they always fail and waste time.
+const GEMINI_FALLBACK_MODELS = [
   'gemini-3.6-flash',
   'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
@@ -52,17 +53,11 @@ function stripMarkdownCodeBlock(text: string): string {
 export const Gemini: AIProvider = {
   name: 'gemini',
   supportedModels: [
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b',
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
     'gemini-3.6-flash',
     'gemini-3.5-flash',
     'gemini-3.5-flash-lite',
-    'gemini-1.5-pro',
-    'gemini-pro',
   ],
-  defaultModel: 'gemini-1.5-flash',
+  defaultModel: 'gemini-3.6-flash',
 
   async generate(
     prompt: string,
@@ -122,7 +117,7 @@ export const Gemini: AIProvider = {
             contents,
             generationConfig: {
               temperature: config.temperature ?? 0.2,
-              maxOutputTokens: config.maxTokens ?? 2048,
+              maxOutputTokens: config.maxTokens ?? 8192,
             },
           }),
         })
@@ -163,6 +158,14 @@ export const Gemini: AIProvider = {
 
         if (!content || typeof content !== 'string') {
           throw new ProviderError('Gemini returned empty content', 500)
+        }
+
+        const finishReason = data.candidates[0].finishReason
+        if (finishReason === 'MAX_TOKENS' || finishReason === 'LENGTH') {
+          throw new ProviderError(
+            `Gemini model ${model} produced truncated output`,
+            503
+          )
         }
 
         const code = stripMarkdownCodeBlock(content)

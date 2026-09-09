@@ -20,8 +20,12 @@ const PRICING: Record<
 export function estimateCost(
   prompt: string,
   provider: string,
-  _model: string
+  model: string
 ): number {
+  // Free models cost $0 — check before looking up pricing.
+  if (model.endsWith(':free') || model === 'openrouter/free') return 0
+  if (provider === 'huggingface') return 0
+
   const effectiveProvider = (provider in PRICING ? provider : 'auto') as
     | Provider
     | 'auto'

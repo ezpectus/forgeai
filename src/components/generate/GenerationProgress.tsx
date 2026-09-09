@@ -17,15 +17,11 @@ export function GenerationProgress() {
     cost,
     error,
     generationClient,
-    setStatus,
-    setError,
     setGenerationClient,
   } = useProject()
 
   function handleCancel() {
     generationClient?.disconnect()
-    setStatus('idle')
-    setError('Generation cancelled')
     setGenerationClient(null)
   }
 
@@ -111,7 +107,7 @@ export function GenerationProgress() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
+      <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto pr-1">
         {components.map((component) => (
           <ComponentStatusRow key={component.name} component={component} />
         ))}

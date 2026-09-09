@@ -6,15 +6,18 @@ function makeSuccessResponse(text: string) {
   return {
     ok: true,
     status: 200,
-    json: async () => [{ generated_text: text }],
+    json: async () => ({
+      choices: [{ message: { content: text }, finish_reason: 'stop' }],
+      usage: { prompt_tokens: 10, completion_tokens: 20 },
+    }),
   }
 }
 
-function makeErrorResponse(status: number, text: string) {
+function makeErrorResponse(status: number, message: string) {
   return {
     ok: false,
     status,
-    text: async () => text,
+    json: async () => ({ error: { message } }),
   }
 }
 
@@ -29,12 +32,12 @@ describe('HuggingFace.generate', () => {
 
     const result = await HuggingFace.generate(
       'hero',
-      { model: 'deepseek-ai/deepseek-coder-6.7b-instruct' },
+      { model: 'deepseek-ai/DeepSeek-V4-Flash' },
       'key'
     )
 
     expect(result.code).toBe('export const Hero = () => <div>hi</div>')
-    expect(result.model).toBe('deepseek-ai/deepseek-coder-6.7b-instruct')
+    expect(result.model).toBe('deepseek-ai/DeepSeek-V4-Flash')
     expect(result.provider).toBe('huggingface')
     expect(fetch).toHaveBeenCalledTimes(1)
   })
@@ -44,7 +47,7 @@ describe('HuggingFace.generate', () => {
     vi.stubGlobal('fetch', fetch)
 
     await expect(
-      HuggingFace.generate('hero', { model: 'deepseek-ai/deepseek-coder-6.7b-instruct' }, 'key')
+      HuggingFace.generate('hero', { model: 'deepseek-ai/DeepSeek-V4-Flash' }, 'key')
     ).rejects.toThrow('Rate limit exceeded')
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -59,12 +62,12 @@ describe('HuggingFace.generate', () => {
 
     const result = await HuggingFace.generate(
       'hero',
-      { model: 'deepseek-ai/deepseek-coder-6.7b-instruct' },
+      { model: 'deepseek-ai/DeepSeek-V4-Flash' },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('THUDM/glm-4-9b-chat')
+    expect(result.model).toBe('Qwen/Qwen3.8-27B')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -77,12 +80,12 @@ describe('HuggingFace.generate', () => {
 
     const result = await HuggingFace.generate(
       'hero',
-      { model: 'deepseek-ai/deepseek-coder-6.7b-instruct' },
+      { model: 'deepseek-ai/DeepSeek-V4-Flash' },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('THUDM/glm-4-9b-chat')
+    expect(result.model).toBe('Qwen/Qwen3.8-27B')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -91,7 +94,7 @@ describe('HuggingFace.generate', () => {
     vi.stubGlobal('fetch', fetch)
 
     await expect(
-      HuggingFace.generate('hero', { model: 'deepseek-ai/deepseek-coder-6.7b-instruct' }, 'key')
+      HuggingFace.generate('hero', { model: 'deepseek-ai/DeepSeek-V4-Flash' }, 'key')
     ).rejects.toThrow('Invalid token')
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -103,7 +106,7 @@ describe('HuggingFace.generate', () => {
 
     let err: unknown
     try {
-      await HuggingFace.generate('hero', { model: 'deepseek-ai/deepseek-coder-6.7b-instruct' }, 'key')
+      await HuggingFace.generate('hero', { model: 'deepseek-ai/DeepSeek-V4-Flash' }, 'key')
     } catch (e) {
       err = e
     }

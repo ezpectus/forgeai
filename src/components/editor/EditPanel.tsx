@@ -6,6 +6,7 @@ import { saveSnapshot } from '@/lib/version-history'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
+import { getLastGenerationPrefs } from '@/lib/prefs'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { VersionHistory } from './VersionHistory'
@@ -27,7 +28,7 @@ function DiffView({ oldCode, newCode }: { oldCode: string; newCode: string }) {
 
 export function EditPanel() {
   const { selectedComponent, editorOpen, closeEditor } = useUI()
-  const { components, updateComponent, projectId } = useProject()
+  const { components, updateComponent, projectId, templateId, files, setFiles } = useProject()
   const { openrouter, huggingface, gemini } = useKeys()
 
   const component = components.find((c) => c.name === selectedComponent)
@@ -49,10 +50,15 @@ export function EditPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId: projectId ?? 'forgeai',
+          templateId: templateId ?? 'website',
           componentName: component.name,
           currentCode: component.code,
           instruction: instruction.trim(),
           auth: { openrouter, huggingface, gemini },
+          ...(() => {
+            const { provider, model } = getLastGenerationPrefs()
+            return provider && model ? { provider, model } : {}
+          })(),
         }),
       })
 
@@ -78,8 +84,16 @@ export function EditPanel() {
     updateComponent(component.name, {
       code: newCode,
       version: component.version + 1,
+      status: 'ready',
+      error: undefined,
     })
     saveSnapshot(component.name, newCode, instruction.trim() || undefined)
+    if (files) {
+      setFiles({
+        ...files,
+        [`src/components/sections/${component.name}.tsx`]: newCode,
+      })
+    }
     setNewCode('')
     setInstruction('')
   }
@@ -131,7 +145,15 @@ export function EditPanel() {
         <VersionHistory
           componentName={component.name}
           currentCode={component.code}
-          onRestore={(code) => updateComponent(component.name, { code })}
+          onRestore={(code) => {
+            updateComponent(component.name, { code, status: 'ready', error: undefined })
+            if (files) {
+              setFiles({
+                ...files,
+                [`src/components/sections/${component.name}.tsx`]: code,
+              })
+            }
+          }}
         />
       )}
 

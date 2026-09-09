@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { fetchModels, checkProviderHealth, type ModelSummary } from '@/lib/health'
+import { OpenRouter } from '@/plugins/providers/openrouter'
+import { Gemini } from '@/plugins/providers/gemini'
+import { HuggingFace } from '@/plugins/providers/huggingface'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -21,23 +24,31 @@ const providers = [
   { id: 'huggingface', label: 'HuggingFace' },
 ]
 
+// Build fallback model lists from the provider's own defaultModel + supportedModels
+// so there is a single source of truth and no hardcoded duplicates.
+function buildFallbackModels(provider: string): ModelSummary[] {
+  if (provider === 'openrouter') {
+    return OpenRouter.supportedModels.length > 0
+      ? OpenRouter.supportedModels.map((id) => ({ id, name: id, free: id.endsWith(':free') || id === 'openrouter/free' }))
+      : [{ id: OpenRouter.defaultModel, name: OpenRouter.defaultModel }]
+  }
+  if (provider === 'gemini') {
+    return Gemini.supportedModels.map((id) => ({
+      id,
+      name: id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      free: id.includes('flash') || id.includes('lite'),
+    }))
+  }
+  if (provider === 'huggingface') {
+    return HuggingFace.supportedModels.map((id) => ({ id, name: id, free: true }))
+  }
+  return []
+}
+
 const fallbackModels: Record<string, ModelSummary[]> = {
-  // OpenRouter model IDs change constantly. The live list from
-  // /api/v1/models is the source of truth, so the hardcoded fallback is
-  // intentionally empty. The user must refresh the list if the API call fails.
-  openrouter: [],
-  gemini: [
-    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', free: true },
-    { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash 8B', free: true },
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', free: true },
-    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', free: true },
-    { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', free: true },
-    { id: 'gemini-pro', name: 'Gemini Pro', free: true },
-  ],
-  huggingface: [
-    { id: 'deepseek-ai/deepseek-coder-6.7b-instruct', name: 'DeepSeek Coder 6.7B', free: true },
-    { id: 'THUDM/glm-4-9b-chat', name: 'GLM-4 9B Chat', free: true },
-  ],
+  openrouter: buildFallbackModels('openrouter'),
+  gemini: buildFallbackModels('gemini'),
+  huggingface: buildFallbackModels('huggingface'),
 }
 
 interface ModelSelectorProps {

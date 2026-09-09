@@ -9,12 +9,16 @@ import {
 
 const API_BASE = 'https://openrouter.ai/api/v1'
 
-const GENERATE_TIMEOUT_MS = 120_000
+const GENERATE_TIMEOUT_MS = 90_000
 const HEALTH_TIMEOUT_MS = 30_000
 const MODEL_LIST_TTL_MS = 5 * 60 * 1000
 
 let cachedModelList: string[] | null = null
 let cachedModelListAt = 0
+
+function isFreeModel(id: string): boolean {
+  return id.endsWith(':free') || id === 'openrouter/free'
+}
 
 async function getOpenRouterModels(): Promise<string[]> {
   if (cachedModelList && Date.now() - cachedModelListAt < MODEL_LIST_TTL_MS) {
@@ -23,7 +27,9 @@ async function getOpenRouterModels(): Promise<string[]> {
 
   try {
     const models = await fetchOpenRouterModels()
-    cachedModelList = models.map((m) => m.id)
+    // Only keep free models so the fallback chain doesn't waste requests on
+    // paid models that return 402 and burn the user's daily quota.
+    cachedModelList = models.filter((m) => m.free).map((m) => m.id)
     cachedModelListAt = Date.now()
     return cachedModelList
   } catch {
@@ -40,9 +46,18 @@ const INVALID_MODEL_KEYWORDS = [
 ]
 
 const PRICES: Record<string, { in: number; out: number }> = {
-  'deepseek/deepseek-chat': { in: 0.14, out: 0.28 },
-  'Qwen/Qwen2.5-Coder': { in: 0.3, out: 0.6 },
-  'meta-llama/llama-3.1-70b-instruct': { in: 0.22, out: 0.22 },
+  // Free models are $0
+  'openrouter/free': { in: 0, out: 0 },
+  'poolside/laguna-s-2.1:free': { in: 0, out: 0 },
+  'thinkingmachines/inkling:free': { in: 0, out: 0 },
+  'poolside/laguna-xs-2.1:free': { in: 0, out: 0 },
+  'cohere/north-mini-code:free': { in: 0, out: 0 },
+  'nvidia/nemotron-3-ultra:free': { in: 0, out: 0 },
+  'nvidia/nemotron-3-super:free': { in: 0, out: 0 },
+  'google/gemma-4-26b-a4b:free': { in: 0, out: 0 },
+  'google/gemma-4-31b:free': { in: 0, out: 0 },
+  'minimax/mini-max-m3:free': { in: 0, out: 0 },
+  'inclusionai/ling-3.0-flash-fin:free': { in: 0, out: 0 },
 }
 
 function stripMarkdownCodeBlock(text: string): string {
@@ -54,10 +69,23 @@ function stripMarkdownCodeBlock(text: string): string {
 
 export const OpenRouter: AIProvider = {
   name: 'openrouter',
-  // Hardcoded fallback is intentionally empty. OpenRouter model IDs change
-  // often and the live list from /api/v1/models is the source of truth.
-  supportedModels: [],
-  defaultModel: 'deepseek/deepseek-chat',
+  // Curated free coding models (Sep 2026). Verified against
+  // openrouter.ai/collections/free-models — all have :free suffix.
+  // The live list from /api/v1/models is still the source of truth.
+  supportedModels: [
+    'openrouter/free',
+    'poolside/laguna-s-2.1:free',
+    'poolside/laguna-xs-2.1:free',
+    'thinkingmachines/inkling:free',
+    'cohere/north-mini-code:free',
+    'nvidia/nemotron-3-ultra:free',
+    'nvidia/nemotron-3-super:free',
+    'google/gemma-4-31b:free',
+    'google/gemma-4-26b-a4b:free',
+    'minimax/mini-max-m3:free',
+    'inclusionai/ling-3.0-flash-fin:free',
+  ],
+  defaultModel: 'openrouter/free',
 
   async generate(
     prompt: string,
@@ -88,30 +116,25 @@ export const OpenRouter: AIProvider = {
       modelList = this.supportedModels
     }
 
-    // Build candidates: requested model first, then up to 15 fallbacks.
-    // If the requested model is not in the source list, it is skipped
-    // without a network call (B).
+    // Build candidates: requested model first, then up to 3 fallbacks from the
+    // live list. The requested model is always tried even if it is not in the
+    // live list — the list may be incomplete or cached. If the API rejects it
+    // with a 400 "invalid model", we skip to the next candidate.
     const unique = new Set<string>()
     const candidates: string[] = []
     for (const m of [requestedModel, ...modelList]) {
       if (!m || unique.has(m)) continue
-      if (modelList.length > 0 && !modelList.includes(m)) {
-        // Requested/fallback model not in the provider list — skip without a request.
-        if (m === requestedModel) {
-          errors.push(`${m}: not in OpenRouter model list`)
-        }
-        continue
-      }
       unique.add(m)
       candidates.push(m)
     }
 
-    // Limit fallback depth to avoid long chains.
-    const finalCandidates = candidates.slice(0, 16)
+    // Limit fallback depth to avoid long chains. A free model should respond
+    // quickly; if it does not, it is better to try another provider.
+    const finalCandidates = candidates.slice(0, 3)
     let hit402 = false
 
     for (const model of finalCandidates) {
-      if (hit402 && !model.endsWith(':free')) continue
+      if (hit402 && !isFreeModel(model)) continue
 
       try {
         const res = await fetch(`${API_BASE}/chat/completions`, {
@@ -121,14 +144,14 @@ export const OpenRouter: AIProvider = {
             'Content-Type': 'application/json',
             'HTTP-Referer':
               process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
-            'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
+            'X-OpenRouter-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
           },
           signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
           body: JSON.stringify({
             model,
             messages,
             temperature: config.temperature ?? 0.2,
-            max_tokens: config.maxTokens ?? 2048,
+            max_tokens: config.maxTokens ?? 8192,
           }),
         })
 
@@ -143,11 +166,33 @@ export const OpenRouter: AIProvider = {
           throw new ProviderError(message, res.status)
         }
 
-        const data = await res.json()
-        const content = data.choices?.[0]?.message?.content
+        const data = (await res.json()) as {
+          choices?: {
+            finish_reason?: string
+            message?: {
+              content?: string
+              reasoning?: string
+              reasoning_content?: string
+            }
+          }[]
+          usage?: { prompt_tokens?: number; completion_tokens?: number }
+        }
+
+        // Reasoning models (e.g. nex-n2.5-pro) may put the actual output
+        // in reasoning_content when reasoning_effort is not "none".
+        // Fall back to reasoning_content if content is empty.
+        const msg = data.choices?.[0]?.message
+        const content = msg?.content || msg?.reasoning_content || msg?.reasoning
 
         if (!content || typeof content !== 'string') {
           throw new ProviderError('OpenRouter returned empty content', 500)
+        }
+
+        if (data.choices?.[0]?.finish_reason === 'length') {
+          throw new ProviderError(
+            `OpenRouter model ${model} produced truncated output`,
+            503
+          )
         }
 
         const code = stripMarkdownCodeBlock(content)
@@ -194,7 +239,8 @@ export const OpenRouter: AIProvider = {
           continue
         }
 
-        if (status === 404 || status === 402 || status === 503) {
+        // 500, 502, 503 — upstream provider errors. Try the next model.
+        if (status === 404 || status === 402 || status >= 500) {
           if (status === 402) hit402 = true
           errors.push(`${model}: ${message}`)
           continue
@@ -233,8 +279,8 @@ export const OpenRouter: AIProvider = {
   },
 
   estimateCost(tokensIn: number, tokensOut: number, model: string): number {
-    // OpenRouter models ending in `:free` cost $0.
-    if (model.endsWith(':free')) return 0
+    // Free models (including openrouter/free auto-router) cost $0.
+    if (isFreeModel(model)) return 0
     // Use the default model's price for unknown models so the UI never
     // silently shows zero cost.
     const price = PRICES[model] ?? PRICES[this.defaultModel] ?? null

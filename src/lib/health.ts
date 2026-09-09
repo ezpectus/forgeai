@@ -1,3 +1,7 @@
+import { OpenRouter } from '@/plugins/providers/openrouter'
+import { Gemini } from '@/plugins/providers/gemini'
+import { HuggingFace } from '@/plugins/providers/huggingface'
+
 export type ProviderKeys = Partial<{
   openrouter: string | null
   gemini: string | null
@@ -125,9 +129,9 @@ export async function loadFirstModel(
   }
 
   const defaults: Record<ProviderKey, string> = {
-    openrouter: 'deepseek/deepseek-chat',
-    gemini: 'gemini-1.5-flash',
-    huggingface: 'deepseek-ai/deepseek-coder-6.7b-instruct',
+    openrouter: OpenRouter.defaultModel,
+    gemini: Gemini.defaultModel,
+    huggingface: HuggingFace.defaultModel,
   }
 
   return defaults[provider as ProviderKey] ?? ''
@@ -212,17 +216,11 @@ export async function resolveGenerationProvider(
   else if (resolvedProvider === 'huggingface') token = keys.huggingface ?? ''
   else token = keys.openrouter || keys.gemini || keys.huggingface || ''
 
-  // Respect the user's model selection. If the model is not in the provider's
-  // live list (e.g. stale id or belongs to a different provider), fall back
-  // to the provider's default. This also fixes the `auto` provider ignoring
-  // the selected model.
-  let resolvedModel = ''
-  if (model) {
-    const models = await fetchModels(resolvedProvider, token)
-    if (models.some((m) => m.id === model)) {
-      resolvedModel = model
-    }
-  }
+  // Respect the user's model selection. Always send it to the API — the
+  // provider will reject it with a 400 if the ID is truly invalid, and the
+  // fallback chain handles that. Silently replacing the user's choice based
+  // on a cached/incomplete live list was causing the wrong model to be used.
+  let resolvedModel = model || ''
   if (!resolvedModel) {
     resolvedModel = await loadFirstModel(resolvedProvider, keys)
   }

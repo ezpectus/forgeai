@@ -40,7 +40,7 @@ export function ComponentStatusRow({
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [retrying, setRetrying] = useState(false)
-  const { projectId, prompt, templateId, updateComponent } = useProject()
+  const { projectId, prompt, templateId, updateComponent, files, setFiles } = useProject()
   const { openrouter, huggingface, gemini } = useKeys()
   const Icon = statusIcons[component.status]
   const isSpinning = component.status === 'generating'
@@ -88,6 +88,13 @@ export function ComponentStatusRow({
         cost: updated.cost,
         error: updated.error,
       })
+
+      if (updated.code && files) {
+        setFiles({
+          ...files,
+          [`src/components/sections/${component.name}.tsx`]: updated.code,
+        })
+      }
 
       if (updated.cost !== undefined) {
         const current = useProject.getState().cost

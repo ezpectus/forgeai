@@ -26,23 +26,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function DeployButton() {
-  const { status, components, setDeployUrl, deployUrl, setError, projectId } = useProject()
+  const { status, components, files, setDeployUrl, deployUrl, setError, projectId } = useProject()
   const { deployStatus, setDeployStatus } = useUI()
   const { vercel } = useKeys()
   const [copied, setCopied] = useState(false)
 
   const canDeploy =
-    status === 'ready' && !deployUrl && vercel && deployStatus !== 'deploying'
+    status === 'ready' && vercel && deployStatus !== 'deploying'
 
   async function handleDeploy() {
     if (!canDeploy) return
 
     setDeployStatus('deploying')
 
-    const files: Record<string, string> = {}
-    for (const component of components) {
-      files[`src/components/sections/${component.name}.tsx`] = component.code
-    }
+    const deployFiles = files ?? {}
 
     try {
       const res = await fetch('/api/deploy', {
@@ -54,7 +51,7 @@ export function DeployButton() {
         body: JSON.stringify({
           projectId: projectId ?? 'forgeai',
           provider: 'vercel',
-          files,
+          files: deployFiles,
         }),
       })
 
@@ -120,20 +117,17 @@ export function DeployButton() {
 }
 
 export function ExportMenu() {
-  const { components } = useProject()
+  const { components, files, projectId } = useProject()
   const [open, setOpen] = useState(false)
   const hasComponents = components.length > 0
 
   async function handleDownload() {
-    const files: Record<string, string> = {}
-    for (const component of components) {
-      files[`src/components/sections/${component.name}.tsx`] = component.code
-    }
+    const exportFiles = files ?? {}
 
     const res = await fetch('/api/export', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files }),
+      body: JSON.stringify({ files: exportFiles, projectId }),
     })
 
     if (!res.ok) return

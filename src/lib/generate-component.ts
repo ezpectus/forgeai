@@ -1,5 +1,3 @@
-import { readFile } from 'fs/promises'
-import { join } from 'path'
 import { callWithFallback } from './fallback'
 import { buildSystemPrompt, buildUserPrompt } from './prompt-builder'
 import { HuggingFace } from '@/plugins/providers/huggingface'
@@ -25,20 +23,17 @@ function buildChain(
   }
 
   if (auth.openrouter && !seen.has('openrouter')) {
-    chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
+    chain.push({ provider: OpenRouter, model: OpenRouter.defaultModel })
     seen.add('openrouter')
   }
 
   if (auth.gemini && !seen.has('gemini')) {
-    chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
+    chain.push({ provider: Gemini, model: Gemini.defaultModel })
     seen.add('gemini')
   }
 
   if (auth.huggingface && !seen.has('huggingface')) {
-    chain.push({
-      provider: HuggingFace,
-      model: 'deepseek-ai/deepseek-coder-6.7b-instruct',
-    })
+    chain.push({ provider: HuggingFace, model: HuggingFace.defaultModel })
     seen.add('huggingface')
   }
 
@@ -57,11 +52,9 @@ export async function generateComponent(
   intent: IntentResult,
   preferred?: { provider: string; model: string }
 ): Promise<ComponentState> {
-  const filePath = join(process.cwd(), 'configs/templates', `${config.id}.json`)
-  const raw = await readFile(filePath, 'utf-8')
-  const template = JSON.parse(raw) as ComponentSpec
-
-  const systemPrompt = buildSystemPrompt(template, componentName)
+  // Use the config passed in — it may come from configs/templates/ OR
+  // public/templates/. Re-reading from disk would break for public templates.
+  const systemPrompt = buildSystemPrompt(config, componentName)
 
   const userPrompt = buildUserPrompt(intent, componentName, prompt)
   const chain = buildChain(auth, preferred)
@@ -76,19 +69,32 @@ export async function generateComponent(
     }
   }
 
-  const result = await callWithFallback(
-    userPrompt,
-    { systemPrompt, temperature: 0.2, maxTokens: 2048 },
-    auth,
-    chain
-  )
+  try {
+    const result = await callWithFallback(
+      userPrompt,
+      { systemPrompt, temperature: 0.2, maxTokens: 4096 },
+      auth,
+      chain
+    )
 
-  return {
-    name: componentName,
-    code: result.code,
-    status: 'ready',
-    version: 1,
-    cost: result.cost,
+    return {
+      name: componentName,
+      code: result.code,
+      status: 'ready',
+      version: 1,
+      cost: result.cost,
+      provider: result.provider,
+      model: result.model,
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return {
+      name: componentName,
+      code: '',
+      status: 'error',
+      version: 0,
+      error: message,
+    }
   }
 }
 
@@ -101,16 +107,14 @@ export async function regenerateComponent(
   componentName: string,
   currentCode: string,
   instruction: string,
-  auth: Record<string, string>
+  auth: Record<string, string>,
+  preferred?: { provider: string; model: string }
 ): Promise<ComponentState> {
-  const filePath = join(process.cwd(), 'configs/templates', `${config.id}.json`)
-  const raw = await readFile(filePath, 'utf-8')
-  const template = JSON.parse(raw) as ComponentSpec
-
-  const systemPrompt = buildSystemPrompt(template, componentName)
+  // Use the config passed in — no need to re-read from disk.
+  const systemPrompt = buildSystemPrompt(config, componentName)
   const userPrompt = `Current component code:\n${currentCode}\n\nInstruction: ${instruction}\n\nMake minimal changes. Preserve structure. Return only the TypeScript React component code. No markdown, no explanation.`
 
-  const chain = buildChain(auth)
+  const chain = buildChain(auth, preferred)
 
   if (chain.length === 0) {
     return {
@@ -122,18 +126,31 @@ export async function regenerateComponent(
     }
   }
 
-  const result = await callWithFallback(
-    userPrompt,
-    { systemPrompt, temperature: 0.2, maxTokens: 2048 },
-    auth,
-    chain
-  )
+  try {
+    const result = await callWithFallback(
+      userPrompt,
+      { systemPrompt, temperature: 0.2, maxTokens: 4096 },
+      auth,
+      chain
+    )
 
-  return {
-    name: componentName,
-    code: result.code,
-    status: 'ready',
-    version: 1,
-    cost: result.cost,
+    return {
+      name: componentName,
+      code: result.code,
+      status: 'ready',
+      version: 1,
+      cost: result.cost,
+      provider: result.provider,
+      model: result.model,
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return {
+      name: componentName,
+      code: '',
+      status: 'error',
+      version: 0,
+      error: message,
+    }
   }
 }

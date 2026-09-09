@@ -6,19 +6,37 @@ import {
   type HealthResult,
 } from '@/types'
 
-const API_BASE = 'https://api-inference.huggingface.co'
-const WHOAMI_URL = 'https://huggingface.co/api/whoami'
+// HuggingFace migrated from the old api-inference.huggingface.co endpoint to
+// a new OpenAI-compatible router at router.huggingface.co/v1 (July 2025).
+// The old endpoint is now limited to CPU inference (embeddings, small models).
+const API_BASE = 'https://router.huggingface.co/v1'
 
 const GENERATE_TIMEOUT_MS = 120_000
 const HEALTH_TIMEOUT_MS = 30_000
 
+function stripMarkdownCodeBlock(text: string): string {
+  return text
+    .replace(/^```[a-z]*\n?/i, '')
+    .replace(/\n```\s*$/i, '')
+    .trim()
+}
+
 export const HuggingFace: AIProvider = {
   name: 'huggingface',
+  // Models available through HuggingFace Inference Providers router (Sep 2026).
+  // 135 models total, these are the best for code generation.
+  // Free tier: $0.10/month credits. API: router.huggingface.co/v1
   supportedModels: [
-    'deepseek-ai/deepseek-coder-6.7b-instruct',
-    'THUDM/glm-4-9b-chat',
+    'deepseek-ai/DeepSeek-V4-Flash',
+    'Qwen/Qwen3.8-27B',
+    'openai/gpt-oss-120b',
+    'zai-org/GLM-5.3-Flash',
+    'moonshotai/Kimi-K3',
+    'google/gemma-4-31B-it',
+    'meta-llama/Llama-3.1-8B-Instruct',
+    'thinkingmachines/Inkling',
   ],
-  defaultModel: 'deepseek-ai/deepseek-coder-6.7b-instruct',
+  defaultModel: 'deepseek-ai/DeepSeek-V4-Flash',
 
   async generate(
     prompt: string,
@@ -41,12 +59,13 @@ export const HuggingFace: AIProvider = {
 
     for (const model of candidates) {
       try {
-        // Prepend system instructions if provided; HF serverless takes a single prompt string.
-        const inputs = config.systemPrompt
-          ? `${config.systemPrompt}\n\n---\n\n${prompt}`
-          : prompt
+        const messages = []
+        if (config.systemPrompt) {
+          messages.push({ role: 'system', content: config.systemPrompt })
+        }
+        messages.push({ role: 'user', content: prompt })
 
-        const res = await fetch(`${API_BASE}/models/${model}`, {
+        const res = await fetch(`${API_BASE}/chat/completions`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -54,39 +73,55 @@ export const HuggingFace: AIProvider = {
           },
           signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
           body: JSON.stringify({
-            inputs,
-            parameters: {
-              max_new_tokens: config.maxTokens ?? 2048,
-              return_full_text: false,
-              temperature: config.temperature ?? 0.2,
-            },
+            model,
+            messages,
+            max_tokens: config.maxTokens ?? 8192,
+            temperature: config.temperature ?? 0.2,
           }),
         })
 
         if (!res.ok) {
-          const text = await res.text().catch(() => 'Unknown HuggingFace error')
+          const data = await res
+            .json()
+            .catch(() => ({ error: { message: 'Unknown HuggingFace error' } }))
+          const message =
+            data.error?.message ?? `HuggingFace error ${res.status}`
+          throw new ProviderError(message, res.status)
+        }
+
+        const data = (await res.json()) as {
+          choices?: {
+            finish_reason?: string
+            message?: { content?: string }
+          }[]
+          usage?: { prompt_tokens?: number; completion_tokens?: number }
+        }
+
+        const content = data.choices?.[0]?.message?.content
+
+        if (!content || typeof content !== 'string') {
+          throw new ProviderError('HuggingFace returned empty content', 500)
+        }
+
+        if (data.choices?.[0]?.finish_reason === 'length') {
           throw new ProviderError(
-            `HuggingFace error ${res.status}: ${text}`,
-            res.status
+            `HuggingFace model ${model} produced truncated output`,
+            503
           )
         }
 
-        const data = (await res.json()) as
-          { generated_text: string }[] | { error?: string }
+        const code = stripMarkdownCodeBlock(content)
+        const tokensIn = data.usage?.prompt_tokens ?? 0
+        const tokensOut = data.usage?.completion_tokens ?? 0
 
-        if (Array.isArray(data) && data[0]?.generated_text) {
-          return {
-            code: data[0].generated_text.trim(),
-            model,
-            provider: 'huggingface',
-          }
+        return {
+          code,
+          model,
+          provider: 'huggingface',
+          tokensIn,
+          tokensOut,
+          cost: 0,
         }
-
-        if ('error' in data && data.error) {
-          throw new ProviderError(data.error, 500)
-        }
-
-        throw new ProviderError('HuggingFace returned unexpected response', 500)
       } catch (err) {
         let status = err instanceof ProviderError ? err.status : 500
         let message = err instanceof Error ? err.message : String(err)
@@ -111,7 +146,7 @@ export const HuggingFace: AIProvider = {
           throw new ProviderError(message, 429)
         }
 
-        if (status === 404 || status === 503) {
+        if (status === 404 || status === 503 || status >= 500) {
           errors.push(`${model}: ${message}`)
           continue
         }
@@ -124,16 +159,31 @@ export const HuggingFace: AIProvider = {
   },
 
   async health(apiKey: string): Promise<HealthResult> {
-    const res = await fetch(WHOAMI_URL, {
-      headers: { Authorization: `Bearer ${apiKey}` },
+    // /v1/models is public and doesn't validate the token. The only reliable
+    // way to check a HF token is a minimal chat completion request.
+    const res = await fetch(`${API_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
       signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
+      body: JSON.stringify({
+        model: this.defaultModel,
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 1,
+      }),
     })
 
     if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      const err = data.error?.message ?? ''
       const message =
-        res.status === 429
-          ? 'HuggingFace rate limit exceeded. Try again later.'
-          : `HuggingFace error ${res.status}`
+        res.status === 401
+          ? `Invalid HuggingFace token. Create a fine-grained token with "Make calls to Inference Providers" permission at huggingface.co/settings/tokens. ${err}`
+          : res.status === 429
+            ? 'HuggingFace rate limit exceeded. Try again later.'
+            : `HuggingFace error ${res.status}: ${err}`
       return { ok: false, status: res.status, error: message }
     }
 

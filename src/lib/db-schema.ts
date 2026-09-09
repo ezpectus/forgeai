@@ -36,5 +36,5 @@ export function generateSchema(forms: FormIntent[], projectId: string): string {
 );
 
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY allow_all ON submissions FOR ALL USING (true);`
+CREATE POLICY "allow_inserts" ON submissions FOR INSERT TO anon WITH CHECK (true);`
 }

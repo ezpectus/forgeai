@@ -20,6 +20,10 @@ export interface ComponentState {
   version: number
   cost?: number
   error?: string
+  /** Provider that produced this component (e.g. 'openrouter'). */
+  provider?: string
+  /** Exact model ID that produced this component. */
+  model?: string
 }
 
 export interface Cancellable {
@@ -40,6 +44,8 @@ export interface ProjectState {
   regenerateAt: number
   /** Template / mode used to generate the project (e.g. 'website', 'slides'). */
   templateId: string | null
+  /** Full assembled project files from the generate SSE 'done' event. */
+  files: Record<string, string> | null
 }
 
 export interface ProjectRecord {

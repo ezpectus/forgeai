@@ -1,5 +1,5 @@
 const DB_NAME = 'forgeai-db'
-const DB_VERSION = 2
+const DB_VERSION = 3
 const STORE_NAME = 'keys'
 const HISTORY_STORE = 'history'
 
@@ -71,39 +71,51 @@ export async function deleteKey(id: string): Promise<void> {
 
 // Read a saved project record from the browser's local IndexedDB history store.
 export async function getHistory(): Promise<Record<string, unknown>[]> {
-  const db = await openDB()
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(HISTORY_STORE, 'readonly')
-    const store = tx.objectStore(HISTORY_STORE)
-    const request = store.getAll()
+  try {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(HISTORY_STORE, 'readonly')
+      const store = tx.objectStore(HISTORY_STORE)
+      const request = store.getAll()
 
-    request.onsuccess = () => resolve(request.result as Record<string, unknown>[])
-    request.onerror = () => reject(request.error)
-  })
+      request.onsuccess = () => resolve(request.result as Record<string, unknown>[])
+      request.onerror = () => reject(request.error)
+    })
+  } catch {
+    return []
+  }
 }
 
 // Persist a project record in the browser's local IndexedDB history store.
 export async function saveHistory(id: string, record: Record<string, unknown>): Promise<void> {
-  const db = await openDB()
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(HISTORY_STORE, 'readwrite')
-    const store = tx.objectStore(HISTORY_STORE)
-    const request = store.put({ id, ...record })
+  try {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(HISTORY_STORE, 'readwrite')
+      const store = tx.objectStore(HISTORY_STORE)
+      const request = store.put({ id, ...record })
 
-    request.onsuccess = () => resolve()
-    request.onerror = () => reject(request.error)
-  })
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  } catch {
+    // IndexedDB store may not exist yet (stale DB version). Silently skip.
+  }
 }
 
 // Remove a project record from the browser's local IndexedDB history store.
 export async function deleteHistory(id: string): Promise<void> {
-  const db = await openDB()
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(HISTORY_STORE, 'readwrite')
-    const store = tx.objectStore(HISTORY_STORE)
-    const request = store.delete(id)
+  try {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(HISTORY_STORE, 'readwrite')
+      const store = tx.objectStore(HISTORY_STORE)
+      const request = store.delete(id)
 
-    request.onsuccess = () => resolve()
-    request.onerror = () => reject(request.error)
-  })
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  } catch {
+    // Silently skip if store doesn't exist.
+  }
 }

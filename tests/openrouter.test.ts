@@ -5,9 +5,9 @@ import { ProviderError } from '@/types'
 // Stable test fallback list. OpenRouter.supportedModels is now intentionally
 // empty in production, so tests provide their own fallback.
 const fallbackList = [
-  'deepseek/deepseek-chat',
-  'qwen/qwen-2.5-coder-32b-instruct',
-  'google/gemma-2-9b-it:free',
+  'poolside/laguna-s-2.1:free',
+  'thinkingmachines/inkling:free',
+  'google/gemma-4-31b:free',
 ]
 
 function makeSuccessResponse(text: string) {
@@ -44,12 +44,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+      { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('export const Hero = () => <div>hi</div>')
-    expect(result.model).toBe('deepseek/deepseek-chat')
+    expect(result.model).toBe('poolside/laguna-s-2.1:free')
     expect(result.provider).toBe('openrouter')
     expect(result.tokensIn).toBe(10)
     expect(result.tokensOut).toBe(20)
@@ -65,7 +65,7 @@ describe('OpenRouter.generate', () => {
     await expect(
       OpenRouter.generate(
         'hero',
-        { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+        { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
         'key'
       )
     ).rejects.toThrow('Rate limit exceeded')
@@ -82,12 +82,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+      { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('qwen/qwen-2.5-coder-32b-instruct')
+    expect(result.model).toBe('thinkingmachines/inkling:free')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -100,12 +100,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+      { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('qwen/qwen-2.5-coder-32b-instruct')
+    expect(result.model).toBe('thinkingmachines/inkling:free')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -118,7 +118,7 @@ describe('OpenRouter.generate', () => {
     await expect(
       OpenRouter.generate(
         'hero',
-        { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+        { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
         'key'
       )
     ).rejects.toThrow('Invalid API key')
@@ -135,12 +135,12 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+      { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('free model ok')
-    expect(result.model).toBe('google/gemma-2-9b-it:free')
+    expect(result.model).toBe('thinkingmachines/inkling:free')
     expect(result.cost).toBe(0)
     expect(fetch).toHaveBeenCalledTimes(2)
   })
@@ -155,7 +155,7 @@ describe('OpenRouter.generate', () => {
     try {
       await OpenRouter.generate(
         'hero',
-        { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+        { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
         'key'
       )
     } catch (e) {
@@ -169,23 +169,28 @@ describe('OpenRouter.generate', () => {
   it('skips 400 "invalid model" and falls back', async () => {
     const fetch = vi
       .fn()
-      .mockResolvedValueOnce(makeErrorResponse(400, 'deepseek/deepseek-chat is not a valid model ID'))
+      .mockResolvedValueOnce(makeErrorResponse(400, 'poolside/laguna-s-2.1:free is not a valid model ID'))
       .mockResolvedValueOnce(makeSuccessResponse('ok'))
     vi.stubGlobal('fetch', fetch)
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat', fallback: fallbackList },
+      { model: 'poolside/laguna-s-2.1:free', fallback: fallbackList },
       'key'
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('qwen/qwen-2.5-coder-32b-instruct')
+    expect(result.model).toBe('thinkingmachines/inkling:free')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
-  it('skips a requested model that is not in the fallback list without a network call', async () => {
-    const fetch = vi.fn().mockResolvedValue(makeSuccessResponse('ok'))
+  it('tries a requested model even if not in the fallback list, then falls back on 400', async () => {
+    // First call: API rejects the stale model with 400 "not a valid model"
+    // Second call: API succeeds with the first fallback model
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(makeErrorResponse(400, 'stale/unknown-model is not a valid model'))
+      .mockResolvedValueOnce(makeSuccessResponse('ok'))
     vi.stubGlobal('fetch', fetch)
 
     const result = await OpenRouter.generate(
@@ -195,7 +200,7 @@ describe('OpenRouter.generate', () => {
     )
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('deepseek/deepseek-chat')
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(result.model).toBe('poolside/laguna-s-2.1:free')
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })

@@ -156,9 +156,9 @@ flowchart TB
     end
 
     subgraph Providers["External APIs (BYOK)"]
-        OpenRouter["OpenRouter<br/>DeepSeek / Qwen / 200+ models"]
-        HuggingFace["HuggingFace<br/>DeepSeek Coder / GLM-4"]
-        Gemini["Gemini<br/>Free tier"]
+        OpenRouter["OpenRouter<br/>Free models only"]
+        HuggingFace["HuggingFace<br/>135+ models, $0.10/mo"]
+        Gemini["Gemini<br/>3 flash models, free tier"]
         Vercel["Vercel Build API"]
         E2B["E2B Sandbox"]
         Supabase["Supabase<br/>PostgreSQL"]
@@ -233,19 +233,9 @@ Run the app, generate a project, then add your own PNGs to `public/screenshots/`
 
 ## Cost
 
-With a **Gemini** key the generation is effectively **$0** (1,500 requests/day free tier). With **OpenRouter** / **HuggingFace** paid models, the typical cost is:
+**Free models cost $0.** OpenRouter `:free` models, HuggingFace ($0.10/mo credits), and Gemini (1500 RPD) are all free. The UI cost estimate shows **$0** for free models.
 
-| Step                      | Model                                | Cost        |
-| ------------------------- | ------------------------------------ | ----------- |
-| Intent analysis           | DeepSeek V3 / Gemini 1.5 Flash       | $0.0003     |
-| Component generation (×6) | DeepSeek Coder / Gemini 1.5 Flash    | $0.0012     |
-| Validation retry (avg 1)  | Same as code-gen                     | $0.0003     |
-| Layout assembly           | DeepSeek V3 / Gemini 1.5 Flash       | $0.0005     |
-| **Total per generation**  |                                      | **~$0.002** |
-
-Compare: $0.15–0.30 with GPT-4o, $0.10–0.20 with Claude. This stack is **50–100x cheaper**.
-
----
+Paid models (~$0.002/generation) are 50–100x cheaper than GPT-4o (~$0.15–0.30).
 
 ## Getting Started
 
@@ -447,14 +437,14 @@ MIT licensed. PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 **Where do I get API keys?**
 
-- OpenRouter: [openrouter.ai/keys](https://openrouter.ai/keys) — sign up, create a key, add $1-5 credit
-- HuggingFace: [hf.co/settings/tokens](https://hf.co/settings/tokens) — sign up, create a Read token (free)
-- Gemini: [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) — free tier with generous limits
+- OpenRouter: [openrouter.ai/keys](https://openrouter.ai/keys) — sign up, create a key. Free models need **no credit**. Paid models need $1-5 credit.
+- HuggingFace: [hf.co/settings/tokens](https://hf.co/settings/tokens) — sign up, create a **fine-grained token** with **"Make calls to Inference Providers"** permission. $0.10/mo free credits.
+- Gemini: [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) — free tier, 1500 RPD
 - Supabase: [supabase.com](https://supabase.com) — create a project (free tier), find keys in Settings > API
 - Vercel: [vercel.com/account/tokens](https://vercel.com/account/tokens) — create a token
 
 **How much does it cost?**
-~$0.002 per generation. You pay the AI provider directly. $1 of OpenRouter credit = ~500 generations.
+**$0 with free models.** OpenRouter `:free` models need no credits. HuggingFace gives $0.10/mo free. Gemini has 1500 RPD free. Paid models cost ~$0.002/generation.
 
 **Why does my API key fail even though the provider dashboard shows 0 usage?**
 Dashboards like Google AI Studio show quota for the selected project. `0/60 RPM` means no requests were counted for that project in the last 28 days — it does not guarantee the key is active, attached to that project, or that the Generative Language API is enabled. ForgeAI runs a `/api/health` check before every generation and shows the exact error (e.g. `[400] API key not valid`). See `internal/bug-report.md` for a full diagnostic guide.

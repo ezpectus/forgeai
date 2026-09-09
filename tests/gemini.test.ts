@@ -39,10 +39,10 @@ describe('Gemini.generate', () => {
       )
     vi.stubGlobal('fetch', fetch)
 
-    const result = await Gemini.generate('hero', { model: 'gemini-1.5-flash' }, 'key')
+    const result = await Gemini.generate('hero', { model: 'gemini-3.6-flash' }, 'key')
 
     expect(result.code).toBe('export const Hero = () => <div>hi</div>')
-    expect(result.model).toBe('gemini-1.5-flash')
+    expect(result.model).toBe('gemini-3.6-flash')
     expect(result.provider).toBe('gemini')
     expect(result.tokensIn).toBe(10)
     expect(result.tokensOut).toBe(20)
@@ -57,7 +57,7 @@ describe('Gemini.generate', () => {
     vi.stubGlobal('fetch', fetch)
 
     await expect(
-      Gemini.generate('hero', { model: 'gemini-1.5-flash' }, 'key')
+      Gemini.generate('hero', { model: 'gemini-3.6-flash' }, 'key')
     ).rejects.toThrow('Resource has been exhausted')
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -70,10 +70,10 @@ describe('Gemini.generate', () => {
       .mockResolvedValueOnce(makeSuccessResponse('ok'))
     vi.stubGlobal('fetch', fetch)
 
-    const result = await Gemini.generate('hero', { model: 'gemini-1.5-flash' }, 'key')
+    const result = await Gemini.generate('hero', { model: 'gemini-3.6-flash' }, 'key')
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('gemini-1.5-flash-8b')
+    expect(result.model).toBe('gemini-3.5-flash')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -84,10 +84,10 @@ describe('Gemini.generate', () => {
       .mockResolvedValueOnce(makeSuccessResponse('ok'))
     vi.stubGlobal('fetch', fetch)
 
-    const result = await Gemini.generate('hero', { model: 'gemini-1.5-flash' }, 'key')
+    const result = await Gemini.generate('hero', { model: 'gemini-3.6-flash' }, 'key')
 
     expect(result.code).toBe('ok')
-    expect(result.model).toBe('gemini-1.5-flash-8b')
+    expect(result.model).toBe('gemini-3.5-flash')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -100,7 +100,7 @@ describe('Gemini.generate', () => {
     vi.stubGlobal('fetch', fetch)
 
     await expect(
-      Gemini.generate('hero', { model: 'gemini-1.5-flash' }, 'key')
+      Gemini.generate('hero', { model: 'gemini-3.6-flash' }, 'key')
     ).rejects.toThrow('API key not valid')
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -114,7 +114,7 @@ describe('Gemini.generate', () => {
 
     let err: unknown
     try {
-      await Gemini.generate('hero', { model: 'gemini-1.5-flash' }, 'key')
+      await Gemini.generate('hero', { model: 'gemini-3.6-flash' }, 'key')
     } catch (e) {
       err = e
     }
