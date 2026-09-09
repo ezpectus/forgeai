@@ -51,6 +51,7 @@ export function LivePreview({
             size="icon"
             onClick={() => setKey((k) => k + 1)}
             title="Refresh preview"
+            aria-label="Refresh preview"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -59,6 +60,7 @@ export function LivePreview({
             size="icon"
             onClick={() => openUrl(url)}
             title="Open in new tab"
+            aria-label="Open in new tab"
           >
             <ExternalLink className="h-4 w-4" />
           </Button>
