@@ -72,9 +72,9 @@ The agent follows a three-phase workflow:
 | Template library            | ✅ v1.0    | Template gallery with search, filter and customization panel                                     |
 | Security & validation       | ✅ v1.0    | esbuild parse, AST scan, prompt-injection tests, CSP, rate limiting                              |
 | Unit + E2E tests            | ✅ v1.0    | Vitest + Playwright with mocked API                                                              |
-| Multi-page generation       | 🔄 Roadmap | Home, About, Contact, Blog with navigation                                                       |
+| Multi-page generation       | ✅ Done    | Home, About, Contact, Blog with navigation and shared `Nav` component                            |
 | Plugin system            | 🔄 Roadmap | Add custom AI models, deployers, templates (interface exists, sample in README)               |
-| Grow layer               | 🔄 Roadmap | SEO, analytics, email automation, A/B testing after deployment                                |
+| Grow layer               | ✅ Done    | SEO, analytics, email automation, A/B testing after deployment (via Reports dashboard)         |
 | AI voice agent           | 🔄 Future  | Add a voice agent to any deployed site                                                        |
 | Messaging integration    | 🔄 Future  | Run the agent from Telegram, Slack, Discord                                                   |
 

@@ -1,6 +1,6 @@
 {
   "name": "forgeai",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Open-source prompt-to-live-URL generator. BYOK, self-hostable, MIT licensed.",
   "private": false,
   "license": "MIT",

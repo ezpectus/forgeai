@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- No unreleased changes yet.
+
+## [1.1.0] - 2026-09-09
+
+### Added
+
 - Pre-generation provider health check in `src/lib/health.ts`.
   - Validates the selected or auto-detected provider before starting generation.
   - Returns exact HTTP status and provider error message (e.g. `[400] API key not valid`).
