@@ -314,6 +314,11 @@ API_PORT=3001
 API_URL=http://localhost:3001
 CORS_ORIGINS=http://localhost:3000
 
+# `development` disables API rate limiting so dev UX is not blocked.
+# `production` enforces RATE_LIMIT_RPM (defaults to 10).
+NODE_ENV=development
+RATE_LIMIT_RPM=10
+
 docker-compose up
 ```
 
@@ -341,38 +346,44 @@ For self-hosted deployments, you can put keys in `.env` instead.
 Add your own:
 
 ```typescript
-// plugins/providers/my-provider.ts
-import type { AIProvider } from '@/types'
+// src/plugins/providers/my-provider.ts
+import { ProviderError, type AIProvider, type GenConfig, type GenResult } from '@/types'
 
 export const MyProvider: AIProvider = {
   name: 'my-provider',
-  async generate(prompt, config) {
+  supportedModels: ['my-model'],
+  defaultModel: 'my-model',
+  async generate(prompt: string, config: GenConfig, apiKey: string): Promise<GenResult> {
     // call your API
-    return { code: '...' }
+    return { code: '...', model: config.model ?? 'my-model', provider: 'my-provider' }
   },
-  async health() {
-    return true
+  async health(apiKey: string) {
+    // check that the provider is reachable
+    return { ok: true }
+  },
+  estimateCost(tokensIn: number, tokensOut: number) {
+    return 0
   },
 }
 ```
 
 ```typescript
-// plugins/deployers/my-deployer.ts
+// src/plugins/deployers/my-deployer.ts
 import type { Deployer } from '@/types'
 
 export const MyDeployer: Deployer = {
   name: 'my-deployer',
-  async deploy(files) {
+  async deploy(files, apiKey: string) {
     // deploy to your platform
     return { url: 'https://...', deployId: '...' }
   },
-  async status(deployId) {
+  async status(deployId, apiKey: string) {
     return { status: 'ready', url: '...' }
   },
 }
 ```
 
-Register in `plugins/index.ts`. No core code changes needed.
+Register providers in `src/plugins/providers/index.ts` and deployers in `src/plugins/deployers/index.ts`. No core code changes needed.
 
 ---
 

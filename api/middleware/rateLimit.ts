@@ -6,7 +6,13 @@ interface RateLimitEntry {
 }
 
 const limits = new Map<string, RateLimitEntry>()
-const LIMIT = Number(process.env.RATE_LIMIT_RPM ?? 10)
+// In development (NODE_ENV is unset or not 'production') the limit defaults to
+// 0 so the dev UX is not blocked by aggressive throttling. Set RATE_LIMIT_RPM
+// or NODE_ENV=production to enforce real limits.
+const LIMIT = Number(
+  process.env.RATE_LIMIT_RPM ??
+    (process.env.NODE_ENV === 'production' ? 10 : 0)
+)
 const WINDOW_MS = 60_000
 
 /**
@@ -14,6 +20,11 @@ const WINDOW_MS = 60_000
  * requests per minute and returns `429` with `RateLimit-*` headers when exceeded.
  */
 export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
+  if (LIMIT <= 0) {
+    await next()
+    return
+  }
+
   const ip = c.req.header('x-forwarded-for') ?? 'unknown'
   const now = Date.now()
   const entry = limits.get(ip)

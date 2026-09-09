@@ -1,14 +1,20 @@
-import { describe, expect, it } from 'vitest'
-import app from '../../api/main'
+import { describe, expect, it, beforeAll } from 'vitest'
+
+let app: typeof import('../../api/main').default
 
 describe('API security headers', () => {
   const routes = ['/api/health', '/api/templates']
 
+  beforeAll(async () => {
+    // Force a fixed rate-limit ceiling for the tests so the middleware is not
+    // disabled in the dev (NODE_ENV != 'production') default.
+    process.env.RATE_LIMIT_RPM = '10'
+    app = (await import('../../api/main')).default
+  })
+
   it('applies security headers on all routes', async () => {
     for (const route of routes) {
-      const res = await app.fetch(
-        new Request(`http://localhost:3001${route}`)
-      )
+      const res = await app.fetch(new Request(`http://localhost:3001${route}`))
 
       expect(res.status).toBe(200)
       expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff')
@@ -29,14 +35,14 @@ describe('API security headers', () => {
 
     expect(res.status).toBe(200)
     expect(res.headers.get('RateLimit-Limit')).toBe(
-      String(process.env.RATE_LIMIT_RPM ?? 10)
+      String(process.env.RATE_LIMIT_RPM)
     )
     expect(Number(res.headers.get('RateLimit-Remaining'))).toBeGreaterThanOrEqual(0)
     expect(Number(res.headers.get('RateLimit-Reset'))).toBeGreaterThan(0)
   })
 
   it('enforces rate limiting after the configured burst', async () => {
-    const limit = Number(process.env.RATE_LIMIT_RPM ?? 10)
+    const limit = Number(process.env.RATE_LIMIT_RPM)
     const url = 'http://localhost:3001/api/health'
     const headers = { 'x-forwarded-for': '10.0.0.2' }
 
