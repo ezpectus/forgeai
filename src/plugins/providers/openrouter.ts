@@ -49,8 +49,9 @@ export const OpenRouter: AIProvider = {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'ForgeAI',
+        'HTTP-Referer':
+          process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
+        'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
       },
       body: JSON.stringify({
         model,
@@ -113,7 +114,9 @@ export const OpenRouter: AIProvider = {
   },
 
   estimateCost(tokensIn: number, tokensOut: number, model: string): number {
-    const price = PRICES[model]
+    // Use the default model's price for unknown models so the UI never
+    // silently shows zero cost.
+    const price = PRICES[model] ?? PRICES[this.defaultModel] ?? null
     if (!price) return 0
     return (tokensIn * price.in + tokensOut * price.out) / 1_000_000
   },

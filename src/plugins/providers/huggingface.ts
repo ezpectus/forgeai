@@ -24,6 +24,11 @@ export const HuggingFace: AIProvider = {
   ): Promise<GenResult> {
     const model = config.model ?? this.defaultModel
 
+    // Prepend system instructions if provided; HF serverless takes a single prompt string.
+    const inputs = config.systemPrompt
+      ? `${config.systemPrompt}\n\n---\n\n${prompt}`
+      : prompt
+
     const res = await fetch(`${API_BASE}/models/${model}`, {
       method: 'POST',
       headers: {
@@ -31,10 +36,11 @@ export const HuggingFace: AIProvider = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: prompt,
+        inputs,
         parameters: {
           max_new_tokens: config.maxTokens ?? 2048,
           return_full_text: false,
+          temperature: config.temperature ?? 0.2,
         },
       }),
     })

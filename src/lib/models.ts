@@ -6,7 +6,11 @@ export interface ModelOption {
 
 export async function fetchOpenRouterModels(): Promise<ModelOption[]> {
   const res = await fetch('https://openrouter.ai/api/v1/models', {
-    headers: { 'HTTP-Referer': 'http://localhost:3000', 'X-Title': 'ForgeAI' },
+    headers: {
+      'HTTP-Referer':
+        process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
+      'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
+    },
   })
 
   if (!res.ok) {
