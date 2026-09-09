@@ -40,9 +40,13 @@ export function PromptInput() {
     error,
   } = useProject()
 
-  const { provider: lastProvider, model: lastModel } = getLastGenerationPrefs()
+  const {
+    provider: lastProvider,
+    model: lastModel,
+    prompt: lastPrompt,
+  } = getLastGenerationPrefs()
 
-  const [prompt, setPromptLocal] = useState('')
+  const [prompt, setPromptLocal] = useState(lastPrompt)
   const [provider, setProvider] = useState(lastProvider)
   const [model, setModel] = useState(lastModel)
   const [checking, setChecking] = useState(false)
@@ -50,6 +54,10 @@ export function PromptInput() {
   useEffect(() => {
     setLastGenerationPrefs({ provider, model })
   }, [provider, model])
+
+  useEffect(() => {
+    setLastGenerationPrefs({ prompt })
+  }, [prompt])
 
   const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
