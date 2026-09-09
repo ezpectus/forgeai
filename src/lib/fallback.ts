@@ -51,7 +51,14 @@ export async function callWithFallback(
         status === 429 ||
         status >= 500
       ) {
-        const delay = Math.min(2 ** i * 1000, 8000)
+        // Capacity (503) needs a longer wait; rate limits (429) need less but
+        // still enough to clear; other transient errors use short backoff.
+        const delay =
+          status === 503
+            ? Math.min(2 ** i * 5000, 30_000)
+            : status === 429
+              ? Math.min(2 ** i * 2000, 8_000)
+              : Math.min(2 ** i * 1000, 8_000)
         await sleep(delay)
         errors.push(`${provider.name}: ${message}`)
         continue

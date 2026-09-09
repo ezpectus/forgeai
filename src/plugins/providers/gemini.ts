@@ -33,13 +33,13 @@ const DEPRECATED_MODELS = new Set([
 // because they have lower rate limits and are more likely to hit 429.
 // Ordered from newest (best price/speed) to older/stable options.
 const GEMINI_FALLBACK_MODELS = [
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
   'gemini-3.6-flash',
   'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
 ]
 
 function stripMarkdownCodeBlock(text: string): string {
@@ -56,17 +56,17 @@ function sleep(ms: number): Promise<void> {
 export const Gemini: AIProvider = {
   name: 'gemini',
   supportedModels: [
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
     'gemini-3.6-flash',
     'gemini-3.5-flash',
     'gemini-3.5-flash-lite',
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b',
     'gemini-1.5-pro',
     'gemini-pro',
   ],
-  defaultModel: 'gemini-3.6-flash',
+  defaultModel: 'gemini-1.5-flash',
 
   async generate(
     prompt: string,
@@ -83,138 +83,154 @@ export const Gemini: AIProvider = {
       requestedModel,
       ...GEMINI_FALLBACK_MODELS,
     ].filter((m) => {
-      if (!m || seen.has(m)) return false
+      if (!m || seen.has(m) || DEPRECATED_MODELS.has(m)) return false
       seen.add(m)
       return true
     })
 
     const errors: string[] = []
+    const KEYWORDS = [
+      'no longer available',
+      'not available',
+      'not found',
+      'deprecated',
+      'invalid argument',
+      'unsupported',
+    ]
 
     for (const model of candidates) {
-      try {
-        const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`
+      // 429/503 are transient; give each model two attempts before moving on.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`
 
-        const parts = [{ text: prompt }]
-        const contents = []
+          const parts = [{ text: prompt }]
+          const contents = []
 
-        if (config.systemPrompt) {
-          contents.push({
-            role: 'user',
-            parts: [
-              {
-                text: `System instruction (you must follow it): ${config.systemPrompt}\n\n---\n\n${prompt}`,
+          if (config.systemPrompt) {
+            contents.push({
+              role: 'user',
+              parts: [
+                {
+                  text: `System instruction (you must follow it): ${config.systemPrompt}\n\n---\n\n${prompt}`,
+                },
+              ],
+            })
+          } else {
+            contents.push({ role: 'user', parts })
+          }
+
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
+            body: JSON.stringify({
+              contents,
+              generationConfig: {
+                temperature: config.temperature ?? 0.2,
+                maxOutputTokens: config.maxTokens ?? 2048,
               },
-            ],
+            }),
           })
-        } else {
-          contents.push({ role: 'user', parts })
-        }
 
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
-          body: JSON.stringify({
-            contents,
-            generationConfig: {
-              temperature: config.temperature ?? 0.2,
-              maxOutputTokens: config.maxTokens ?? 2048,
-            },
-          }),
-        })
-
-        if (!res.ok) {
-          const data = await res
-            .json()
-            .catch(() => ({ error: { message: 'Unknown Gemini error' } }))
-          throw new ProviderError(
-            data.error?.message ?? `Gemini error ${res.status}`,
-            res.status
-          )
-        }
-
-        const data = (await res.json()) as {
-          candidates?: {
-            content?: { parts?: { text?: string }[]; role?: string }
-            finishReason?: string
-          }[]
-          usageMetadata?: {
-            promptTokenCount?: number
-            candidatesTokenCount?: number
+          if (!res.ok) {
+            const data = await res
+              .json()
+              .catch(() => ({ error: { message: 'Unknown Gemini error' } }))
+            throw new ProviderError(
+              data.error?.message ?? `Gemini error ${res.status}`,
+              res.status
+            )
           }
-        }
 
-        if (
-          !data.candidates ||
-          data.candidates.length === 0 ||
-          data.candidates[0].finishReason === 'SAFETY'
-        ) {
-          throw new ProviderError(
-            'Gemini response blocked or empty',
-            500
-          )
-        }
-
-        const content = data.candidates[0].content?.parts?.[0]?.text
-
-        if (!content || typeof content !== 'string') {
-          throw new ProviderError('Gemini returned empty content', 500)
-        }
-
-        const code = stripMarkdownCodeBlock(content)
-        const tokensIn = data.usageMetadata?.promptTokenCount ?? 0
-        const tokensOut = data.usageMetadata?.candidatesTokenCount ?? 0
-        const cost = this.estimateCost?.(tokensIn, tokensOut, model)
-
-        return {
-          code,
-          model,
-          provider: 'gemini',
-          tokensIn,
-          tokensOut,
-          cost,
-        }
-      } catch (err) {
-        let status = err instanceof ProviderError ? err.status : 500
-        let message = err instanceof Error ? err.message : String(err)
-        const lower = message.toLowerCase()
-
-        const isTimeoutError =
-          lower.includes('the operation was aborted') ||
-          lower.includes('connection timed out') ||
-          lower.includes('etimedout') ||
-          lower.includes('econnreset') ||
-          lower.includes('socket') ||
-          lower.includes('network')
-
-        if (isTimeoutError && !(err instanceof ProviderError)) {
-          status = 503
-          message = `Gemini request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
-        }
-
-        const isModelUnavailableError =
-          status === 404 ||
-          status === 429 ||
-          status === 503 ||
-          (status === 400 &&
-            (lower.includes('no longer available') ||
-              lower.includes('not available') ||
-              lower.includes('not found') ||
-              lower.includes('deprecated') ||
-              lower.includes('invalid argument') ||
-              lower.includes('unsupported')))
-
-        if (isModelUnavailableError && candidates.length > 1) {
-          errors.push(`${model}: ${message}`)
-          // 429/503 are transient; wait a moment before hammering the next model
-          // so demand spikes have a chance to settle.
-          if (status === 429 || status === 503) {
-            await sleep(1500)
+          const data = (await res.json()) as {
+            candidates?: {
+              content?: { parts?: { text?: string }[]; role?: string }
+              finishReason?: string
+            }[]
+            usageMetadata?: {
+              promptTokenCount?: number
+              candidatesTokenCount?: number
+            }
           }
-          continue
-        }
 
-        throw new ProviderError(message, status)
+          if (
+            !data.candidates ||
+            data.candidates.length === 0 ||
+            data.candidates[0].finishReason === 'SAFETY'
+          ) {
+            throw new ProviderError(
+              'Gemini response blocked or empty',
+              500
+            )
+          }
+
+          const content = data.candidates[0].content?.parts?.[0]?.text
+
+          if (!content || typeof content !== 'string') {
+            throw new ProviderError('Gemini returned empty content', 500)
+          }
+
+          const code = stripMarkdownCodeBlock(content)
+          const tokensIn = data.usageMetadata?.promptTokenCount ?? 0
+          const tokensOut = data.usageMetadata?.candidatesTokenCount ?? 0
+          const cost = this.estimateCost?.(tokensIn, tokensOut, model)
+
+          return {
+            code,
+            model,
+            provider: 'gemini',
+            tokensIn,
+            tokensOut,
+            cost,
+          }
+        } catch (err) {
+          let status = err instanceof ProviderError ? err.status : 500
+          let message = err instanceof Error ? err.message : String(err)
+          const lower = message.toLowerCase()
+
+          const isTimeoutError =
+            lower.includes('the operation was aborted') ||
+            lower.includes('connection timed out') ||
+            lower.includes('etimedout') ||
+            lower.includes('econnreset') ||
+            lower.includes('socket') ||
+            lower.includes('network')
+
+          if (isTimeoutError && !(err instanceof ProviderError)) {
+            status = 503
+            message = `Gemini request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
+          }
+
+          const isModelUnavailableError =
+            status === 404 ||
+            status === 429 ||
+            status === 503 ||
+            (status === 400 &&
+              KEYWORDS.some((kw) => lower.includes(kw)))
+
+          // 404 means the model does not exist for this key — skip immediately.
+          if (status === 404) {
+            errors.push(`${model}: ${message}`)
+            break
+          }
+
+          // 429/503 are transient: retry the same model once after 5s.
+          if ((status === 429 || status === 503) && attempt === 0) {
+            await sleep(5000)
+            continue
+          }
+
+          if (isModelUnavailableError && candidates.length > 1) {
+            errors.push(`${model}: ${message}`)
+            if (status === 429 || status === 503) {
+              await sleep(1500)
+            }
+            break
+          }
+
+          throw new ProviderError(message, status)
+        }
       }
     }
 
