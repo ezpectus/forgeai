@@ -85,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Gemini.generate` no longer retries on 429 or waits 5s between 503 fallbacks, so a quota/capacity error is returned within seconds instead of hanging `GenerationProgress`.
 - `analyzeIntent` now includes the actual provider error message in the "Using a default plan" warning.
 - `generate.ts` now logs generation errors to the API console.
+- `OpenRouter.generate` and `HuggingFace.generate` now also fail fast on 429 instead of silently trying every fallback model.
+- `callWithFallback` no longer waits on 401/403/404, uses 2s backoff on 429/503, and 1s on other server errors, so a bad key or capacity error does not waste time before the next provider.
 - `MainArea` now keeps the **Reports** view visible when it is the active sidebar mode, even if a generation is in progress, ready or errored.
 - `Sidebar` top `Home` button now returns to the prompt view from **Reports** and only highlights one top-level nav item at a time.
 - `OnboardingDialog` now persists its `seen` state when the user closes it via Escape or the backdrop.

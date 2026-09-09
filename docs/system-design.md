@@ -349,7 +349,7 @@ interface ComponentConfig {
 | Problem              | Cause                                                | Mitigation                                                                      |
 | -------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
 | Broken AI code       | Hallucinated imports, syntax errors, wrong types     | esbuild parse, AST scan, auto-retry, fallback models                            |
-| AI provider down     | Rate limit, outage, 503 capacity error               | Multi-provider fallback: OpenRouter → Gemini → HuggingFace; 404/deprecated models skipped; 429 fails fast so you see the quota error; 503 tries the next model immediately |
+| AI provider down     | Rate limit, outage, 503 capacity error               | Multi-provider fallback: OpenRouter → Gemini → HuggingFace; 429 fails fast inside every provider; 503/404 fall back to the next model without sleeps; OpenRouter falls back to `:free` models on 402; cross-provider backoff is 0s for auth/missing-model, 2s for 429/503, 1s for other server errors |
 | Deploy fails         | Vercel build error, invalid files                    | Local build/typecheck before deploy; deploy to E2B fallback                     |
 | API key leak         | Key sent to malicious code                           | Keys never stored on server; only in IndexedDB; AST scan for hard-coded secrets |
 | XSS / malicious code | AI generates `<script>` or `dangerouslySetInnerHTML` | AST scan for forbidden patterns; sandboxed iframe preview                       |

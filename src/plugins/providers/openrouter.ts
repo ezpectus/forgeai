@@ -133,7 +133,13 @@ export const OpenRouter: AIProvider = {
           message = `OpenRouter request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
         }
 
-        if (status === 404 || status === 429 || status === 402 || status === 503) {
+        // 429 is account-level rate limit. Falling back to other OpenRouter
+        // models usually fails with the same error and wastes time/quota.
+        if (status === 429) {
+          throw new ProviderError(message, 429)
+        }
+
+        if (status === 404 || status === 402 || status === 503) {
           if (status === 402) hit402 = true
           errors.push(`${model}: ${message}`)
           continue

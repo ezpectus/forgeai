@@ -42,24 +42,23 @@ export async function callWithFallback(
       const status = err instanceof ProviderError ? err.status : 500
       const message = err instanceof Error ? err.message : String(err)
 
-      // Retry on auth/missing-model errors and rate limits / server errors so
-      // a bad key or removed model on one provider does not kill generation.
-      if (
-        status === 401 ||
-        status === 403 ||
-        status === 404 ||
-        status === 429 ||
-        status >= 500
-      ) {
-        // Capacity (503) needs a longer wait; rate limits (429) need less but
-        // still enough to clear; other transient errors use short backoff.
-        const delay =
-          status === 503
-            ? Math.min(2 ** i * 5000, 30_000)
-            : status === 429
-              ? Math.min(2 ** i * 2000, 8_000)
-              : Math.min(2 ** i * 1000, 8_000)
-        await sleep(delay)
+      // Move to the next provider on auth/missing-model/rate-limit/server
+      // errors so a bad key or removed model on one provider does not kill
+      // generation. Auth and missing-model errors need no cooldown; 429 and
+      // 503 need a short one; other server errors get a tiny backoff.
+      if (status === 401 || status === 403 || status === 404) {
+        errors.push(`${provider.name}: ${message}`)
+        continue
+      }
+
+      if (status === 429 || status === 503) {
+        await sleep(Math.min(2 ** i * 2000, 8_000))
+        errors.push(`${provider.name}: ${message}`)
+        continue
+      }
+
+      if (status >= 500) {
+        await sleep(Math.min(2 ** i * 1000, 8_000))
         errors.push(`${provider.name}: ${message}`)
         continue
       }

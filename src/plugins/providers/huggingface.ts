@@ -105,11 +105,13 @@ export const HuggingFace: AIProvider = {
           message = `HuggingFace request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
         }
 
-        if (
-          status === 404 ||
-          status === 429 ||
-          status === 503
-        ) {
+        // 429 is account-level rate limit. Other HF models share the same
+        // project quota, so fallback is unlikely to help — fail fast.
+        if (status === 429) {
+          throw new ProviderError(message, 429)
+        }
+
+        if (status === 404 || status === 503) {
           errors.push(`${model}: ${message}`)
           continue
         }

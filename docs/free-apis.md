@@ -57,4 +57,9 @@ To see your exact limits and current usage:
 
 If the ForgeAI **Test** button shows `Gemini rate limit exceeded` or a `429` in the Console, you have hit one of those caps. Wait a minute or switch to another provider key until the quota window resets.
 
-If you add multiple keys, ForgeAI tries them in this order: **OpenRouter → Gemini → HuggingFace**. Each provider also has its own fallback models and a 120-second request timeout. Gemini falls back to other models on 503/404 but fails fast on 429 so you see the quota error instead of a silent hang.
+If you add multiple keys, ForgeAI tries them in this order: **OpenRouter → Gemini → HuggingFace**. Each provider has its own fallback models and a 120-second request timeout.
+
+- **429 (rate limit / quota)** — all providers fail fast, so you get the error immediately instead of a silent hang.
+- **503 (capacity)** and **404/deprecated** — they fall back to the next model without sleeps.
+- **402 (OpenRouter, no credits)** — OpenRouter falls back to `:free` models automatically.
+- **401/403 (bad key)** — the engine moves to the next provider instantly.
