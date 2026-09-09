@@ -67,6 +67,7 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
       return
     }
 
+    setModels(fallbackModels[provider] ?? [])
     setLoading(true)
     setError(null)
 
