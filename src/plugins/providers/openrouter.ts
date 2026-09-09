@@ -8,6 +8,9 @@ import {
 
 const API_BASE = 'https://openrouter.ai/api/v1'
 
+const GENERATE_TIMEOUT_MS = 120_000
+const HEALTH_TIMEOUT_MS = 30_000
+
 const PRICES: Record<string, { in: number; out: number }> = {
   'deepseek/deepseek-chat': { in: 0.14, out: 0.28 },
   'Qwen/Qwen2.5-Coder': { in: 0.3, out: 0.6 },
@@ -72,6 +75,7 @@ export const OpenRouter: AIProvider = {
               process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
             'X-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
           },
+          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
           body: JSON.stringify({
             model,
             messages,
@@ -112,16 +116,30 @@ export const OpenRouter: AIProvider = {
           cost,
         }
       } catch (err) {
-        const status = err instanceof ProviderError ? err.status : 500
-        const message = err instanceof Error ? err.message : String(err)
+        let status = err instanceof ProviderError ? err.status : 500
+        let message = err instanceof Error ? err.message : String(err)
+        const lower = message.toLowerCase()
 
-        if (status === 404 || status === 429 || status === 402) {
+        const isTimeoutError =
+          lower.includes('the operation was aborted') ||
+          lower.includes('connection timed out') ||
+          lower.includes('etimedout') ||
+          lower.includes('econnreset') ||
+          lower.includes('socket') ||
+          lower.includes('network')
+
+        if (isTimeoutError && !(err instanceof ProviderError)) {
+          status = 503
+          message = `OpenRouter request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
+        }
+
+        if (status === 404 || status === 429 || status === 402 || status === 503) {
           if (status === 402) hit402 = true
           errors.push(`${model}: ${message}`)
           continue
         }
 
-        throw err
+        throw new ProviderError(message, status)
       }
     }
 
@@ -133,6 +151,7 @@ export const OpenRouter: AIProvider = {
     // endpoint for validating an API key and reading remaining credits.
     const res = await fetch(`${API_BASE}/key`, {
       headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
     })
 
     if (!res.ok) {

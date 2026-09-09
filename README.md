@@ -219,8 +219,8 @@ Run the app, generate a project, then add your own PNGs to `public/screenshots/`
 | Frontend         | Next.js 14 + Tailwind + shadcn/ui   | Fast, beautiful, SSR                |
 | API Orchestrator | Hono (Node.js)                      | 15KB, minimal, fast                 |
 | AI Intent        | OpenRouter / Gemini / HuggingFace   | Cheap + free-tier options           |
-| AI Code Gen      | HuggingFace (DeepSeek Coder, GLM-4) | Free tier, open-source models       |
-|                  | + OpenRouter / Gemini fallback      | Multi-provider resilience           |
+| AI Code Gen      | OpenRouter / Gemini / HuggingFace   | Auto-fallback between providers     |
+|                  | with model-level retries            | 120s timeout + fallback resilience  |
 | Deploy           | Vercel Build API / E2B Sandbox      | Instant live URL                    |
 | Database         | Supabase                            | Free tier, PostgreSQL, auto-binding |
 | State            | Zustand                             | 3KB, no boilerplate                 |
@@ -445,6 +445,9 @@ MIT licensed. PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 **Why does my API key fail even though the provider dashboard shows 0 usage?**
 Dashboards like Google AI Studio show quota for the selected project. `0/60 RPM` means no requests were counted for that project in the last 28 days — it does not guarantee the key is active, attached to that project, or that the Generative Language API is enabled. ForgeAI runs a `/api/health` check before every generation and shows the exact error (e.g. `[400] API key not valid`). See `internal/bug-report.md` for a full diagnostic guide.
+
+**Why does it say "Connection timed out"?**
+Generation can take 30–90 seconds, especially on the first `analyzeIntent` call. The client waits up to 60s for the connection and up to 120s between SSE events. The API now sends an immediate keep-alive `ping` and every provider has a 120s request timeout with automatic model/provider fallback. If you still see a timeout, the provider itself is not responding — check your key, region, or try again later.
 
 **Can I use GPT-4 or Claude?**
 Yes. OpenRouter supports GPT-4o, Claude, Llama, and 200+ other models. Gemini has a free tier and works out of the box. Just change the provider/model in the dropdown. Cost will be higher (~$0.15-0.30 per generation with GPT-4o).

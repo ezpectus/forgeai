@@ -8,9 +8,9 @@ You need at least one of these. ForgeAI will fall back automatically if one fail
 
 | Provider | Free tier | Get a key | Notes |
 | --- | --- | --- | --- |
-| **Google Gemini** | 1,500 requests/day for `gemini-1.5-flash` | https://aistudio.google.com/app/apikey | Best free option. No credit card. |
-| **OpenRouter** | Rate-limited free models (e.g. `deepseek/deepseek-chat`) | https://openrouter.ai/keys | Works with many models; some are paid. |
-| **HuggingFace** | Free serverless inference for some models | https://hf.co/settings/tokens | Slower; good as a fallback. |
+| **Google Gemini** | 1,500 requests/day for `gemini-1.5-flash` / `gemini-3.6-flash` | https://aistudio.google.com/app/apikey | Best free option. No credit card. Tries `gemini-3.6-flash` first, then `gemini-1.5-flash` if the first is unavailable. |
+| **OpenRouter** | Rate-limited free models (e.g. `deepseek/deepseek-chat:free`, `google/gemma-4-31b-it:free`) | https://openrouter.ai/keys | Tried first if you have a key. Falls through `:free` models if a paid model has no credits. |
+| **HuggingFace** | Free serverless inference for some models | https://hf.co/settings/tokens | Slower; tried last. Falls back to `THUDM/glm-4-9b-chat` if the first model fails. |
 
 ## Optional providers
 
@@ -38,4 +38,4 @@ You need at least one of these. ForgeAI will fall back automatically if one fail
 
 If the API server is not running, the **Test** button will show a "non-JSON response" error. Make sure `npm run api` is started first.
 
-If you also add an OpenRouter or HuggingFace key, ForgeAI will try them in order if Gemini is rate-limited.
+If you add multiple keys, ForgeAI tries them in this order: **OpenRouter → Gemini → HuggingFace**. Each provider also has its own fallback models and a 120-second request timeout with automatic retries on network/rate-limit errors.
