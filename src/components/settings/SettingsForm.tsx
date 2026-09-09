@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label'
 
 type Provider = 'openrouter' | 'huggingface' | 'gemini' | 'supabase' | 'vercel'
 
+// The /api/health endpoint currently only supports AI providers.
+const AI_PROVIDERS: Provider[] = ['openrouter', 'huggingface', 'gemini']
+
 interface TestState {
   status: 'idle' | 'testing' | 'ok' | 'error'
   message?: string
@@ -202,7 +205,7 @@ export function SettingsForm() {
                 <Trash2 className="h-4 w-4 text-muted-foreground" />
               </Button>
             )}
-            {provider && (
+            {provider && AI_PROVIDERS.includes(provider) && (
               <Button
                 type="button"
                 variant="outline"

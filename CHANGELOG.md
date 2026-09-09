@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cancel button on the `GenerationProgress` UI; stores the active SSE client in `useProject`.
 - Post-generation `GenerationSuccess` screen with project summary, component list, export, deploy and a "New project" action.
 - Client-side 30-second cache on provider health checks (`/api/health`) to avoid hammering providers.
+- Shared, cached `fetchModels()` helper used by the model dropdown and by `loadFirstModel` so `/api/models` is not fetched multiple times in a row.
 
 ### Fixed
 
