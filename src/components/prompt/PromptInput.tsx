@@ -14,6 +14,7 @@ import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
 import { ModelSelector } from './ModelSelector'
 import { FaqSection } from './FaqSection'
+import { HomeTemplates } from './HomeTemplates'
 
 /**
  * Main prompt input component. Collects the user's idea, lets them pick an AI
@@ -236,6 +237,8 @@ export function PromptInput() {
           <span>Your API keys, your machine</span>
         </div>
       </div>
+
+      <HomeTemplates />
 
       <FaqSection />
     </div>
