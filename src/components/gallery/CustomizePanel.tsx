@@ -162,6 +162,12 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
           setPromptLocal(e.target.value)
           setPrompt(e.target.value)
         }}
+        onKeyDown={(e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault()
+            handleCustomize()
+          }
+        }}
         className="min-h-[120px] resize-none"
       />
 

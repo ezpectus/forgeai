@@ -179,6 +179,12 @@ export function PromptInput() {
           setPromptLocal(e.target.value)
           setPrompt(e.target.value)
         }}
+        onKeyDown={(e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault()
+            handleGenerate()
+          }
+        }}
         className="min-h-[120px] resize-none text-base"
       />
 
