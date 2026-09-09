@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Loader2, Sparkles, X } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
@@ -8,6 +8,7 @@ import { useKeys } from '@/stores/keys'
 import { useHistory } from '@/stores/history'
 import { resolveGenerationProvider } from '@/lib/health'
 import { getLastGenerationPrefs, setLastGenerationPrefs } from '@/lib/prefs'
+import { estimateCost, formatCost } from '@/lib/cost-estimate'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -40,6 +41,11 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
   const [model, setModel] = useState(lastModel)
   const [loading, setLoading] = useState(false)
   const hasKeys = Boolean(openrouter || huggingface || gemini)
+
+  const costEstimate = useMemo(
+    () => estimateCost(prompt, provider, model),
+    [prompt, provider, model]
+  )
 
   useEffect(() => {
     setLastGenerationPrefs({ provider, model })
@@ -210,7 +216,10 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
           <X className="h-3 w-3" />
           Clear
         </button>
-        <span>Ctrl / Cmd + Enter to customize</span>
+        <span className="flex items-center gap-2">
+          <span>{formatCost(costEstimate)}</span>
+          <span>Ctrl / Cmd + Enter to customize</span>
+        </span>
       </div>
 
       <ModelSelector
