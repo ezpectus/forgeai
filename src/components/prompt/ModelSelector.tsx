@@ -32,7 +32,12 @@ const fallbackModels: Record<string, ModelSummary[]> = {
   ],
   gemini: [
     { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', free: true },
+    { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', free: true },
+    { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', free: true },
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', free: true },
+    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', free: true },
     { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', free: true },
+    { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash 8B', free: true },
     { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', free: true },
     { id: 'gemini-pro', name: 'Gemini Pro', free: true },
   ],

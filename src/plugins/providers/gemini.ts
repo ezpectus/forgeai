@@ -21,12 +21,26 @@ const PRICES: Record<string, { in: number; out: number }> = {
 }
 
 // Models Google has flagged as deprecated/unavailable for new users.
-// Keep this minimal and update as Google changes the model list.
-const DEPRECATED_MODELS = new Set(['gemini-2.5-flash'])
+// gemini-2.0-flash* was shut down June 2026; 2.5/3.x flash models are current.
+const DEPRECATED_MODELS = new Set([
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-001',
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash-lite-001',
+])
 
 // Only fall back to stable/cheap flash models — avoid expensive pro models
 // because they have lower rate limits and are more likely to hit 429.
-const GEMINI_FALLBACK_MODELS = ['gemini-3.6-flash', 'gemini-1.5-flash']
+// Ordered from newest (best price/speed) to older/stable options.
+const GEMINI_FALLBACK_MODELS = [
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+]
 
 function stripMarkdownCodeBlock(text: string): string {
   return text
@@ -35,11 +49,20 @@ function stripMarkdownCodeBlock(text: string): string {
     .trim()
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export const Gemini: AIProvider = {
   name: 'gemini',
   supportedModels: [
     'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
     'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
     'gemini-1.5-pro',
     'gemini-pro',
   ],
@@ -183,6 +206,11 @@ export const Gemini: AIProvider = {
 
         if (isModelUnavailableError && candidates.length > 1) {
           errors.push(`${model}: ${message}`)
+          // 429/503 are transient; wait a moment before hammering the next model
+          // so demand spikes have a chance to settle.
+          if (status === 429 || status === 503) {
+            await sleep(1500)
+          }
           continue
         }
 

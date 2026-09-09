@@ -40,7 +40,13 @@ export async function fetchOpenRouterModels(): Promise<ModelOption[]> {
 }
 
 // Models that appear in the Google model list but are deprecated/unavailable for new users.
-const DEPRECATED_GEMINI_MODELS = new Set(['gemini-2.5-flash'])
+// gemini-2.0-flash* was shut down June 2026; 2.5/3.x flash models are current.
+const DEPRECATED_GEMINI_MODELS = new Set([
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-001',
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash-lite-001',
+])
 
 export async function fetchGeminiModels(apiKey: string): Promise<ModelOption[]> {
   const res = await fetch(
