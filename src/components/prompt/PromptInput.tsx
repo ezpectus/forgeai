@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Globe, Loader2, Rocket, Shield, Sparkles } from 'lucide-react'
+import { Globe, Loader2, Rocket, Shield, Sparkles, X } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useHistory } from '@/stores/history'
@@ -206,7 +206,22 @@ export function PromptInput() {
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{prompt.length} characters</span>
-        <span>Ctrl / Cmd + Enter to generate</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setPromptLocal('')
+              setPrompt('')
+            }}
+            disabled={!prompt}
+            aria-label="Clear prompt"
+            className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-0"
+          >
+            <X className="h-3 w-3" />
+            Clear
+          </button>
+          <span>Ctrl / Cmd + Enter to generate</span>
+        </div>
       </div>
 
       <ExampleChips onSelect={handleSelect} />
