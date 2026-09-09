@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useHistory } from '@/stores/history'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
@@ -20,6 +21,8 @@ export function ProjectsDialog() {
   const { projectsOpen, closeProjects } = useUI()
   const { projects, remove, add, loaded } = useHistory()
   const { vercel } = useKeys()
+  const [redeploying, setRedeploying] = useState<string | null>(null)
+  const [redeployError, setRedeployError] = useState<{ id: string; message: string } | null>(null)
 
   async function handleDownload(project: ProjectRecord) {
     if (!project.files) return
@@ -40,24 +43,39 @@ export function ProjectsDialog() {
 
   async function handleRedeploy(project: ProjectRecord) {
     if (!project.files || !vercel) return
-    const res = await fetch('/api/deploy', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${vercel}`,
-      },
-      body: JSON.stringify({
-        projectId: project.id,
-        provider: 'vercel',
-        files: project.files,
-      }),
-    })
-    const data = (await res.json()) as { url?: string; error?: string }
-    if (!res.ok || !data.url) {
-      console.error(data.error ?? 'Deploy failed')
-      return
+    setRedeploying(project.id)
+    setRedeployError(null)
+
+    try {
+      const res = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${vercel}`,
+        },
+        body: JSON.stringify({
+          projectId: project.id,
+          provider: 'vercel',
+          files: project.files,
+        }),
+      })
+      const data = (await res.json()) as { url?: string; error?: string }
+      if (!res.ok || !data.url) {
+        setRedeployError({
+          id: project.id,
+          message: data.error ?? 'Deploy failed',
+        })
+        return
+      }
+      await add({ ...project, deployUrl: data.url })
+    } catch (err) {
+      setRedeployError({
+        id: project.id,
+        message: err instanceof Error ? err.message : 'Deploy failed',
+      })
+    } finally {
+      setRedeploying(null)
     }
-    await add({ ...project, deployUrl: data.url })
   }
 
   return (
@@ -132,7 +150,7 @@ export function ProjectsDialog() {
                       variant="outline"
                       size="sm"
                       className="gap-1 text-xs"
-                      disabled={!project.files || !vercel}
+                      disabled={!project.files || !vercel || redeploying === project.id}
                       onClick={() => handleRedeploy(project)}
                     >
                       <Rocket className="h-3 w-3" />
@@ -149,6 +167,11 @@ export function ProjectsDialog() {
                       </Button>
                     )}
                   </div>
+                  {redeployError?.id === project.id && (
+                    <p className="text-xs text-destructive">
+                      {redeployError.message}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
