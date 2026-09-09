@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GenerationSuccess` now shows real-time deploy status (`Deploying…` / `Deploy failed`) using the existing `deployStatus` state.
 - New `ReportsView` dashboard reachable via the **Reports** sidebar mode. Surfaces analytics summary, recent events, an A/B test playground and email template previews using the existing `src/lib/grow` libraries.
 - Multi-page website assembly: `SectionIntent` now supports a `page` field, `assemble.ts` builds per-page `page.tsx` files, generates a shared `Nav` component in the layout, and updates `sitemap.ts` with all pages.
+- First-run onboarding dialog (`OnboardingDialog`) appears the first time a user opens the app, with steps for adding API keys, choosing a mode and generating.
 - Playwright E2E now starts both the Next.js frontend and the Hono API server, and sets `RATE_LIMIT_RPM=1000` during tests to prevent the in-memory rate limiter from flaking the gallery test.
 - Last prompt draft is persisted in `localStorage` and restored in `PromptInput`.
 - Clear button next to the prompt textarea to quickly reset the draft.
