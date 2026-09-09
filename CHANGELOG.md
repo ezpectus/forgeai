@@ -55,8 +55,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clear button next to the customize textarea to quickly reset the customization prompt.
 - Last selected active mode (website/landing/…) is persisted in `localStorage` and restored via `Sidebar`.
 
+### Security
+
+- Upgraded dependencies to resolve all `npm audit` vulnerabilities:
+  - `next` 14.2.5 → 16.3.4
+  - `eslint` 8.57.0 → ^9.0.0
+  - `eslint-config-next` 14.2.5 → 16.3.4
+  - `vitest` 2.1.9 → ^4.1.11
+  - `esbuild` 0.23.0 → ^0.25.0
+  - `postcss` 8.4.40 → ^8.5.23
+- Added `eslint.config.mjs` for ESLint 9 flat config and `package.json` overrides to force safe transitive versions (`postcss`, `glob`, `vite`).
+- `npm audit` now reports **0 vulnerabilities**.
+
 ### Fixed
 
+- `MainArea` now keeps the **Reports** view visible when it is the active sidebar mode, even if a generation is in progress, ready or errored.
+- `Sidebar` top `Home` button now returns to the prompt view from **Reports** and only highlights one top-level nav item at a time.
+- `OnboardingDialog` now persists its `seen` state when the user closes it via Escape or the backdrop.
+- `PromptInput` no longer starts a second generation via the `Generate` button or `Ctrl/Cmd + Enter` while a generation is already running.
+- `ModelSelector` falls back to `Auto` when the saved provider is no longer available (e.g. key removed).
+- Removed duplicate `id` attributes from the email preview inputs in `ReportsView`.
+- Added missing `title` and `aria-label` to icon-only close and copy/open buttons in `EditPanel`, `CustomizePanel` and `GenerationSuccess`.
 - TopBar deploy button now sends the Vercel token as an `Authorization: Bearer` header.
 - Sidebar active state now only highlights one top-level nav item at a time.
 - Provider fallback chain (`callWithFallback`) now retries on 401, 403, 404 and 429 / >=500 errors, so an invalid key or removed model does not immediately kill generation.
