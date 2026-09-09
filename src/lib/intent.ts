@@ -244,7 +244,12 @@ export async function analyzeIntent(
     }
 
     return intent
-  } catch {
-    return { ...DEFAULT_INTENT, warning: 'Intent analysis failed. Using a default plan.' }
+  } catch (err) {
+    console.error('[analyzeIntent] failed:', err)
+    const message = (err instanceof Error ? err.message : String(err)).trim().replace(/[.!?;:,]+$/, '')
+    return {
+      ...DEFAULT_INTENT,
+      warning: `Intent analysis failed: ${message}. Using a default plan.`,
+    }
   }
 }

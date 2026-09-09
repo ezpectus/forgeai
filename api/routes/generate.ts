@@ -179,6 +179,7 @@ app.post('/', async (c) => {
         controller.close()
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
+        console.error('[generate] error:', err)
         send('error', { message })
         controller.close()
       }

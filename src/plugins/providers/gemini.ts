@@ -49,10 +49,6 @@ function stripMarkdownCodeBlock(text: string): string {
     .trim()
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 export const Gemini: AIProvider = {
   name: 'gemini',
   supportedModels: [
@@ -99,138 +95,131 @@ export const Gemini: AIProvider = {
     ]
 
     for (const model of candidates) {
-      // 429/503 are transient; give each model two attempts before moving on.
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`
+      try {
+        const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`
 
-          const parts = [{ text: prompt }]
-          const contents = []
+        const parts = [{ text: prompt }]
+        const contents = []
 
-          if (config.systemPrompt) {
-            contents.push({
-              role: 'user',
-              parts: [
-                {
-                  text: `System instruction (you must follow it): ${config.systemPrompt}\n\n---\n\n${prompt}`,
-                },
-              ],
-            })
-          } else {
-            contents.push({ role: 'user', parts })
-          }
-
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
-            body: JSON.stringify({
-              contents,
-              generationConfig: {
-                temperature: config.temperature ?? 0.2,
-                maxOutputTokens: config.maxTokens ?? 2048,
+        if (config.systemPrompt) {
+          contents.push({
+            role: 'user',
+            parts: [
+              {
+                text: `System instruction (you must follow it): ${config.systemPrompt}\n\n---\n\n${prompt}`,
               },
-            }),
+            ],
           })
-
-          if (!res.ok) {
-            const data = await res
-              .json()
-              .catch(() => ({ error: { message: 'Unknown Gemini error' } }))
-            throw new ProviderError(
-              data.error?.message ?? `Gemini error ${res.status}`,
-              res.status
-            )
-          }
-
-          const data = (await res.json()) as {
-            candidates?: {
-              content?: { parts?: { text?: string }[]; role?: string }
-              finishReason?: string
-            }[]
-            usageMetadata?: {
-              promptTokenCount?: number
-              candidatesTokenCount?: number
-            }
-          }
-
-          if (
-            !data.candidates ||
-            data.candidates.length === 0 ||
-            data.candidates[0].finishReason === 'SAFETY'
-          ) {
-            throw new ProviderError(
-              'Gemini response blocked or empty',
-              500
-            )
-          }
-
-          const content = data.candidates[0].content?.parts?.[0]?.text
-
-          if (!content || typeof content !== 'string') {
-            throw new ProviderError('Gemini returned empty content', 500)
-          }
-
-          const code = stripMarkdownCodeBlock(content)
-          const tokensIn = data.usageMetadata?.promptTokenCount ?? 0
-          const tokensOut = data.usageMetadata?.candidatesTokenCount ?? 0
-          const cost = this.estimateCost?.(tokensIn, tokensOut, model)
-
-          return {
-            code,
-            model,
-            provider: 'gemini',
-            tokensIn,
-            tokensOut,
-            cost,
-          }
-        } catch (err) {
-          let status = err instanceof ProviderError ? err.status : 500
-          let message = err instanceof Error ? err.message : String(err)
-          const lower = message.toLowerCase()
-
-          const isTimeoutError =
-            lower.includes('the operation was aborted') ||
-            lower.includes('connection timed out') ||
-            lower.includes('etimedout') ||
-            lower.includes('econnreset') ||
-            lower.includes('socket') ||
-            lower.includes('network')
-
-          if (isTimeoutError && !(err instanceof ProviderError)) {
-            status = 503
-            message = `Gemini request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
-          }
-
-          const isModelUnavailableError =
-            status === 404 ||
-            status === 429 ||
-            status === 503 ||
-            (status === 400 &&
-              KEYWORDS.some((kw) => lower.includes(kw)))
-
-          // 404 means the model does not exist for this key — skip immediately.
-          if (status === 404) {
-            errors.push(`${model}: ${message}`)
-            break
-          }
-
-          // 429/503 are transient: retry the same model once after 5s.
-          if ((status === 429 || status === 503) && attempt === 0) {
-            await sleep(5000)
-            continue
-          }
-
-          if (isModelUnavailableError && candidates.length > 1) {
-            errors.push(`${model}: ${message}`)
-            if (status === 429 || status === 503) {
-              await sleep(1500)
-            }
-            break
-          }
-
-          throw new ProviderError(message, status)
+        } else {
+          contents.push({ role: 'user', parts })
         }
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
+          body: JSON.stringify({
+            contents,
+            generationConfig: {
+              temperature: config.temperature ?? 0.2,
+              maxOutputTokens: config.maxTokens ?? 2048,
+            },
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res
+            .json()
+            .catch(() => ({ error: { message: 'Unknown Gemini error' } }))
+          throw new ProviderError(
+            data.error?.message ?? `Gemini error ${res.status}`,
+            res.status
+          )
+        }
+
+        const data = (await res.json()) as {
+          candidates?: {
+            content?: { parts?: { text?: string }[]; role?: string }
+            finishReason?: string
+          }[]
+          usageMetadata?: {
+            promptTokenCount?: number
+            candidatesTokenCount?: number
+          }
+        }
+
+        if (
+          !data.candidates ||
+          data.candidates.length === 0 ||
+          data.candidates[0].finishReason === 'SAFETY'
+        ) {
+          throw new ProviderError(
+            'Gemini response blocked or empty',
+            500
+          )
+        }
+
+        const content = data.candidates[0].content?.parts?.[0]?.text
+
+        if (!content || typeof content !== 'string') {
+          throw new ProviderError('Gemini returned empty content', 500)
+        }
+
+        const code = stripMarkdownCodeBlock(content)
+        const tokensIn = data.usageMetadata?.promptTokenCount ?? 0
+        const tokensOut = data.usageMetadata?.candidatesTokenCount ?? 0
+        const cost = this.estimateCost?.(tokensIn, tokensOut, model)
+
+        return {
+          code,
+          model,
+          provider: 'gemini',
+          tokensIn,
+          tokensOut,
+          cost,
+        }
+      } catch (err) {
+        let status = err instanceof ProviderError ? err.status : 500
+        let message = err instanceof Error ? err.message : String(err)
+        const lower = message.toLowerCase()
+
+        const isTimeoutError =
+          lower.includes('the operation was aborted') ||
+          lower.includes('connection timed out') ||
+          lower.includes('etimedout') ||
+          lower.includes('econnreset') ||
+          lower.includes('socket') ||
+          lower.includes('network')
+
+        if (isTimeoutError && !(err instanceof ProviderError)) {
+          status = 503
+          message = `Gemini request timed out after ${GENERATE_TIMEOUT_MS / 1000}s`
+        }
+
+        // 404 means the model does not exist for this key — try the next one.
+        if (status === 404) {
+          errors.push(`${model}: ${message}`)
+          continue
+        }
+
+        // 429 is project-level quota. Falling back to other Gemini models
+        // wastes the user’s time and quota, so fail fast.
+        if (status === 429) {
+          throw new ProviderError(message, 429)
+        }
+
+        // 503 (capacity) or deprecated/removed models (400 with keywords):
+        // try the next fallback model immediately.
+        if (
+          status === 503 ||
+          (status === 400 &&
+            KEYWORDS.some((kw) => lower.includes(kw)))
+        ) {
+          errors.push(`${model}: ${message}`)
+          continue
+        }
+
+        throw new ProviderError(message, status)
       }
     }
 
