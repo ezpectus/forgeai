@@ -86,7 +86,13 @@ export function GenerationSuccess() {
             >
               {deployUrl}
             </a>
-            <Button variant="ghost" size="icon" onClick={copyUrl} title="Copy URL">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={copyUrl}
+              title="Copy URL"
+              aria-label={copied ? 'URL copied' : 'Copy URL'}
+            >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
             <Button
@@ -94,6 +100,7 @@ export function GenerationSuccess() {
               size="icon"
               onClick={() => openUrl(deployUrl)}
               title="Open"
+              aria-label="Open in new tab"
             >
               <ExternalLink className="h-4 w-4" />
             </Button>

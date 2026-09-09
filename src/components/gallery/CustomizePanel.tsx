@@ -153,7 +153,13 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
     <div className="flex w-full max-w-2xl flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Customize {templateId}</h2>
-        <Button variant="ghost" size="icon" onClick={closeCustomize}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={closeCustomize}
+          title="Close customization"
+          aria-label="Close customization"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>

@@ -95,7 +95,13 @@ export function EditPanel() {
     <div className="fixed right-0 top-14 z-50 flex h-[calc(100vh-3.5rem)] w-full max-w-md flex-col border-l bg-background p-4 shadow-lg">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Edit {component.name}</h3>
-        <Button variant="ghost" size="icon" onClick={closeEditor}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={closeEditor}
+          title="Close editor"
+          aria-label="Close editor"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
