@@ -15,7 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GenerationSuccess` now uses a card-based layout with clearer export, deploy and new-project actions.
 - `ModelSelector` now shows a health dot for each provider and `free` / `recommended` badges for models.
 - `GenerationError` now provides **Edit prompt** and **Regenerate** actions in addition to **New project**.
-- `SSEClient` now uses an `AbortController` and enforces a 30s connection timeout and a 120s read timeout.
+- `SSEClient` now uses an `AbortController` and enforces a 60s connection timeout and a 120s read timeout. The API sends an immediate `ping` event to clear the connection timeout during long first-token waits.
+- Added explicit 120s generate / 30s health request timeouts for OpenRouter, Gemini and HuggingFace.
+- Added per-model fallback and retry logic inside each provider, including 503 capacity / 429 rate-limit retry (5s for 503, 2s for 429) and immediate 404 skip.
+- Gemini now defaults to `gemini-1.5-flash` with fallback chain `1.5-flash-8b → 2.5-flash → 3.6-flash → 3.5-flash`.
+- `callWithFallback` now waits 5s before the next provider on 503 and 2s on 429, instead of a flat 1s.
 - Added screen-reader-only labels to `PromptInput` and `CustomizePanel` textareas.
 - Added E2E Playwright coverage for cancel, regenerate after error and Vercel deploy.
 - Added `internal/release-notes-v1.2.0.md` with a draft of the v1.2.0 release notes.

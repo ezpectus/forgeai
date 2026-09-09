@@ -7,7 +7,7 @@ This document describes the complete architecture, API, data flow, failure modes
 ## 1. High-Level Architecture
 
 ```
-Browser (Next.js 14 SPA)
+Browser (Next.js 16 app router)
   │
   ├── UI: prompt input, settings, API key management
   ├── Preview: iframe with generated site
@@ -27,8 +27,9 @@ API Orchestrator (Hono / Node.js)
   │
   ▼
 External APIs (called with user keys)
-  ├── OpenRouter      → Intent + fallback code gen
-  ├── HuggingFace     → Primary code gen
+  ├── OpenRouter      → Code gen + intent fallback
+  ├── Gemini          → Free-tier code gen + intent fallback
+  ├── HuggingFace     → Code gen + intent fallback
   ├── Vercel Build API → Deploy
   ├── E2B Sandbox     → Alternative deploy
   └── Supabase        → Database schema + storage
@@ -85,8 +86,9 @@ data: {"projectId":"proj_abc123","files":{"src/app/page.tsx":"..."}}
 
 - `400` — Empty prompt
 - `401` — No API key provided
-- `429` — Rate limited by provider (triggers fallback)
+- `429` — Rate limited by provider (triggers fallback with 2s backoff)
 - `502` — All models in fallback chain failed
+- `503` — Provider capacity error or timeout (retried with 5s backoff)
 - `500` — Orchestrator internal error
 
 #### `POST /api/generate/component`
@@ -256,6 +258,7 @@ data: {"projectId":"proj_xyz","slides":[...]}
   "status": "ok",
   "providers": [
     { "name": "openrouter", "healthy": true },
+    { "name": "gemini", "healthy": true },
     { "name": "huggingface", "healthy": true }
   ]
 }
@@ -271,7 +274,7 @@ data: {"projectId":"proj_xyz","slides":[...]}
 3. User enters API keys (stored in IndexedDB)
 4. User types prompt: "Landing for yoga studio with booking form"
 5. Browser sends POST /api/generate with Authorization header
-6. Orchestrator calls OpenRouter for intent analysis
+6. Orchestrator calls OpenRouter / Gemini / HuggingFace fallback chain for intent analysis
 7. Intent returns: type=landing, sections=[navbar, hero, features, pricing, contact-form, footer]
 8. Orchestrator loads per-component configs from configs/templates/website.json
 9. Orchestrator calls AI for each component in parallel
@@ -346,12 +349,12 @@ interface ComponentConfig {
 | Problem              | Cause                                                | Mitigation                                                                      |
 | -------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
 | Broken AI code       | Hallucinated imports, syntax errors, wrong types     | esbuild parse, AST scan, auto-retry, fallback models                            |
-| AI provider down     | Rate limit, outage                                   | Multi-model fallback chain: HF → OpenRouter → next model                        |
+| AI provider down     | Rate limit, outage, 503 capacity error               | Multi-provider fallback: OpenRouter → Gemini → HuggingFace; per-model retry; 503 waits 5s |
 | Deploy fails         | Vercel build error, invalid files                    | Local build/typecheck before deploy; deploy to E2B fallback                     |
 | API key leak         | Key sent to malicious code                           | Keys never stored on server; only in IndexedDB; AST scan for hard-coded secrets |
 | XSS / malicious code | AI generates `<script>` or `dangerouslySetInnerHTML` | AST scan for forbidden patterns; sandboxed iframe preview                       |
 | Database conflicts   | Table already exists                                 | Prefix `ai_gen_`; dry-run SQL; versioned migrations                             |
-| Timeouts             | Slow model, large prompt                             | Per-component timeouts; streaming; max retries                                  |
+| Timeouts             | Slow model, large prompt                             | 120s per-provider request timeout; 60s SSE connection timeout + 120s read timeout; fallback retries |
 | High costs           | Using expensive model                                | Default to cheap models; cost estimate shown before generation                  |
 | Browser memory       | Large generated project                              | Component streaming; lazy load preview; ZIP export on server                    |
 | Concurrent edits     | Multiple edits at once                               | Component-level locking; version numbers                                        |

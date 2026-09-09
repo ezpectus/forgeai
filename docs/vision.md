@@ -28,18 +28,18 @@ Every generated project can be exported as a complete ZIP archive with a `packag
 
 ### 2. BYOK (Bring Your Own Keys)
 
-You connect your own API keys for OpenRouter, HuggingFace, Supabase, and Vercel. Keys are stored in your browser's IndexedDB and never touch our servers. You pay providers directly, so there is no middleman markup.
+You connect your own API keys for OpenRouter, Gemini, HuggingFace, Supabase, and Vercel. Keys are stored in your browser's IndexedDB and never touch our servers. You pay providers directly, so there is no middleman markup.
 
 ### 3. Ultra-Low Cost
 
 The default stack uses free-tier and low-cost models:
 
-- **Intent analysis:** DeepSeek V3 via OpenRouter (~$0.0003)
-- **Code generation:** DeepSeek Coder via HuggingFace (~$0.0012)
-- **Validation retry:** DeepSeek Coder (~$0.0003)
-- **Layout assembly:** DeepSeek V3 (~$0.0005)
+- **Intent analysis:** OpenRouter / Gemini / HuggingFace fallback chain (~$0.0003)
+- **Code generation:** Gemini 1.5 Flash, DeepSeek Coder or OpenRouter fallback (~$0.0012)
+- **Validation retry:** Same code-gen model (~$0.0003)
+- **Layout assembly:** OpenRouter / Gemini fallback (~$0.0005)
 
-**Total: ~$0.002 per generation.** Compare this to ~$0.15–$0.30 with GPT-4o.
+**Total: ~$0.002 per generation with paid models; $0 with Gemini free tier.** Compare this to ~$0.15–$0.30 with GPT-4o.
 
 ### 4. Config-Driven Generation
 
@@ -57,7 +57,7 @@ This means the AI generates small, focused, testable pieces of code that are val
 
 The production dependency count is intentionally small. No Redux, no Axios, no Lodash, no Moment. Every dependency must earn its place:
 
-- Next.js 14
+- Next.js 16
 - Tailwind CSS
 - shadcn/ui
 - Zustand
@@ -76,7 +76,7 @@ You can add your own:
 - Templates
 - Components
 
-No core code changes are needed.
+No core code changes are needed. Provider plugins live in `src/plugins/providers/` and must implement the `AIProvider` interface (name, supportedModels, defaultModel, generate, health, and optional estimateCost).
 
 ---
 

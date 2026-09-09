@@ -35,8 +35,9 @@ flowchart TB
     end
 
     subgraph Providers["External APIs (BYOK)"]
-        OpenRouter["OpenRouter<br/>DeepSeek / Qwen"]
-        HuggingFace["HuggingFace<br/>DeepSeek Coder"]
+        OpenRouter["OpenRouter<br/>DeepSeek / Qwen / 200+"]
+        Gemini["Gemini<br/>1.5 / 2.5 / 3.x Flash"]
+        HuggingFace["HuggingFace<br/>DeepSeek Coder / GLM-4"]
         Vercel["Vercel Build API"]
         E2B["E2B Sandbox"]
         Supabase["Supabase<br/>PostgreSQL"]
@@ -61,9 +62,11 @@ flowchart TB
     DbAPI --> Supabase
 
     GenAPI -->|fallback| OpenRouter
-    GenAPI -->|primary| HuggingFace
+    GenAPI -->|fallback| Gemini
+    GenAPI -->|fallback| HuggingFace
     ComponentGen -->|fallback| OpenRouter
-    ComponentGen -->|primary| HuggingFace
+    ComponentGen -->|fallback| Gemini
+    ComponentGen -->|fallback| HuggingFace
 
     CompAPI -->|differential prompt| ComponentGen
     CompAPI --> Validate
@@ -128,7 +131,7 @@ sequenceDiagram
 
 ```
 1. Browser sends prompt + Authorization header (user API key)
-2. Orchestrator forwards to OpenRouter/HuggingFace for intent
+2. Orchestrator forwards to OpenRouter / Gemini / HuggingFace fallback chain
 3. Based on intent, loads per-component config from configs/
 4. Calls AI for each component in parallel
 5. Validates each component (esbuild, AST, lint)

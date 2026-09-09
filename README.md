@@ -233,15 +233,17 @@ Run the app, generate a project, then add your own PNGs to `public/screenshots/`
 
 ## Cost
 
-| Step                      | Model                        | Cost        |
-| ------------------------- | ---------------------------- | ----------- |
-| Intent analysis           | DeepSeek V3 (OpenRouter)     | $0.0003     |
-| Component generation (×6) | DeepSeek Coder (HuggingFace) | $0.0012     |
-| Validation retry (avg 1)  | DeepSeek Coder (HuggingFace) | $0.0003     |
-| Layout assembly           | DeepSeek V3 (OpenRouter)     | $0.0005     |
-| **Total per generation**  |                              | **~$0.002** |
+With a **Gemini** key the generation is effectively **$0** (1,500 requests/day free tier). With **OpenRouter** / **HuggingFace** paid models, the typical cost is:
 
-Compare: $0.15-0.30 with GPT-4o, $0.10-0.20 with Claude. This stack is **50-100x cheaper**.
+| Step                      | Model                                | Cost        |
+| ------------------------- | ------------------------------------ | ----------- |
+| Intent analysis           | DeepSeek V3 / Gemini 1.5 Flash       | $0.0003     |
+| Component generation (×6) | DeepSeek Coder / Gemini 1.5 Flash    | $0.0012     |
+| Validation retry (avg 1)  | Same as code-gen                     | $0.0003     |
+| Layout assembly           | DeepSeek V3 / Gemini 1.5 Flash       | $0.0005     |
+| **Total per generation**  |                                      | **~$0.002** |
+
+Compare: $0.15–0.30 with GPT-4o, $0.10–0.20 with Claude. This stack is **50–100x cheaper**.
 
 ---
 

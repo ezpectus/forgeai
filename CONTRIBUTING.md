@@ -35,34 +35,59 @@ Open `http://localhost:3000`.
 
 ```typescript
 // src/plugins/providers/my-provider.ts
-import type { AIProvider } from '@/types'
+import { ProviderError, type AIProvider, type GenConfig, type GenResult } from '@/types'
 
 export const MyProvider: AIProvider = {
   name: 'my-provider',
-  async generate(prompt: string, config: GenConfig): Promise<GenResult> {
+  supportedModels: ['my-model'],
+  defaultModel: 'my-model',
+  async generate(prompt: string, config: GenConfig, apiKey: string): Promise<GenResult> {
     const res = await fetch('https://my-api.com/generate', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${config.apiKey}` },
-      body: JSON.stringify({ prompt, model: config.model }),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ prompt, model: config.model ?? this.defaultModel }),
     })
-    return res.json()
+
+    if (!res.ok) {
+      throw new ProviderError(`my-provider: ${res.statusText}`, res.status)
+    }
+
+    const data = await res.json()
+    return {
+      code: data.code,
+      model: config.model ?? this.defaultModel,
+      provider: this.name,
+    }
   },
-  async health(): Promise<boolean> {
+  async health(apiKey: string) {
     try {
-      await fetch('https://my-api.com/health')
-      return true
+      const res = await fetch('https://my-api.com/health', {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      })
+      return res.ok
     } catch {
-      return false
+      return { ok: false, error: 'my-provider health check failed' }
     }
   },
 }
 ```
 
-Register in `src/plugins/index.ts`:
+Register in `src/plugins/providers/index.ts`:
 
 ```typescript
-import { MyProvider } from './providers/my-provider'
-export const providers = [OpenRouter, HuggingFace, MyProvider]
+import { MyProvider } from './my-provider'
+
+export const providers = [OpenRouter, HuggingFace, Gemini, MyProvider]
+
+export function registerProviders() {
+  registry.registerProvider('openrouter', OpenRouter)
+  registry.registerProvider('huggingface', HuggingFace)
+  registry.registerProvider('gemini', Gemini)
+  registry.registerProvider('my-provider', MyProvider)
+}
 ```
 
 #### Deployer Plugin
