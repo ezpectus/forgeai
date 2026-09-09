@@ -58,7 +58,7 @@ export function MainArea({
   children?: ReactNode
   className?: string
 }) {
-  const { status, deployUrl } = useProject()
+  const { status, deployUrl, error } = useProject()
   const { deployStatus, galleryOpen, customizeTemplateId, openCustomize } =
     useUI()
 
@@ -85,7 +85,7 @@ export function MainArea({
         <LivePreview
           url={deployUrl}
           status={previewStatus}
-          error={useProject.getState().error ?? undefined}
+          error={error ?? undefined}
         />
       </EditorOverlay>
     )
