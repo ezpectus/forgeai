@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `PromptInput` now shows a benefit-first headline, a richer placeholder, live character count with a 2000-character limit and a minimum-length hint.
 - `ExampleChips` are now rendered as clickable mini-cards with a Sparkles icon and accessible `aria-label`.
 - `GenerationProgress` now displays the current step label (`Analyzing`, `Generating <component>`, `Assembling project`) and an elapsed timer.
+- `GenerationSuccess` now uses a card-based layout with clearer export, deploy and new-project actions.
+- `ModelSelector` now shows a health dot for each provider and `free` / `recommended` badges for models.
+- `GenerationError` now provides **Edit prompt** and **Regenerate** actions in addition to **New project**.
+- `SSEClient` now uses an `AbortController` and enforces a 30s connection timeout and a 120s read timeout.
+- Added screen-reader-only labels to `PromptInput` and `CustomizePanel` textareas.
+- Added E2E Playwright coverage for cancel, regenerate after error and Vercel deploy.
+- Added `internal/release-notes-v1.2.0.md` with a draft of the v1.2.0 release notes.
 
 ## [1.1.0] - 2026-09-09
 
