@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { Globe, Loader2, Rocket, Shield, Sparkles, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useKeys } from '@/stores/keys'
@@ -20,6 +20,9 @@ import { ExampleChips } from './ExampleChips'
 import { ModelSelector } from './ModelSelector'
 import { FaqSection } from './FaqSection'
 import { HomeTemplates } from './HomeTemplates'
+
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 /**
  * Main prompt input component. Collects the user's idea, lets them pick an AI
@@ -46,16 +49,22 @@ export function PromptInput() {
     regenerateAt,
   } = useProject()
 
-  const {
-    provider: lastProvider,
-    model: lastModel,
-    prompt: lastPrompt,
-  } = getLastGenerationPrefs()
-
-  const [prompt, setPromptLocal] = useState(lastPrompt)
-  const [provider, setProvider] = useState(lastProvider)
-  const [model, setModel] = useState(lastModel)
+  const [prompt, setPromptLocal] = useState(useProject.getState().prompt)
+  const [provider, setProvider] = useState('auto')
+  const [model, setModel] = useState('')
   const [checking, setChecking] = useState(false)
+
+  // Load persisted prefs only after mount so server and client initial renders
+  // match. This avoids the `prompt.length` and `Textarea value` hydration error.
+  // useIsomorphicLayoutEffect runs before paint, before any user input can race it.
+  useIsomorphicLayoutEffect(() => {
+    const { provider: lastProvider, model: lastModel, prompt: lastPrompt } =
+      getLastGenerationPrefs()
+    // Prefer the in-memory project prompt (e.g. on Regenerate) over localStorage.
+    setPromptLocal(prompt || lastPrompt)
+    setProvider(lastProvider)
+    setModel(lastModel)
+  }, [])
 
   useEffect(() => {
     setLastGenerationPrefs({ provider, model })
@@ -91,8 +100,8 @@ export function PromptInput() {
 
     const trimmed = prompt.trim()
     setPromptLocal(trimmed)
-    setPrompt(trimmed)
     reset()
+    setPrompt(trimmed)
     setTemplateId(activeMode)
     setStatus('generating')
     setError(null)
