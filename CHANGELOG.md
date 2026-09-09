@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sidebar active state now only highlights one top-level nav item at a time.
 - Provider fallback chain (`callWithFallback`) now retries on 401, 403, 404 and 429 / >=500 errors, so an invalid key or removed model does not immediately kill generation.
 - Live preview iframe sandbox now allows forms, popups and same-origin cookies so deployed sites are interactive.
+- Settings Test button is now hidden for Supabase and Vercel since `/api/health` only supports AI providers.
 
 ### Changed
 
