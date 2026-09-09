@@ -31,6 +31,13 @@ const GenerationProgress = dynamic(
     ),
   { ssr: false, loading }
 )
+const GenerationSuccess = dynamic(
+  () =>
+    import('@/components/generate/GenerationSuccess').then(
+      (mod) => mod.GenerationSuccess
+    ),
+  { ssr: false, loading }
+)
 const LivePreview = dynamic(
   () =>
     import('@/components/preview/LivePreview').then((mod) => mod.LivePreview),
@@ -64,13 +71,9 @@ export function MainArea({
 
   let content = <PromptInput />
 
-  if (status === 'generating' || status === 'ready') {
+  if (status === 'generating') {
     content = <GenerationProgress />
-  } else if (customizeTemplateId) {
-    content = <CustomizePanel templateId={customizeTemplateId} />
-  } else if (galleryOpen) {
-    content = <GalleryView onSelect={(id) => openCustomize(id)} />
-  } else if (deployUrl) {
+  } else if (status === 'ready' && deployUrl) {
     content = (
       <EditorOverlay>
         <LivePreview
@@ -80,6 +83,12 @@ export function MainArea({
         />
       </EditorOverlay>
     )
+  } else if (status === 'ready') {
+    content = <GenerationSuccess />
+  } else if (customizeTemplateId) {
+    content = <CustomizePanel templateId={customizeTemplateId} />
+  } else if (galleryOpen) {
+    content = <GalleryView onSelect={(id) => openCustomize(id)} />
   }
 
   return (

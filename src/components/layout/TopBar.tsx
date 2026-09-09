@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-function DeployButton() {
+export function DeployButton() {
   const { status, components, setDeployUrl, deployUrl, setError } = useProject()
   const { deployStatus, setDeployStatus } = useUI()
   const { vercel } = useKeys()
@@ -112,7 +112,7 @@ function DeployButton() {
   )
 }
 
-function ExportMenu() {
+export function ExportMenu() {
   const { components } = useProject()
   const [open, setOpen] = useState(false)
   const hasComponents = components.length > 0
