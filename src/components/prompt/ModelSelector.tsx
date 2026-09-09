@@ -126,7 +126,10 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
             onChange(value, '')
           }}
         >
-          <SelectTrigger className="w-full sm:w-[140px]">
+          <SelectTrigger
+            className="w-full sm:w-[140px]"
+            aria-label="AI provider"
+          >
             <SelectValue placeholder="Provider">
               {selectedProviderLabel}
             </SelectValue>
@@ -142,7 +145,11 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
 
         {provider !== 'auto' && (
           <Select value={model} onValueChange={(value) => onChange(provider, value)}>
-            <SelectTrigger className="w-full sm:w-[200px]" disabled={loading || shownModels.length === 0}>
+            <SelectTrigger
+              className="w-full sm:w-[200px]"
+              disabled={loading || shownModels.length === 0}
+              aria-label="AI model"
+            >
               <SelectValue placeholder={loading ? 'Loading…' : 'Select model'}>
                 {selectedModelName}
               </SelectValue>
