@@ -38,6 +38,13 @@ const GenerationSuccess = dynamic(
     ),
   { ssr: false, loading }
 )
+const GenerationError = dynamic(
+  () =>
+    import('@/components/generate/GenerationError').then(
+      (mod) => mod.GenerationError
+    ),
+  { ssr: false, loading }
+)
 const LivePreview = dynamic(
   () =>
     import('@/components/preview/LivePreview').then((mod) => mod.LivePreview),
@@ -89,6 +96,8 @@ export function MainArea({
         />
       </EditorOverlay>
     )
+  } else if (status === 'error') {
+    content = <GenerationError />
   } else if (status === 'ready') {
     content = <GenerationSuccess />
   }
