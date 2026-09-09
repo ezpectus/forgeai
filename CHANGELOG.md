@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Last used provider and model are persisted in `localStorage` via `src/lib/prefs.ts` and restored in `PromptInput` and `CustomizePanel`.
 - `Textarea` supports `autoResize` and prompt/customize textareas now grow with content up to 300px.
 - Last prompt draft is persisted in `localStorage` and restored in `PromptInput`.
+- Clear button next to the prompt textarea to quickly reset the draft.
 
 ### Fixed
 
