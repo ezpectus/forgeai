@@ -41,7 +41,7 @@ describe('analyzeIntent', () => {
     vi.unstubAllGlobals()
   })
 
-  it('returns default intent on provider error', async () => {
+  it('returns default intent on provider error and surfaces the error message', async () => {
     const fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -52,6 +52,8 @@ describe('analyzeIntent', () => {
     const result = await analyzeIntent('yoga studio landing', { openrouter: 'fake-key' })
     expect(result.type).toBe('landing')
     expect(result.sections.length).toBeGreaterThan(0)
+    expect(result.warning).toContain('All providers failed')
+    expect(result.warning).toContain('Unauthorized')
 
     vi.unstubAllGlobals()
   })
