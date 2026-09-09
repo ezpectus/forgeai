@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Globe, Loader2, Rocket, Shield, Sparkles, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useKeys } from '@/stores/keys'
@@ -8,6 +8,7 @@ import { useProject } from '@/stores/project'
 import { useHistory } from '@/stores/history'
 import { resolveGenerationProvider } from '@/lib/health'
 import { getLastGenerationPrefs, setLastGenerationPrefs } from '@/lib/prefs'
+import { estimateCost, formatCost } from '@/lib/cost-estimate'
 import { SSEClient } from '@/lib/sse'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -69,6 +70,11 @@ export function PromptInput() {
   const promptTooLong = prompt.length > 2000
   const canGenerate =
     prompt.trim().length >= 10 && !promptTooLong && hasKeys && !isBusy
+
+  const costEstimate = useMemo(
+    () => estimateCost(prompt, provider, model),
+    [prompt, provider, model]
+  )
 
   function handleSelect(text: string) {
     setPromptLocal(text)
@@ -291,6 +297,12 @@ export function PromptInput() {
           </Button>
         </div>
       </div>
+
+      {hasKeys && (
+        <p className="text-right text-xs text-muted-foreground">
+          Estimated cost: {formatCost(costEstimate)}
+        </p>
+      )}
 
       {!hasKeys && (
         <p className="text-sm text-destructive">
