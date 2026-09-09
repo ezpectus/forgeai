@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2, Sparkles, X } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
 import { useHistory } from '@/stores/history'
 import { resolveGenerationProvider } from '@/lib/health'
+import { getLastGenerationPrefs, setLastGenerationPrefs } from '@/lib/prefs'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SSEClient } from '@/lib/sse'
@@ -30,11 +31,17 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
   const { closeCustomize, activeMode } = useUI()
   const { openrouter, huggingface, gemini } = useKeys()
   const { add: addToHistory } = useHistory()
+  const { provider: lastProvider, model: lastModel } = getLastGenerationPrefs()
+
   const [prompt, setPromptLocal] = useState('')
-  const [provider, setProvider] = useState('auto')
-  const [model, setModel] = useState('')
+  const [provider, setProvider] = useState(lastProvider)
+  const [model, setModel] = useState(lastModel)
   const [loading, setLoading] = useState(false)
   const hasKeys = Boolean(openrouter || huggingface || gemini)
+
+  useEffect(() => {
+    setLastGenerationPrefs({ provider, model })
+  }, [provider, model])
 
   async function handleCustomize() {
     if (!prompt.trim()) return

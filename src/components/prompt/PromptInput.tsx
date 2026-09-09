@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Globe, Loader2, Rocket, Shield, Sparkles } from 'lucide-react'
 import { useKeys } from '@/stores/keys'
 import { useProject } from '@/stores/project'
 import { useHistory } from '@/stores/history'
 import { resolveGenerationProvider } from '@/lib/health'
+import { getLastGenerationPrefs, setLastGenerationPrefs } from '@/lib/prefs'
+import { SSEClient } from '@/lib/sse'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { SSEClient } from '@/lib/sse'
 import { useUI } from '@/stores/ui'
 import type { ComponentState, IntentResult } from '@/types'
 import { ExampleChips } from './ExampleChips'
@@ -39,10 +40,16 @@ export function PromptInput() {
     error,
   } = useProject()
 
+  const { provider: lastProvider, model: lastModel } = getLastGenerationPrefs()
+
   const [prompt, setPromptLocal] = useState('')
-  const [provider, setProvider] = useState('auto')
-  const [model, setModel] = useState('')
+  const [provider, setProvider] = useState(lastProvider)
+  const [model, setModel] = useState(lastModel)
   const [checking, setChecking] = useState(false)
+
+  useEffect(() => {
+    setLastGenerationPrefs({ provider, model })
+  }, [provider, model])
 
   const hasKeys = Boolean(openrouter || huggingface || gemini)
   const isGenerating = status === 'generating'
