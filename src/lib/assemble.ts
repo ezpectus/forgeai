@@ -502,14 +502,18 @@ export function FormHandler() {
       event.preventDefault()
 
       const formData = new FormData(form)
-      const data: Record<string, FormDataEntryValue> = {}
+      const payload: Record<string, FormDataEntryValue> = {}
       formData.forEach((value, key) => {
-        data[key] = value
+        payload[key] = value
       })
 
       const { error } = await supabase
-        .from(\`ai_gen_\${projectId}_\${name}\`)
-        .insert(data)
+        .from('submissions')
+        .insert({
+          project_id: projectId,
+          form_name: name,
+          payload,
+        })
 
       if (error) {
         setMessage(\`Submission failed: \${error.message}\`)
@@ -533,6 +537,19 @@ export function FormHandler() {
     </div>
   )
 }
+`
+
+    files['supabase/migrations/001_submissions.sql'] =
+      `CREATE TABLE IF NOT EXISTS submissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id text NOT NULL,
+  form_name text NOT NULL,
+  payload jsonb NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY allow_all ON submissions FOR ALL USING (true);
 `
   }
 

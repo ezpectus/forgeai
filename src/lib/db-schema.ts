@@ -22,25 +22,19 @@ function pgType(tsType: string): string {
 }
 
 export function generateSchema(forms: FormIntent[], projectId: string): string {
-  const lines: string[] = []
+  // Use a single shared submissions table instead of per-form/per-project tables.
+  // The generated FormHandler inserts { project_id, form_name, payload } here.
+  void forms
+  void projectId
 
-  for (const form of forms) {
-    const tableName = `ai_gen_${projectId}_${form.name}`
+  return `CREATE TABLE IF NOT EXISTS submissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id text NOT NULL,
+  form_name text NOT NULL,
+  payload jsonb NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
 
-    lines.push(`CREATE TABLE IF NOT EXISTS ${tableName} (`)
-    lines.push(`  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),`)
-
-    for (const field of form.fields) {
-      lines.push(`  ${field.name} ${pgType(field.type)} NOT NULL,`)
-    }
-
-    lines.push(`  created_at timestamptz DEFAULT now()`)
-    lines.push(`);`)
-    lines.push('')
-    lines.push(`ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;`)
-    lines.push(`CREATE POLICY allow_all ON ${tableName} FOR ALL USING (true);`)
-    lines.push('')
-  }
-
-  return lines.join('\n')
+ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY allow_all ON submissions FOR ALL USING (true);`
 }
