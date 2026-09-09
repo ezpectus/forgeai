@@ -68,6 +68,7 @@ export function ComponentStatusRow({
               type="button"
               onClick={handleCopy}
               title="Copy code"
+              aria-label="Copy code"
               className="text-muted-foreground hover:text-foreground"
             >
               {copied ? (
@@ -79,6 +80,8 @@ export function ComponentStatusRow({
             <button
               type="button"
               onClick={() => setOpen(!open)}
+              title={open ? 'Hide code' : 'Show code'}
+              aria-label={open ? 'Hide code' : 'Show code'}
               className="text-muted-foreground hover:text-foreground"
             >
               {open ? (
