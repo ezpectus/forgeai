@@ -126,10 +126,12 @@ function buildChain(
 
   if (auth.openrouter && !seen.has('openrouter')) {
     chain.push({ provider: OpenRouter, model: 'deepseek/deepseek-chat' })
+    seen.add('openrouter')
   }
 
   if (auth.gemini && !seen.has('gemini')) {
     chain.push({ provider: Gemini, model: 'gemini-1.5-flash' })
+    seen.add('gemini')
   }
 
   if (auth.huggingface && !seen.has('huggingface')) {
@@ -137,6 +139,7 @@ function buildChain(
       provider: HuggingFace,
       model: 'deepseek-ai/deepseek-coder-6.7b-instruct',
     })
+    seen.add('huggingface')
   }
 
   return chain
