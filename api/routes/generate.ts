@@ -91,10 +91,28 @@ app.post('/', async (c) => {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false
+
       function send(event: string, data: unknown) {
-        controller.enqueue(
-          encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
-        )
+        if (closed) return
+        try {
+          controller.enqueue(
+            encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+          )
+        } catch (err) {
+          closed = true
+          console.error('[generate] send failed, stream already closed:', err)
+        }
+      }
+
+      function close() {
+        if (closed) return
+        closed = true
+        try {
+          controller.close()
+        } catch {
+          // already closed
+        }
       }
 
       try {
@@ -176,12 +194,12 @@ app.post('/', async (c) => {
         const projectId = randomUUID()
         const files = assembleProject(intent, components, projectId)
         send('done', { projectId, files })
-        controller.close()
+        close()
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
         console.error('[generate] error:', err)
         send('error', { message })
-        controller.close()
+        close()
       }
     },
   })

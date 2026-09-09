@@ -36,7 +36,7 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat' },
+      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
       'key'
     )
 
@@ -55,7 +55,11 @@ describe('OpenRouter.generate', () => {
     vi.stubGlobal('fetch', fetch)
 
     await expect(
-      OpenRouter.generate('hero', { model: 'deepseek/deepseek-chat' }, 'key')
+      OpenRouter.generate(
+        'hero',
+        { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+        'key'
+      )
     ).rejects.toThrow('Rate limit exceeded')
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -70,7 +74,7 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat' },
+      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
       'key'
     )
 
@@ -88,7 +92,7 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat' },
+      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
       'key'
     )
 
@@ -104,7 +108,11 @@ describe('OpenRouter.generate', () => {
     vi.stubGlobal('fetch', fetch)
 
     await expect(
-      OpenRouter.generate('hero', { model: 'deepseek/deepseek-chat' }, 'key')
+      OpenRouter.generate(
+        'hero',
+        { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+        'key'
+      )
     ).rejects.toThrow('Invalid API key')
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -119,7 +127,7 @@ describe('OpenRouter.generate', () => {
 
     const result = await OpenRouter.generate(
       'hero',
-      { model: 'deepseek/deepseek-chat' },
+      { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
       'key'
     )
 
@@ -137,12 +145,34 @@ describe('OpenRouter.generate', () => {
 
     let err: unknown
     try {
-      await OpenRouter.generate('hero', { model: 'deepseek/deepseek-chat' }, 'key')
+      await OpenRouter.generate(
+        'hero',
+        { model: 'deepseek/deepseek-chat', fallback: OpenRouter.supportedModels },
+        'key'
+      )
     } catch (e) {
       err = e
     }
 
     expect(err).toBeInstanceOf(ProviderError)
     expect((err as ProviderError).status).toBe(429)
+  })
+
+  it('skips 400 "invalid model" and falls back', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(makeErrorResponse(400, 'Qwen/Qwen2.5-Coder is not a valid model ID'))
+      .mockResolvedValueOnce(makeSuccessResponse('ok'))
+    vi.stubGlobal('fetch', fetch)
+
+    const result = await OpenRouter.generate(
+      'hero',
+      { model: 'Qwen/Qwen2.5-Coder', fallback: ['deepseek/deepseek-chat', 'Qwen/Qwen2.5-Coder'] },
+      'key'
+    )
+
+    expect(result.code).toBe('ok')
+    expect(result.model).toBe('deepseek/deepseek-chat')
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,3 +1,4 @@
+import { fetchOpenRouterModels } from '@/lib/models'
 import {
   ProviderError,
   type AIProvider,
@@ -10,6 +11,33 @@ const API_BASE = 'https://openrouter.ai/api/v1'
 
 const GENERATE_TIMEOUT_MS = 120_000
 const HEALTH_TIMEOUT_MS = 30_000
+const MODEL_LIST_TTL_MS = 5 * 60 * 1000
+
+let cachedModelList: string[] | null = null
+let cachedModelListAt = 0
+
+async function getOpenRouterModels(): Promise<string[]> {
+  if (cachedModelList && Date.now() - cachedModelListAt < MODEL_LIST_TTL_MS) {
+    return cachedModelList
+  }
+
+  try {
+    const models = await fetchOpenRouterModels()
+    cachedModelList = models.map((m) => m.id)
+    cachedModelListAt = Date.now()
+    return cachedModelList
+  } catch {
+    return []
+  }
+}
+
+const INVALID_MODEL_KEYWORDS = [
+  'is not a valid model',
+  'does not exist',
+  'was not found',
+  'invalid model',
+  'no such model',
+]
 
 const PRICES: Record<string, { in: number; out: number }> = {
   'deepseek/deepseek-chat': { in: 0.14, out: 0.28 },
@@ -51,13 +79,20 @@ export const OpenRouter: AIProvider = {
 
     messages.push({ role: 'user', content: prompt })
 
-    // Try the requested model, then the other known models. If we hit a 402
-    // (no credits), only try `:free` models afterwards so we do not waste calls
-    // on paid models.
-    const candidates = [
-      requestedModel,
-      ...this.supportedModels.filter((m) => m !== requestedModel),
-    ]
+    // Build the fallback chain. If the caller gives an explicit fallback list
+    // (e.g. tests), use it. Otherwise pull the live model list from OpenRouter
+    // and fall back through it. The live list is much more reliable than any
+    // hardcoded list, which goes stale quickly.
+    let fallback = (config.fallback ?? []).filter((m) => m !== requestedModel)
+    if (fallback.length === 0) {
+      const live = await getOpenRouterModels()
+      fallback = live.filter((m) => m !== requestedModel).slice(0, 15)
+    }
+    if (fallback.length === 0) {
+      fallback = this.supportedModels.filter((m) => m !== requestedModel)
+    }
+
+    const candidates = [requestedModel, ...fallback]
 
     const errors: string[] = []
     let hit402 = false
@@ -137,6 +172,13 @@ export const OpenRouter: AIProvider = {
         // models usually fails with the same error and wastes time/quota.
         if (status === 429) {
           throw new ProviderError(message, 429)
+        }
+
+        // 400 with an invalid-model message means the model id is stale or not
+        // a chat model — skip it and try the next one.
+        if (status === 400 && INVALID_MODEL_KEYWORDS.some((kw) => lower.includes(kw))) {
+          errors.push(`${model}: ${message}`)
+          continue
         }
 
         if (status === 404 || status === 402 || status === 503) {
