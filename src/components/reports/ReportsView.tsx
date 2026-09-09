@@ -247,9 +247,11 @@ function EmailPreviewPanel() {
           </>
         )}
 
-        <div
-          className="rounded border bg-background p-4 text-sm"
-          dangerouslySetInnerHTML={{ __html: html }}
+        <iframe
+          title="Email preview"
+          srcDoc={html}
+          sandbox=""
+          className="w-full min-h-[200px] rounded border bg-background"
         />
       </CardContent>
     </Card>
