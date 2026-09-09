@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, RefreshCw } from 'lucide-react'
-import type { DeployStatus } from '@/types'
+import { RefreshCw, ExternalLink } from 'lucide-react'
+import { openUrl } from '@/lib/open-url'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { DeployStatus } from '@/types'
 
 /**
  * Render the generated site in a sandboxed iframe, with skeleton, error, and
@@ -56,7 +57,7 @@ export function LivePreview({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => window.open(url, '_blank')}
+            onClick={() => openUrl(url)}
             title="Open in new tab"
           >
             <ExternalLink className="h-4 w-4" />

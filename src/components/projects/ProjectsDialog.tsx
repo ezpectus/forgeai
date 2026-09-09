@@ -3,6 +3,7 @@
 import { useHistory } from '@/stores/history'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
+import { openUrl } from '@/lib/open-url'
 import type { ProjectRecord } from '@/types'
 import { Button } from '@/components/ui/button'
 import {
@@ -139,7 +140,7 @@ export function ProjectsDialog() {
                         variant="link"
                         size="sm"
                         className="h-auto p-0 text-xs"
-                        onClick={() => window.open(project.deployUrl, '_blank')}
+                        onClick={() => openUrl(project.deployUrl)}
                       >
                         Open URL
                       </Button>

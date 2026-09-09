@@ -3,6 +3,7 @@
 import { Check, Plus, ExternalLink, Copy } from 'lucide-react'
 import { useState } from 'react'
 import { useProject } from '@/stores/project'
+import { openUrl } from '@/lib/open-url'
 import { Button } from '@/components/ui/button'
 import { DeployButton, ExportMenu } from '@/components/layout/TopBar'
 import { ComponentStatusRow } from './ComponentStatusRow'
@@ -78,7 +79,7 @@ export function GenerationSuccess() {
             <a
               href={deployUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="flex-1 truncate text-sm text-primary underline"
             >
               {deployUrl}
@@ -86,7 +87,12 @@ export function GenerationSuccess() {
             <Button variant="ghost" size="icon" onClick={copyUrl} title="Copy URL">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => window.open(deployUrl, '_blank')} title="Open">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => openUrl(deployUrl)}
+              title="Open"
+            >
               <ExternalLink className="h-4 w-4" />
             </Button>
           </div>
