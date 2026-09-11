@@ -50,6 +50,8 @@ export interface ProjectState {
 
 export interface ProjectRecord {
   id: string
+  /** User-assigned display name; falls back to the prompt when unset. */
+  title?: string
   prompt: string
   mode: string
   provider: string

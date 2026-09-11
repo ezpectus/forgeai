@@ -1,10 +1,21 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Monitor, Smartphone, Tablet } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+const DEVICES = [
+  { id: 'desktop', label: 'Desktop', icon: Monitor, width: undefined },
+  { id: 'tablet', label: 'Tablet', icon: Tablet, width: '768px' },
+  { id: 'mobile', label: 'Mobile', icon: Smartphone, width: '390px' },
+] as const
+
+type DeviceId = (typeof DEVICES)[number]['id']
 
 /**
  * Real local preview: POSTs the generated files to /api/preview, which
@@ -19,6 +30,7 @@ export function LocalPreview() {
   const [html, setHtml] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [device, setDevice] = useState<DeviceId>('desktop')
 
   // The srcdoc iframe has an opaque origin (sandbox w/o allow-same-origin),
   // so its postMessage arrives with origin 'null'. EditorOverlay's origin
@@ -110,15 +122,42 @@ export function LocalPreview() {
     )
   }
 
+  const active = DEVICES.find((d) => d.id === device) ?? DEVICES[0]
+
   return (
-    <iframe
-      ref={iframeRef}
-      srcDoc={html}
-      // allow-scripts only — no same-origin, no forms-post to our origin.
-      // Generated FormHandler falls back to mailto without env vars anyway.
-      sandbox="allow-scripts"
-      className="h-full w-full rounded border bg-white"
-      title="Local project preview"
-    />
+    <div className="flex h-full w-full flex-col gap-2">
+      <div className="flex items-center justify-end gap-1" role="group" aria-label="Preview device">
+        {DEVICES.map((d) => (
+          <Button
+            key={d.id}
+            type="button"
+            variant={device === d.id ? 'default' : 'ghost'}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setDevice(d.id)}
+            title={`${d.label} preview${d.width ? ` (${d.width})` : ''}`}
+            aria-label={`${d.label} preview`}
+            aria-pressed={device === d.id}
+          >
+            <d.icon className="h-4 w-4" />
+          </Button>
+        ))}
+      </div>
+      <div className="flex min-h-0 flex-1 justify-center overflow-auto rounded bg-muted/30 p-1">
+        <iframe
+          ref={iframeRef}
+          srcDoc={html}
+          // allow-scripts only — no same-origin, no forms-post to our origin.
+          // Generated FormHandler falls back to mailto without env vars anyway.
+          sandbox="allow-scripts"
+          className={cn(
+            'h-full rounded border bg-white transition-[width] duration-200',
+            !active.width && 'w-full'
+          )}
+          style={active.width ? { width: active.width } : undefined}
+          title="Local project preview"
+        />
+      </div>
+    </div>
   )
 }

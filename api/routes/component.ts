@@ -83,7 +83,9 @@ app.post('/', async (c) => {
       body.currentCode,
       body.instruction,
       auth,
-      preferred
+      preferred,
+      // Aborts the provider call if the client closes the panel mid-edit.
+      c.req.raw.signal
     )
 
     if (result.status === 'error') {
@@ -109,7 +111,8 @@ app.post('/', async (c) => {
         result.code,
         fixInstruction,
         auth,
-        preferred
+        preferred,
+        c.req.raw.signal
       )
       if (retry.status === 'ready') {
         validation = await validateComponent(

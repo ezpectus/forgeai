@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Pencil, Copy, Check } from 'lucide-react'
 import { useHistory } from '@/stores/history'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
@@ -23,6 +24,26 @@ export function ProjectsDialog() {
   const { vercel } = useKeys()
   const [redeploying, setRedeploying] = useState<string | null>(null)
   const [redeployError, setRedeployError] = useState<{ id: string; message: string } | null>(null)
+  const [renaming, setRenaming] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+
+  async function handleRename(project: ProjectRecord) {
+    const title = renameValue.trim()
+    setRenaming(null)
+    if (!title || title === (project.title ?? project.prompt)) return
+    await add({ ...project, title })
+  }
+
+  async function handleDuplicate(project: ProjectRecord) {
+    await add({
+      ...project,
+      id: crypto.randomUUID(),
+      title: `${project.title ?? project.prompt.slice(0, 40)} (copy)`,
+      createdAt: new Date().toISOString(),
+      // A copy is not redeployed — it must not inherit the live URL.
+      deployUrl: undefined,
+    })
+  }
 
   async function handleDownload(project: ProjectRecord) {
     if (!project.files) return
@@ -123,19 +144,68 @@ export function ProjectsDialog() {
                   className="flex flex-col gap-2 rounded border p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="line-clamp-2 text-sm font-medium">
-                      {project.prompt}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => remove(project.id)}
-                      title="Delete project"
-                      aria-label="Delete project"
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    {renaming === project.id ? (
+                      <div className="flex flex-1 items-center gap-1">
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void handleRename(project)
+                            if (e.key === 'Escape') setRenaming(null)
+                          }}
+                          aria-label="Project name"
+                          className="h-7 flex-1 rounded border bg-background px-2 text-sm"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0"
+                          onClick={() => void handleRename(project)}
+                          title="Save name"
+                          aria-label="Save name"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="group flex min-w-0 flex-1 items-center gap-1.5 text-left"
+                        onClick={() => {
+                          setRenaming(project.id)
+                          setRenameValue(project.title ?? project.prompt)
+                        }}
+                        title="Rename project"
+                      >
+                        <p className="line-clamp-2 text-sm font-medium">
+                          {project.title ?? project.prompt}
+                        </p>
+                        <Pencil className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                      </button>
+                    )}
+                    <div className="flex shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => void handleDuplicate(project)}
+                        title="Duplicate project"
+                        aria-label="Duplicate project"
+                      >
+                        <Copy className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => remove(project.id)}
+                        title="Delete project"
+                        aria-label="Delete project"
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="capitalize">{project.status}</span>

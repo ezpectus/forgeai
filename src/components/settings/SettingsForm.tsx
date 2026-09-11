@@ -140,6 +140,21 @@ export function SettingsForm() {
     }
   }
 
+  // Batch-test every provider that has a value entered — same code path as
+  // the per-field Test button, just fanned out.
+  async function handleTestAll() {
+    const withKeys = AI_PROVIDERS.filter((p) =>
+      (values[p as keyof typeof values] ?? '').trim()
+    )
+    if (withKeys.length === 0) return
+    await Promise.all(withKeys.map((p) => handleTest(p)))
+  }
+
+  const testAllCount = AI_PROVIDERS.filter((p) =>
+    (values[p as keyof typeof values] ?? '').trim()
+  ).length
+  const anyTesting = AI_PROVIDERS.some((p) => tests[p]?.status === 'testing')
+
   async function handleSave() {
     setSaving(true)
     const entries = Object.entries(values) as [keyof typeof values, string][]
@@ -258,14 +273,26 @@ export function SettingsForm() {
 
       {saveError && <p className="text-sm text-destructive">{saveError}</p>}
 
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline" onClick={handleCancel}>
-          Cancel
+      <div className="flex items-center justify-between gap-2 pt-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleTestAll}
+          disabled={testAllCount === 0 || anyTesting}
+          title={testAllCount === 0 ? 'Enter at least one AI provider key' : `Test ${testAllCount} provider key(s)`}
+        >
+          {anyTesting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+          Test all keys{testAllCount > 0 ? ` (${testAllCount})` : ''}
         </Button>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-          Save
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+            Save
+          </Button>
+        </div>
       </div>
     </div>
   )

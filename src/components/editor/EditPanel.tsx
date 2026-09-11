@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, Loader2, X } from 'lucide-react'
 import { saveSnapshot } from '@/lib/version-history'
 import { useProject } from '@/stores/project'
@@ -37,15 +37,27 @@ export function EditPanel() {
   const [newCode, setNewCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+
+  // Closing the editor cancels the in-flight regeneration — a dismissed edit
+  // should not keep burning a paid provider call server-side.
+  useEffect(() => {
+    if (!editorOpen) abortRef.current?.abort()
+  }, [editorOpen])
 
   async function handleApply() {
     if (!component || !instruction.trim()) return
+
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     setLoading(true)
     setError(null)
 
     try {
       const res = await fetch('/api/generate/component', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,9 +84,10 @@ export function EditPanel() {
 
       setNewCode(data.component.code)
     } catch (err) {
+      if (controller.signal.aborted) return // cancelled — not an error
       setError(err instanceof Error ? err.message : 'Regeneration failed')
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
   }
 

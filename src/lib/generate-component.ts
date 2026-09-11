@@ -72,7 +72,8 @@ export async function regenerateComponent(
   currentCode: string,
   instruction: string,
   auth: Record<string, string>,
-  preferred?: { provider: string; model: string }
+  preferred?: { provider: string; model: string },
+  signal?: AbortSignal
 ): Promise<ComponentState> {
   // Use the config passed in — no need to re-read from disk.
   const systemPrompt = buildSystemPrompt(config, componentName)
@@ -93,7 +94,7 @@ export async function regenerateComponent(
   try {
     const result = await callWithFallback(
       userPrompt,
-      { systemPrompt, temperature: 0.2, maxTokens: 4096 },
+      { systemPrompt, temperature: 0.2, maxTokens: 4096, signal },
       auth,
       chain
     )
