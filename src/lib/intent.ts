@@ -5,11 +5,18 @@ import type { IntentResult, SectionIntent, GenResult } from '@/types'
 
 const SYSTEM_PROMPT = `You analyze website requests. Return valid JSON only.
 
+Plan CONTENT sections only — the site layout renders its own navigation bar,
+so NEVER plan nav/navbar/header/topbar sections; they are dropped and waste
+a generation call.
+
 For "type" of each section, prefer these known kinds (the renderer + prompts
 understand them best): hero, features, pricing, testimonials, faq, cta,
-gallery, stats, team, contact-form, newsletter, footer, navbar, about,
+gallery, stats, team, contact-form, newsletter, footer, about,
 services, portfolio-grid, steps, logos, comparison, banner. Use others only
 when the request genuinely needs something unlisted.
+
+Set "requiresImages": false — generated projects cannot ship image files;
+sections use gradients, icons, and layout instead.
 
 Schema: {
   "type": "landing" | "multi-page" | "portfolio",
