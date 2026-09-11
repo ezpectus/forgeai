@@ -1,6 +1,4 @@
-import { OpenRouter } from '@/plugins/providers/openrouter'
-import { Gemini } from '@/plugins/providers/gemini'
-import { HuggingFace } from '@/plugins/providers/huggingface'
+import { providers } from '@/plugins/providers'
 
 export type ProviderKeys = Partial<{
   openrouter: string | null
@@ -14,20 +12,42 @@ interface HealthCheckResult {
   error?: string
 }
 
-const HEALTH_ORDER = ['openrouter', 'gemini', 'huggingface'] as const
+// The providers array is the single source of truth for provider order.
+const HEALTH_ORDER = providers.map((p) => p.name)
 
 // Cache health checks so rapid clicks / repeated Generate presses do not hammer the provider.
 const HEALTH_CACHE_TTL = 30_000
+const CACHE_MAX_ENTRIES = 50
 interface CacheEntry {
   result: HealthCheckResult
   ts: number
 }
 const healthCache = new Map<string, CacheEntry>()
 
-type ProviderKey = 'openrouter' | 'gemini' | 'huggingface'
+function boundedSet<V>(map: Map<string, V>, key: string, value: V) {
+  if (map.size >= CACHE_MAX_ENTRIES && !map.has(key)) {
+    const now = Date.now()
+    for (const [k, entry] of map) {
+      if ((entry as { ts: number }).ts < now - 5 * 60_000) map.delete(k)
+    }
+    if (map.size >= CACHE_MAX_ENTRIES) {
+      const oldest = map.keys().next().value
+      if (oldest !== undefined) map.delete(oldest)
+    }
+  }
+  map.set(key, value)
+}
+
+// Never keep the raw API key in a cache key — hash it so the in-memory map
+// can't be dumped into a credential list.
+function keyId(key: string): string {
+  let h = 5381
+  for (let i = 0; i < key.length; i++) h = ((h << 5) + h) ^ key.charCodeAt(i)
+  return (h >>> 0).toString(36)
+}
 
 async function checkOne(provider: string, key: string): Promise<HealthCheckResult> {
-  const cacheKey = `${provider}:${key}`
+  const cacheKey = `${provider}:${keyId(key)}`
   const cached = healthCache.get(cacheKey)
   if (cached && Date.now() - cached.ts < HEALTH_CACHE_TTL) {
     return cached.result
@@ -65,7 +85,7 @@ async function checkOne(provider: string, key: string): Promise<HealthCheckResul
             error: `${provider}: [${data.statusCode ?? res.status}] ${data.error ?? 'Health check failed'}`,
           }
 
-    healthCache.set(cacheKey, { result, ts: Date.now() })
+    boundedSet(healthCache, cacheKey, { result, ts: Date.now() })
     return result
   } catch (err) {
     const result: HealthCheckResult = {
@@ -73,7 +93,7 @@ async function checkOne(provider: string, key: string): Promise<HealthCheckResul
       provider,
       error: `${provider}: ${err instanceof Error ? err.message : String(err)}`,
     }
-    healthCache.set(cacheKey, { result, ts: Date.now() })
+    boundedSet(healthCache, cacheKey, { result, ts: Date.now() })
     return result
   }
 }
@@ -128,13 +148,7 @@ export async function loadFirstModel(
     return models[0].id
   }
 
-  const defaults: Record<ProviderKey, string> = {
-    openrouter: OpenRouter.defaultModel,
-    gemini: Gemini.defaultModel,
-    huggingface: HuggingFace.defaultModel,
-  }
-
-  return defaults[provider as ProviderKey] ?? ''
+  return providers.find((p) => p.name === provider)?.defaultModel ?? ''
 }
 
 export interface ModelSummary {
@@ -158,7 +172,7 @@ export async function fetchModels(
   provider: string,
   token?: string | null
 ): Promise<ModelSummary[]> {
-  const cacheKey = `${provider}:${token ?? ''}`
+  const cacheKey = `${provider}:${token ? keyId(token) : ''}`
   const cached = modelCache.get(cacheKey)
   if (cached && Date.now() - cached.ts < MODEL_CACHE_TTL) {
     return cached.models
@@ -185,7 +199,7 @@ export async function fetchModels(
     }
 
     const models = res.ok && data.models ? data.models : []
-    modelCache.set(cacheKey, { models, ts: Date.now() })
+    boundedSet(modelCache, cacheKey, { models, ts: Date.now() })
     return models
   } catch {
     return []

@@ -1,15 +1,11 @@
 import { Hono } from 'hono'
 import type { AIProvider } from '@/types'
-import { HuggingFace } from '@/plugins/providers/huggingface'
-import { OpenRouter } from '@/plugins/providers/openrouter'
-import { Gemini } from '@/plugins/providers/gemini'
+import { providers } from '@/plugins/providers'
 import type { AppEnv } from '../lib/env'
 
-const PROVIDERS: Record<string, AIProvider> = {
-  openrouter: OpenRouter,
-  huggingface: HuggingFace,
-  gemini: Gemini,
-}
+const PROVIDERS = Object.fromEntries(
+  providers.map((p) => [p.name, p])
+) as Record<string, AIProvider>
 
 const app = new Hono<AppEnv>()
 

@@ -1,44 +1,7 @@
 import { callWithFallback } from './fallback'
+import { buildProviderChain } from './provider-chain'
 import { buildSystemPrompt, buildUserPrompt } from './prompt-builder'
-import { HuggingFace } from '@/plugins/providers/huggingface'
-import { OpenRouter } from '@/plugins/providers/openrouter'
-import { Gemini } from '@/plugins/providers/gemini'
-import { providers } from '@/plugins/providers'
-import type { AIProvider, ComponentSpec, ComponentState, IntentResult } from '@/types'
-
-// Build the ordered list of AI providers to try, based on which keys the user has set.
-function buildChain(
-  auth: Record<string, string>,
-  preferred?: { provider: string; model: string }
-) {
-  const chain: { provider: AIProvider; model: string }[] = []
-  const seen = new Set<string>()
-
-  if (preferred && auth[preferred.provider]) {
-    const provider = providers.find((p) => p.name === preferred.provider)
-    if (provider) {
-      chain.push({ provider, model: preferred.model })
-      seen.add(provider.name)
-    }
-  }
-
-  if (auth.openrouter && !seen.has('openrouter')) {
-    chain.push({ provider: OpenRouter, model: OpenRouter.defaultModel })
-    seen.add('openrouter')
-  }
-
-  if (auth.gemini && !seen.has('gemini')) {
-    chain.push({ provider: Gemini, model: Gemini.defaultModel })
-    seen.add('gemini')
-  }
-
-  if (auth.huggingface && !seen.has('huggingface')) {
-    chain.push({ provider: HuggingFace, model: HuggingFace.defaultModel })
-    seen.add('huggingface')
-  }
-
-  return chain
-}
+import type { ComponentSpec, ComponentState, IntentResult } from '@/types'
 
 /**
  * Generate a single component (e.g. Hero, Features) from a template config,
@@ -50,14 +13,15 @@ export async function generateComponent(
   componentName: string,
   auth: Record<string, string>,
   intent: IntentResult,
-  preferred?: { provider: string; model: string }
+  preferred?: { provider: string; model: string },
+  signal?: AbortSignal
 ): Promise<ComponentState> {
   // Use the config passed in — it may come from configs/templates/ OR
   // public/templates/. Re-reading from disk would break for public templates.
   const systemPrompt = buildSystemPrompt(config, componentName)
 
   const userPrompt = buildUserPrompt(intent, componentName, prompt)
-  const chain = buildChain(auth, preferred)
+  const chain = buildProviderChain(auth, preferred)
 
   if (chain.length === 0) {
     return {
@@ -72,7 +36,7 @@ export async function generateComponent(
   try {
     const result = await callWithFallback(
       userPrompt,
-      { systemPrompt, temperature: 0.2, maxTokens: 4096 },
+      { systemPrompt, temperature: 0.2, maxTokens: 4096, signal },
       auth,
       chain
     )
@@ -114,7 +78,7 @@ export async function regenerateComponent(
   const systemPrompt = buildSystemPrompt(config, componentName)
   const userPrompt = `Current component code:\n${currentCode}\n\nInstruction: ${instruction}\n\nMake minimal changes. Preserve structure. Return only the TypeScript React component code. No markdown, no explanation.`
 
-  const chain = buildChain(auth, preferred)
+  const chain = buildProviderChain(auth, preferred)
 
   if (chain.length === 0) {
     return {

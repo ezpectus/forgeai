@@ -1,10 +1,7 @@
 import { callWithFallback } from './fallback'
-import { OpenRouter } from '@/plugins/providers/openrouter'
-import { Gemini } from '@/plugins/providers/gemini'
-import { HuggingFace } from '@/plugins/providers/huggingface'
-import { providers } from '@/plugins/providers'
+import { buildProviderChain } from './provider-chain'
 import { ProviderError } from '@/types'
-import type { AIProvider, IntentResult, SectionIntent, GenResult } from '@/types'
+import type { IntentResult, SectionIntent, GenResult } from '@/types'
 
 const SYSTEM_PROMPT = `You analyze website requests. Return valid JSON only.
 Schema: {
@@ -78,11 +75,41 @@ function safeJsonParse(text: string): unknown {
   return JSON.parse(cleaned)
 }
 
+/**
+ * Turn an AI-provided section name into a safe JS identifier (PascalCase).
+ * `assembleProject` interpolates this into `import X from ...` and `<X />` —
+ * a raw name like "contact-form" or "my hero" produces uncompilable output.
+ */
+export function toIdentifier(raw: string): string {
+  const words = raw.replace(/[^a-zA-Z0-9]+/g, ' ').trim().split(/\s+/)
+  const id = words
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('')
+    .replace(/^[^A-Za-z_]+/, '')
+  return id
+}
+
+/**
+ * Turn an AI-provided page name into a safe Next.js route segment.
+ * Prevents `../`-style escapes, `a/b` nesting, and reserved segments.
+ */
+export function toPageSlug(raw: string): string {
+  const slug = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  if (!slug) return 'index'
+  if (slug === 'api' || slug.startsWith('_')) return `p-${slug}`
+  return slug
+}
+
 // Normalize a raw section object into a typed `SectionIntent`, or reject it.
 function asSection(raw: unknown): SectionIntent | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
-  const name = typeof r.name === 'string' ? r.name : ''
+  const rawName = typeof r.name === 'string' ? r.name : ''
+  const name = toIdentifier(rawName)
   if (!name) return null
   return {
     name,
@@ -93,53 +120,57 @@ function asSection(raw: unknown): SectionIntent | null {
     requiresForm: r.requiresForm === true,
     requiresImages: r.requiresImages === true,
     page:
-      typeof r.page === 'string' && r.page ? (r.page as string) : 'index',
+      typeof r.page === 'string' && r.page
+        ? toPageSlug(r.page)
+        : 'index',
   }
+}
+
+/** Two sections sanitizing to the same identifier would collide on import. */
+function dedupeSections(sections: SectionIntent[]): SectionIntent[] {
+  const counts = new Map<string, number>()
+  return sections.map((s) => {
+    const n = (counts.get(s.name) ?? 0) + 1
+    counts.set(s.name, n)
+    return n === 1 ? s : { ...s, name: `${s.name}${n}` }
+  })
 }
 
 const DEFAULT_INTENT: IntentResult = {
   type: 'landing',
   sections: [
     {
-      name: 'hero',
+      name: 'Hero',
       type: 'hero',
       description: 'Main headline and call to action',
       priority: 1,
       page: 'index',
     },
     {
-      name: 'features',
+      name: 'Features',
       type: 'features',
       description: 'Key selling points',
       priority: 2,
       page: 'index',
     },
     {
-      name: 'pricing',
+      name: 'Pricing',
       type: 'pricing',
       description: 'Pricing plans',
       priority: 3,
       page: 'index',
     },
     {
-      name: 'contact-form',
-      type: 'contact-form',
-      description: 'Contact or booking form',
-      priority: 4,
-      requiresForm: true,
-      page: 'index',
-    },
-    {
-      name: 'footer',
+      name: 'Footer',
       type: 'footer',
       description: 'Footer with links and copyright',
-      priority: 5,
+      priority: 4,
       page: 'index',
     },
   ],
   palette: 'slate-blue',
-  dbRequired: true,
-  dbForms: ['contact-form: name, email, message'],
+  dbRequired: false,
+  dbForms: [],
   pages: ['index'],
   audience: 'general',
   tone: 'professional',
@@ -150,45 +181,13 @@ const DEFAULT_INTENT: IntentResult = {
  * Send the user's prompt to an AI model and convert the returned JSON into a
  * structured build plan: sections, palette, tone, and whether a database is needed.
  */
-function buildChain(
-  auth: Record<string, string>,
-  preferred?: { provider: string; model: string }
-) {
-  const chain: { provider: AIProvider; model: string }[] = []
-  const seen = new Set<string>()
-
-  if (preferred && auth[preferred.provider]) {
-    const provider = providers.find((p) => p.name === preferred.provider)
-    if (provider) {
-      chain.push({ provider, model: preferred.model })
-      seen.add(provider.name)
-    }
-  }
-
-  if (auth.openrouter && !seen.has('openrouter')) {
-    chain.push({ provider: OpenRouter, model: OpenRouter.defaultModel })
-    seen.add('openrouter')
-  }
-
-  if (auth.gemini && !seen.has('gemini')) {
-    chain.push({ provider: Gemini, model: Gemini.defaultModel })
-    seen.add('gemini')
-  }
-
-  if (auth.huggingface && !seen.has('huggingface')) {
-    chain.push({ provider: HuggingFace, model: HuggingFace.defaultModel })
-    seen.add('huggingface')
-  }
-
-  return chain
-}
-
 export async function analyzeIntent(
   prompt: string,
   auth: Record<string, string>,
-  preferred?: { provider: string; model: string }
+  preferred?: { provider: string; model: string },
+  signal?: AbortSignal
 ): Promise<IntentResult> {
-  const chain = buildChain(auth, preferred)
+  const chain = buildProviderChain(auth, preferred)
 
   if (chain.length === 0) {
     return { ...DEFAULT_INTENT, warning: 'No API keys configured. Using a default plan.' }
@@ -201,6 +200,7 @@ export async function analyzeIntent(
         systemPrompt: SYSTEM_PROMPT,
         temperature: 0.1,
         maxTokens: 1024,
+        signal,
       },
       auth,
       chain,
@@ -223,7 +223,9 @@ export async function analyzeIntent(
 
     const rawSections = data.sections
     const sections = Array.isArray(rawSections)
-      ? (rawSections.map(asSection).filter(Boolean) as SectionIntent[])
+      ? dedupeSections(
+          rawSections.map(asSection).filter(Boolean) as SectionIntent[]
+        )
       : DEFAULT_INTENT.sections
     usedDefaults =
       usedDefaults ||
@@ -253,7 +255,9 @@ export async function analyzeIntent(
     usedDefaults = usedDefaults || typeof data.palette !== 'string'
 
     const pages = Array.isArray(data.pages)
-      ? data.pages.map((p) => String(p))
+      ? Array.from(
+          new Set(data.pages.map((p) => toPageSlug(String(p))))
+        )
       : DEFAULT_INTENT.pages
     usedDefaults = usedDefaults || !Array.isArray(data.pages)
 
@@ -288,6 +292,11 @@ export async function analyzeIntent(
 
     return intent
   } catch (err) {
+    // Cancellation is not a parse failure — rethrow so the route sees the 499
+    // instead of falling back to a default plan the client no longer wants.
+    if (signal?.aborted || (err instanceof ProviderError && err.status === 499)) {
+      throw err
+    }
     console.error('[analyzeIntent] failed:', err)
     const message = (err instanceof Error ? err.message : String(err)).trim().replace(/[.!?;:,]+$/, '')
     return {

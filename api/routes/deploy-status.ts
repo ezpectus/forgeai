@@ -1,12 +1,11 @@
 import { Hono } from 'hono'
-import { VercelDeployer } from '@/plugins/deployers/vercel'
-import { E2BDeployer } from '@/plugins/deployers/e2b'
+import { deployers } from '@/plugins/deployers'
 import type { AppEnv } from '../lib/env'
+import type { Deployer } from '@/types'
 
-const DEPLOYERS = {
-  vercel: VercelDeployer,
-  e2b: E2BDeployer,
-}
+const DEPLOYERS = Object.fromEntries(
+  deployers.map((d) => [d.name, d])
+) as Record<string, Deployer>
 
 const app = new Hono<AppEnv>()
 

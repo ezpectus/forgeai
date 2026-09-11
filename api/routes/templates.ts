@@ -6,6 +6,7 @@ import { analyzeIntent } from '@/lib/intent'
 import { assembleProject } from '@/lib/assemble'
 import { generateComponent } from '@/lib/generate-component'
 import { validateComponent } from '@/lib/validate'
+import { COMPONENT_RULES } from '@/lib/validation-rules'
 import { retryComponent } from '@/lib/retry'
 import type { AppEnv } from '../lib/env'
 import type { ComponentSpec } from '@/types'
@@ -35,8 +36,13 @@ app.get('/', async (c) => {
   const type = query.type
   const topic = query.topic
   const search = query.search?.toLowerCase()
-  const page = Math.max(1, Number(query.page ?? '1'))
-  const limit = Math.max(1, Math.min(100, Number(query.limit ?? '10')))
+  const pageNum = Number(query.page ?? '1')
+  const limitNum = Number(query.limit ?? '10')
+  const page = Number.isFinite(pageNum) && pageNum > 0 ? Math.floor(pageNum) : 1
+  const limit =
+    Number.isFinite(limitNum) && limitNum > 0
+      ? Math.min(100, Math.floor(limitNum))
+      : 10
 
   let items = await loadIndex()
 
@@ -69,6 +75,12 @@ app.get('/:id', async (c) => {
 
   if (!item) {
     return c.json({ error: 'Template not found' }, 404)
+  }
+
+  // Guard against a poisoned or hand-edited index: only serve files that
+  // live under public/templates/.
+  if (!/^\/templates\/[a-z0-9-]+\/[a-z0-9-]+\.json$/.test(item.path)) {
+    return c.json({ error: 'Template path invalid' }, 400)
   }
 
   const raw = await readFile(join(process.cwd(), 'public', item.path), 'utf-8')
@@ -128,10 +140,17 @@ app.post('/:id/customize', async (c) => {
     return c.json({ error: 'Template not found', code: 'NOT_FOUND' }, 404)
   }
 
+  if (!/^\/templates\/[a-z0-9-]+\/[a-z0-9-]+\.json$/.test(item.path)) {
+    return c.json({ error: 'Template path invalid', code: 'BAD_REQUEST' }, 400)
+  }
+
   const raw = await readFile(join(process.cwd(), 'public', item.path), 'utf-8')
   const config = JSON.parse(raw) as ComponentSpec
 
   const encoder = new TextEncoder()
+  let cancelled = false
+  // Aborts the in-flight provider fetch on client cancel/disconnect.
+  const genAbort = new AbortController()
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -178,22 +197,21 @@ app.post('/:id/customize', async (c) => {
         heartbeat = setInterval(() => send('ping', {}), 10_000)
 
         send('analyzing', { status: 'analyzing' })
-        const intent = await analyzeIntent(prompt, auth, preferred)
+        // The chosen template must actually influence the result — feed its
+        // identity into the intent prompt instead of silently generating a
+        // generic site (the config's scope/stack still shape the system prompt).
+        const intent = await analyzeIntent(
+          `Using the "${config.name}" template (${config.description}). ${prompt}`,
+          auth,
+          preferred,
+          genAbort.signal
+        )
         send('intent', intent)
 
         const components = []
-        const rules = [
-          'syntax',
-          'hasDefaultExport',
-          'noDangerousHtml',
-          'noEval',
-          'usesTailwindOnly',
-          'imagesHaveAlt',
-          'formsHaveNames',
-          'noForbiddenImports',
-        ]
 
         for (const section of intent.sections) {
+          if (cancelled) break
           const componentName = section.name
           send('component', { name: componentName, status: 'generating' })
 
@@ -203,14 +221,15 @@ app.post('/:id/customize', async (c) => {
             componentName,
             auth,
             intent,
-            generationPreferred
+            generationPreferred,
+            genAbort.signal
           )
 
           if (result.status === 'ready') {
             const validation = await validateComponent(
               componentName,
               result.code,
-              rules,
+              COMPONENT_RULES,
               {
                 allowed: config.constraints?.allowedDependencies as string[],
                 forbidden: config.constraints
@@ -227,7 +246,9 @@ app.post('/:id/customize', async (c) => {
                 validation.errors,
                 auth,
                 intent,
-                generationPreferred
+                generationPreferred,
+                0,
+                genAbort.signal
               )
             }
           }
@@ -251,15 +272,30 @@ app.post('/:id/customize', async (c) => {
           components.push(result)
         }
 
+        if (cancelled) {
+          close()
+          return
+        }
+
         const projectId = randomUUID()
         const files = assembleProject(intent, components, projectId)
         send('done', { projectId, files })
         close()
       } catch (err) {
+        if (cancelled) {
+          close()
+          return
+        }
         const message = err instanceof Error ? err.message : String(err)
         send('error', { message })
         close()
       }
+    },
+    cancel() {
+      // Client disconnected — stop the section loop AND abort the in-flight
+      // provider request (same treatment as /api/generate, S82).
+      cancelled = true
+      genAbort.abort()
     },
   })
 
@@ -271,32 +307,82 @@ app.post('/:id/customize', async (c) => {
   })
 })
 
+const SAFE_SLUG = /^[a-z0-9][a-z0-9-]{0,62}$/
+
 app.post('/', async (c) => {
-  const body = await c.req.json<{
+  // Template submissions write to the deployment's filesystem — that only
+  // persists on a self-hosted/long-lived server (dev, Docker with a volume).
+  // On serverless/read-only hosts the write would fail or silently vanish,
+  // so the endpoint is opt-in: set ALLOW_TEMPLATE_SUBMISSIONS=true.
+  if (process.env.ALLOW_TEMPLATE_SUBMISSIONS !== 'true') {
+    return c.json(
+      {
+        error:
+          'Template submissions are disabled on this deployment. Export the template JSON and open a pull request instead.',
+        code: 'SUBMISSIONS_DISABLED',
+      },
+      403
+    )
+  }
+
+  let body: {
     id: string
     name: string
     type: string
     topic?: string
     description: string
-  }>()
+  }
+
+  try {
+    body = await c.req.json<typeof body>()
+  } catch {
+    return c.json({ error: 'Invalid JSON body', code: 'BAD_REQUEST' }, 400)
+  }
 
   if (!body.id || !body.name || !body.description) {
     return c.json({ error: 'Missing required fields: id, name, description' }, 400)
   }
 
+  // Bound the write — unauthenticated endpoint, no giant names/descriptions.
+  if (
+    body.name.length > 120 ||
+    body.description.length > 4000 ||
+    (body.topic ?? '').length > 80
+  ) {
+    return c.json(
+      { error: 'name/description/topic too long', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+
+  if (!SAFE_SLUG.test(body.id)) {
+    return c.json(
+      { error: 'id must be lowercase alphanumeric with dashes', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+
+  const type = body.type || 'websites'
+  if (!SAFE_SLUG.test(type)) {
+    return c.json(
+      { error: 'type must be lowercase alphanumeric with dashes', code: 'BAD_REQUEST' },
+      400
+    )
+  }
+
   try {
     const templatesDir = join(process.cwd(), 'public/templates')
-    const typeDir = join(templatesDir, body.type || 'websites')
+    const typeDir = join(templatesDir, type)
     const templatePath = join(typeDir, `${body.id}.json`)
 
     const indexItem: TemplateIndexItem = {
       id: body.id,
       name: body.name,
-      type: body.type || 'websites',
+      type,
       topic: body.topic || body.id,
       description: body.description,
       thumbnail: `/templates/thumbnails/${body.id}.png`,
-      path: `/templates/${body.type || 'websites'}/${body.id}.json`,
+      path: `/templates/${type}/${body.id}.json`,
     }
 
     // Load the default website config as a base so the saved template has

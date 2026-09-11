@@ -31,6 +31,12 @@ export async function callWithFallback(
   const errors: string[] = []
 
   for (let i = 0; i < chain.length; i++) {
+    // Client cancelled/disconnected — bail out immediately rather than
+    // starting another paid provider call.
+    if (config.signal?.aborted) {
+      throw new ProviderError('Generation cancelled', 499)
+    }
+
     const { provider, model } = chain[i]
     const apiKey = auth[provider.name]
 
@@ -46,6 +52,10 @@ export async function callWithFallback(
       }
       return result
     } catch (err) {
+      // Aborted mid-request — no fallback, no sleep, just propagate.
+      if (config.signal?.aborted) {
+        throw new ProviderError('Generation cancelled', 499)
+      }
       const status = err instanceof ProviderError ? err.status : 500
       const message = err instanceof Error ? err.message : String(err)
 

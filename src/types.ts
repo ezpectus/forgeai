@@ -122,6 +122,9 @@ export interface GenConfig {
   maxTokens?: number
   systemPrompt?: string
   schema?: Record<string, unknown>
+  /** External cancellation (client cancel/disconnect). Providers must
+   *  combine it with their own request timeout. */
+  signal?: AbortSignal
 }
 
 export interface GenResult {
@@ -157,9 +160,14 @@ export interface AIProvider {
    */
   health(apiKey: string): Promise<boolean | HealthResult>
   /**
-   * Calculate cost based on token usage.
+   * Calculate cost based on token usage. Returns undefined when the model's
+   * price is unknown — callers must not show a fake $0.
    */
-  estimateCost?(tokensIn: number, tokensOut: number, model: string): number
+  estimateCost?(
+    tokensIn: number,
+    tokensOut: number,
+    model: string
+  ): number | undefined
 }
 
 export class ProviderError extends Error {
@@ -181,6 +189,8 @@ export interface DeployFiles {
 export interface DeployResult {
   url: string
   deployId: string
+  /** True when the deploy URL was returned before Vercel confirmed READY. */
+  pending?: boolean
 }
 
 export interface DeployStatus {
@@ -194,8 +204,13 @@ export interface Deployer {
   name: string
   /**
    * Deploy a set of files and return a live URL.
+   * `env` carries build-time public env vars (e.g. NEXT_PUBLIC_PROJECT_ID).
    */
-  deploy(files: DeployFiles, apiKey: string): Promise<DeployResult>
+  deploy(
+    files: DeployFiles,
+    apiKey: string,
+    env?: Record<string, string>
+  ): Promise<DeployResult>
   /**
    * Check deployment status.
    */
@@ -210,13 +225,11 @@ export interface Deployer {
 // Component / Template Spec
 // ------------------------------------------------------------------------
 
-export interface ValidationRule {
-  name: string
-  enabled: boolean
-  except?: string[]
-  params?: Record<string, unknown>
-}
-
+/**
+ * The fields that are actually read by the pipeline: `buildSystemPrompt`
+ * consumes scope/stack/constraints, and routes read constraints for
+ * validation deps. Template JSONs carry only these fields.
+ */
 export interface ComponentSpec {
   id: string
   name: string
@@ -227,170 +240,4 @@ export interface ComponentSpec {
   }
   stack: Record<string, string | string[]>
   constraints: Record<string, unknown>
-  components: string[]
-  generation: {
-    stages: string[]
-    planModeRequiredFor?: string[]
-    askClarifyingQuestions: boolean
-    showPlanBeforeBuild: boolean
-    parallelComponentGeneration: boolean
-    maxRetriesPerComponent: number
-  }
-  validation: {
-    autoTest: string[]
-    staticAnalysisRules: string[]
-    buildCommands?: string[]
-  }
-  model: {
-    intentModel: string
-    codeModel: string
-    fallback: string[]
-  }
-  export: {
-    formats: string[]
-    includeDatabaseSchema: boolean
-    includeReadme: boolean
-    includeEnvExample: boolean
-  }
-  ui: {
-    defaultPrompt: string
-    examplePrompts: string[]
-  }
-}
-
-// ------------------------------------------------------------------------
-// Template Gallery
-// ------------------------------------------------------------------------
-
-export interface Template {
-  id: string
-  name: string
-  type:
-    | 'website'
-    | 'presentation'
-    | 'carousel'
-    | 'report'
-    | 'image'
-    | 'video'
-    | 'audio'
-  topic: string
-  description: string
-  thumbnail: string
-  tags: string[]
-  popularity: number
-  usesCount: number
-  structure: TemplateStructure
-  aiPrompt: TemplateAiPrompt
-  customization: TemplateCustomization
-  export: string[]
-}
-
-export interface TemplateStructure {
-  slides?: TemplateSlide[]
-  sections?: TemplateSection[]
-  pages?: TemplatePage[]
-}
-
-export interface TemplateSlide {
-  id: string
-  type: string
-  layout: string
-  placeholders: Record<string, string>
-  design: Record<string, unknown>
-}
-
-export interface TemplateSection {
-  id: string
-  type: string
-  layout: string
-  placeholders: Record<string, string>
-  design: Record<string, unknown>
-}
-
-export interface TemplatePage {
-  id: string
-  name: string
-  path: string
-  sections: TemplateSection[]
-}
-
-export interface TemplateAiPrompt {
-  systemPrompt: string
-  userPromptTemplate: string
-  placeholders: string[]
-}
-
-export interface TemplateCustomization {
-  colors: boolean
-  fonts: boolean
-  layout: boolean
-  addSlides: boolean
-  removeSlides: boolean
-  reorderSlides: boolean
-}
-
-// ------------------------------------------------------------------------
-// API Request / Response Types
-// ------------------------------------------------------------------------
-
-export interface GenerateRequest {
-  prompt: string
-  config?: GenConfig
-  templateId?: string | null
-  provider?: string
-  model?: string
-}
-
-export interface GenerateComponentRequest {
-  projectId: string
-  componentName: string
-  currentCode: string
-  instruction: string
-  config?: GenConfig
-}
-
-export interface DeployRequest {
-  projectId: string
-  provider: string
-  files: DeployFiles
-}
-
-export interface ExportRequest {
-  projectId: string
-  files: DeployFiles
-  format?: 'zip' | 'json'
-}
-
-export interface DbBindRequest {
-  projectId: string
-  supabaseUrl: string
-  supabaseKey: string
-  forms: Array<{
-    name: string
-    fields: Array<{
-      name: string
-      type: string
-      required?: boolean
-    }>
-  }>
-}
-
-// ------------------------------------------------------------------------
-// Cost & Metrics
-// ------------------------------------------------------------------------
-
-export interface CostBreakdown {
-  step: string
-  model: string
-  provider: string
-  tokensIn: number
-  tokensOut: number
-  cost: number
-}
-
-export interface GenerationMetrics {
-  totalCost: number
-  totalTimeMs: number
-  steps: CostBreakdown[]
-  retries: number
 }

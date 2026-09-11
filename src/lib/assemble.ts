@@ -1,8 +1,16 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { toIdentifier } from './intent'
 import type { ComponentState, DeployFiles, IntentResult } from '@/types'
 
+let cachedHostVersions: ReturnType<typeof readHostVersions> | null = null
+
 function getHostVersions() {
+  cachedHostVersions ??= readHostVersions()
+  return cachedHostVersions
+}
+
+function readHostVersions() {
   try {
     const raw = readFileSync(join(process.cwd(), 'package.json'), 'utf-8')
     const pkg = JSON.parse(raw) as {
@@ -68,9 +76,11 @@ export function assembleProject(
         name,
         page: section.page ?? 'index',
         code: component.code.replace(
-          /<img\b([^>]*)>/gi,
+          /<img\b((?:[^>"'{]+|"[^"]*"|'[^']*'|\{[^}]*\})*)>/gi,
           (_match: string, attrs: string) => {
-            let a = attrs.trim()
+            // Strip the self-closing slash captured into attrs — appending
+            // ` />` after a trailing `/` produced `attr="x"/ loading=...`.
+            let a = attrs.trim().replace(/\/+$/, '').trim()
             if (!/\bloading\s*=/.test(a)) a += ' loading="lazy"'
             if (!/\bdecoding\s*=/.test(a)) a += ' decoding="async"'
             return `<img ${a.trim()} />`.replace(/  +/g, ' ')
@@ -88,7 +98,8 @@ export function assembleProject(
       scripts: {
         dev: 'next dev',
         build: 'next build',
-        start: 'npx serve dist',
+        // output:'export' writes the static site to out/, not distDir.
+        start: 'serve out',
       },
       dependencies: {
         next: versions.next,
@@ -107,6 +118,7 @@ export function assembleProject(
         tailwindcss: versions.tailwindcss,
         postcss: versions.postcss,
         autoprefixer: versions.autoprefixer,
+        serve: '^14.2.0',
       },
     },
     null,
@@ -207,7 +219,6 @@ export default config
   files['next.config.js'] = `/** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  distDir: 'dist',
   images: { unoptimized: true },
   poweredByHeader: false,
 }
@@ -257,13 +268,14 @@ module.exports = nextConfig
   position: relative;
 }
 
-[data-component]:hover {
+/* Editor affordances are only for the ForgeAI iframe preview — a deployed
+   site opened directly never gets the .forgeai-embedded class, so visitors
+   never see the dashed outline. */
+.forgeai-embedded [data-component]:hover {
   outline: 2px dashed hsl(var(--primary));
   outline-offset: -2px;
 }
 `
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
   files['src/app/layout.tsx'] = `import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -312,6 +324,15 @@ export default function RootLayout({
             __html: JSON.stringify(structuredData),
           }}
         />
+        {/* Marks the page as running inside the ForgeAI preview iframe so the
+            editor's [data-component] hover outline only appears there — end
+            users visiting the deployed site never see editor chrome. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'if (window.parent !== window) document.documentElement.classList.add("forgeai-embedded")',
+          }}
+        />
       </head>
       <body className={inter.className}>
         <Nav />
@@ -322,7 +343,11 @@ export default function RootLayout({
 }
 `
 
-  const pages = Array.from(new Set([...(intent.pages ?? []), ...sectionComponents.map((c) => c.page)]))
+  // Only emit routes that actually have rendered sections — a declared page
+  // with zero ready components would produce an empty <main> linked in the
+  // nav and sitemap. 'index' is always kept so the app always has a page.
+  const pagesWithSections = new Set(sectionComponents.map((c) => c.page))
+  const pages = Array.from(new Set(['index', ...pagesWithSections]))
 
   function pagePath(page: string) {
     return page === 'index' ? 'src/app/page.tsx' : `src/app/${page}/page.tsx`
@@ -377,69 +402,36 @@ export function Nav() {
     return sections
       .map(
         (c) =>
-          `      <div data-component="${c.name}" onClick={() => window.parent.postMessage({ action: 'select', component: '${c.name}' }, '*')}>
+          `      <div data-component="${c.name}" onClick={() => {
+        if (window.parent === window || !document.referrer) return
+        try {
+          window.parent.postMessage({ action: 'select', component: '${c.name}' }, new URL(document.referrer).origin)
+        } catch { /* malformed referrer */ }
+      }}>
         <${c.name} />
       </div>`
       )
       .join('\n')
   }
 
-  files['src/lib/analytics.ts'] = `export interface AnalyticsEvent {
-  id: string
-  type: 'page_view' | 'form_submit' | 'conversion'
-  timestamp: number
-  data?: Record<string, unknown>
-}
-
-const STORAGE_KEY = 'forgeai_analytics'
-
-function generateId(): string {
-  return \`\${Date.now()}-\${Math.random().toString(36).slice(2, 9)}\`
-}
-
-function loadEvents(): AnalyticsEvent[] {
-  if (typeof window === 'undefined') return []
-  const raw = localStorage.getItem(STORAGE_KEY)
-  return raw ? (JSON.parse(raw) as AnalyticsEvent[]) : []
-}
-
-function saveEvents(events: AnalyticsEvent[]) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(events.slice(-1000)))
-}
-
-export function trackEvent(type: AnalyticsEvent['type'], data?: Record<string, unknown>) {
-  const events = loadEvents()
-  events.push({ id: generateId(), type, timestamp: Date.now(), data })
-  saveEvents(events)
-}
-
-export function trackPageView(path: string) {
-  trackEvent('page_view', { path })
-}
-
-export function trackFormSubmit(formName: string) {
-  trackEvent('form_submit', { form: formName })
-}
-`
-
   for (const page of pages) {
     const sectionsForPage = sectionComponents.filter((c) => c.page === page)
     const pageImports = buildImports(sectionsForPage)
     const pageRendered = buildRendered(sectionsForPage)
     const path = pagePath(page)
-    const route = pageRoute(page)
+    // Page slugs are kebab-case (toPageSlug) — a raw capitalize would produce
+    // `About-usPage`, an invalid identifier. Convert to PascalCase.
     const pageName =
-      page === 'index' ? 'HomePage' : `${page.charAt(0).toUpperCase() + page.slice(1)}Page`
+      page === 'index' ? 'HomePage' : `${toIdentifier(page)}Page`
 
     files[path] =
-      `'use client'\n\nimport { useEffect } from 'react'\n${pageImports}${formHandler}\nimport { trackPageView, trackFormSubmit } from '@/lib/analytics'\n\nexport default function ${pageName}() {\n  useEffect(() => {\n    trackPageView('${route}')\n  }, [])\n\n  function handleFormSubmit(name: string) {\n    trackFormSubmit(name)\n  }\n\n  return (\n    <main className="min-h-screen" onSubmit={(e) => {\n      const form = e.target as HTMLFormElement\n      const name = form.dataset.form ?? form.getAttribute('name')\n      if (name) handleFormSubmit(name)\n    }}>\n${pageRendered}${formHandlerNode}    </main>\n  )\n}\n`
+      `'use client'\n\n${pageImports}${formHandler}\nexport default function ${pageName}() {\n  return (\n    <main className="min-h-screen">\n${pageRendered}${formHandlerNode}    </main>\n  )\n}\n`
   }
 
   const sitemapEntries = pages
     .map(
       (page) => `    {
-      url: '${siteUrl}${pageRoute(page)}',
+      url: \`\${siteUrl}${pageRoute(page)}\`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: ${page === 'index' ? 1 : 0.8},
@@ -448,6 +440,12 @@ export function trackFormSubmit(formName: string) {
     .join(',\n')
 
   files['src/app/sitemap.ts'] = `import type { MetadataRoute } from 'next'
+
+// NEXT_PUBLIC_SITE_URL wins; on Vercel, VERCEL_URL is injected at build time
+// so deployed sites get correct absolute URLs without extra config.
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? \`https://\${process.env.VERCEL_URL}\` : 'http://localhost:3000')
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -458,13 +456,17 @@ ${sitemapEntries}
 
   files['src/app/robots.ts'] = `import type { MetadataRoute } from 'next'
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? \`https://\${process.env.VERCEL_URL}\` : 'http://localhost:3000')
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: '${siteUrl}/sitemap.xml',
+    sitemap: \`\${siteUrl}/sitemap.xml\`,
   }
 }
 `
@@ -475,12 +477,15 @@ export default function robots(): MetadataRoute.Robots {
 
   if (intent.dbRequired) {
     files['src/lib/supabase.ts'] =
-      `import { createClient } from '@supabase/supabase-js'
+      `import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// null when env vars are missing — FormHandler checks before using it, so the
+// site still renders instead of crashing at module import.
+export const supabase: SupabaseClient | null =
+  supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null
 `
 
     files['src/components/FormHandler.tsx'] = `'use client'
@@ -501,6 +506,12 @@ export function FormHandler() {
       if (!name) return
 
       event.preventDefault()
+
+      if (!supabase) {
+        setMessage('Form submissions are not configured.')
+        setTimeout(() => setMessage(null), 4000)
+        return
+      }
 
       const formData = new FormData(form)
       const payload: Record<string, FormDataEntryValue> = {}
@@ -552,13 +563,15 @@ export function FormHandler() {
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "allow_inserts" ON submissions FOR INSERT TO anon WITH CHECK (true);
 `
-  }
 
-  files['.env.local.example'] =
-    `NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+    // Only advertised when the project actually wires Supabase — otherwise the
+    // env example tells users to configure services the code never reads.
+    files['.env.local.example'] =
+      `NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_PROJECT_ID=${projectId}
 `
+  }
 
   files['README.md'] = `# ForgeAI Project: ${projectId}
 

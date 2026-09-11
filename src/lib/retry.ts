@@ -1,5 +1,6 @@
 import { generateComponent } from './generate-component'
 import { validateComponent } from './validate'
+import { COMPONENT_RULES } from './validation-rules'
 import type { ComponentSpec, ComponentState, IntentResult } from '@/types'
 
 /**
@@ -15,7 +16,8 @@ export async function retryComponent(
   auth: Record<string, string>,
   intent: IntentResult,
   preferred?: { provider: string; model: string },
-  attempt = 0
+  attempt = 0,
+  signal?: AbortSignal
 ): Promise<ComponentState> {
   if (attempt >= 2) {
     return {
@@ -37,7 +39,8 @@ export async function retryComponent(
     componentName,
     auth,
     intent,
-    attempt === 0 ? preferred : undefined
+    preferred,
+    signal
   )
 
   if (result.status === 'error') {
@@ -47,16 +50,7 @@ export async function retryComponent(
   const validation = await validateComponent(
     componentName,
     result.code,
-    [
-      'syntax',
-      'hasDefaultExport',
-      'noDangerousHtml',
-      'noEval',
-      'usesTailwindOnly',
-      'imagesHaveAlt',
-      'formsHaveNames',
-      'noForbiddenImports',
-    ],
+    COMPONENT_RULES,
     {
       allowed: config.constraints?.allowedDependencies as string[] | undefined,
       forbidden: config.constraints?.forbiddenDependencies as
@@ -77,6 +71,7 @@ export async function retryComponent(
     auth,
     intent,
     preferred,
-    attempt + 1
+    attempt + 1,
+    signal
   )
 }

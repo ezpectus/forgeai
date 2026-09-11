@@ -5,7 +5,39 @@ export interface Snapshot {
   instruction?: string
 }
 
-const history: Record<string, Snapshot[]> = {}
+const STORAGE_KEY = 'forgeai_version_history'
+const MAX_SNAPSHOTS_PER_COMPONENT = 50
+
+// Backed by localStorage so version history survives page refresh — the
+// previous module-level object silently lost everything on reload.
+let history: Record<string, Snapshot[]> | null = null
+
+function load(): Record<string, Snapshot[]> {
+  if (history) return history
+  history = {}
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      const parsed = raw ? JSON.parse(raw) : {}
+      if (parsed && typeof parsed === 'object') {
+        history = parsed as Record<string, Snapshot[]>
+      }
+    } catch {
+      // corrupted entry — start clean
+      history = {}
+    }
+  }
+  return history
+}
+
+function persist() {
+  if (typeof window === 'undefined' || !history) return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+  } catch {
+    // storage full — history is best-effort
+  }
+}
 
 function createId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -23,33 +55,41 @@ export function saveSnapshot(
     instruction,
   }
 
-  if (!history[componentName]) {
-    history[componentName] = []
+  const store = load()
+  if (!store[componentName]) {
+    store[componentName] = []
   }
 
-  history[componentName].push(snapshot)
+  store[componentName].push(snapshot)
+  if (store[componentName].length > MAX_SNAPSHOTS_PER_COMPONENT) {
+    store[componentName] = store[componentName].slice(-MAX_SNAPSHOTS_PER_COMPONENT)
+  }
+  persist()
   return snapshot
 }
 
 export function getHistory(componentName: string): Snapshot[] {
-  return history[componentName] ?? []
+  return load()[componentName] ?? []
 }
 
 export function rollbackTo(componentName: string, id: string): Snapshot | null {
-  const snapshots = history[componentName]
+  const store = load()
+  const snapshots = store[componentName]
   if (!snapshots) return null
 
   const index = snapshots.findIndex((s) => s.id === id)
   if (index === -1) return null
 
-  // Remove later snapshots so the chosen one becomes the latest
+  // Re-order so the chosen snapshot becomes the latest. Later snapshots are
+  // kept — restore is non-destructive (you can un-restore).
   const [target] = snapshots.splice(index, 1)
   snapshots.push(target)
+  persist()
 
   return target
 }
 
 export function getCurrent(componentName: string): Snapshot | null {
-  const snapshots = history[componentName]
+  const snapshots = load()[componentName]
   return snapshots?.[snapshots.length - 1] ?? null
 }

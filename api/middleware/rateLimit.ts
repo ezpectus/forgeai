@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from 'hono'
+import type { Context, MiddlewareHandler } from 'hono'
 
 interface RateLimitEntry {
   count: number
@@ -14,6 +14,36 @@ const LIMIT = Number(
     (process.env.NODE_ENV === 'production' ? 10 : 0)
 )
 const WINDOW_MS = 60_000
+const SWEEP_INTERVAL_MS = WINDOW_MS
+// Only trust X-Forwarded-For when the deployment explicitly says it sits
+// behind a proxy — otherwise the client can rotate the header per request and
+// bypass the limit entirely.
+const TRUST_PROXY = process.env.TRUST_PROXY === 'true'
+
+let lastSweep = Date.now()
+
+/** Drop expired windows so the map can't grow unbounded. */
+function sweep(now: number) {
+  if (now - lastSweep < SWEEP_INTERVAL_MS) return
+  lastSweep = now
+  for (const [key, entry] of limits) {
+    if (entry.resetAt <= now) limits.delete(key)
+  }
+}
+
+function clientKey(c: Context): string {
+  if (TRUST_PROXY) {
+    const fwd = c.req.header('x-forwarded-for')
+    if (fwd) return fwd.split(',')[0].trim()
+  }
+  try {
+    const addr = c.env?.incoming?.socket?.remoteAddress
+    if (addr) return String(addr)
+  } catch {
+    // not running under @hono/node-server (e.g. tests via app.fetch)
+  }
+  return 'local'
+}
 
 /**
  * Simple in-memory per-IP rate limiter. Allows a configurable number of
@@ -25,8 +55,10 @@ export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
     return
   }
 
-  const ip = c.req.header('x-forwarded-for') ?? 'unknown'
   const now = Date.now()
+  sweep(now)
+
+  const ip = clientKey(c)
   const entry = limits.get(ip)
 
   const resetAt = entry && entry.resetAt > now ? entry.resetAt : now + WINDOW_MS

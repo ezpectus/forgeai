@@ -31,6 +31,8 @@ export class SSEClient {
   ): Promise<void> {
     this.cancelled = false
     this.controller = new AbortController()
+    this.reader = undefined
+    this.buffer = ''
     this.clearTimers()
     this.connectTimer = setTimeout(() => {
       this.abort(new DOMException('Connection timed out', 'AbortError'))

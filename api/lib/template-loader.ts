@@ -7,9 +7,17 @@ import type { ComponentSpec } from '@/types'
  * then falls back to the public/templates/ gallery index. This is shared
  * between the generate and component routes so both support gallery templates.
  */
+const SAFE_TEMPLATE_ID = /^[a-z0-9][a-z0-9-]{0,62}$/
+
 export async function loadTemplateConfig(
   templateId: string
 ): Promise<ComponentSpec> {
+  // Reject anything that could escape the template directories before any
+  // path is joined — templateId arrives from request bodies.
+  if (!SAFE_TEMPLATE_ID.test(templateId)) {
+    throw new Error(`Invalid template id: ${templateId}`)
+  }
+
   // 1. Try built-in config directory
   const configPath = join(process.cwd(), 'configs/templates', `${templateId}.json`)
   try {
@@ -31,6 +39,11 @@ export async function loadTemplateConfig(
     }>
     const item = index.find((i) => i.id === templateId)
     if (item) {
+      // item.path is trusted index data, but a hand-edited/poisoned index.json
+      // could point anywhere — enforce the same shape the templates route does.
+      if (!/^\/templates\/[a-z0-9-]+\/[a-z0-9-]+\.json$/.test(item.path)) {
+        throw new Error(`Template path invalid for id: ${templateId}`)
+      }
       const raw = await readFile(
         join(process.cwd(), 'public', item.path),
         'utf-8'
@@ -41,10 +54,15 @@ export async function loadTemplateConfig(
     // Index missing or unreadable; fall through to the default website config.
   }
 
-  // 3. Fall back to the default website config
-  const raw = await readFile(
-    join(process.cwd(), 'configs/templates/website.json'),
-    'utf-8'
-  )
-  return JSON.parse(raw) as ComponentSpec
+  // 3. Last-resort fallback keeps generation working if the built-in config
+  // read itself failed; for any other id, surface "not found" to the caller.
+  if (templateId === 'website') {
+    const raw = await readFile(
+      join(process.cwd(), 'configs/templates/website.json'),
+      'utf-8'
+    )
+    return JSON.parse(raw) as ComponentSpec
+  }
+
+  throw new Error(`Template config not found: ${templateId}`)
 }

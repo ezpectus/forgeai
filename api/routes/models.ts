@@ -6,9 +6,7 @@ import {
   fetchHuggingFaceModels,
   type ModelOption,
 } from '@/lib/models'
-import { OpenRouter } from '@/plugins/providers/openrouter'
-import { HuggingFace } from '@/plugins/providers/huggingface'
-import { Gemini } from '@/plugins/providers/gemini'
+import { providers } from '@/plugins/providers'
 
 function pickDefault(
   models: ModelOption[],
@@ -30,14 +28,7 @@ function sortByDefault(
   provider: string,
   models: ModelOption[]
 ): ModelOption[] {
-  const defaultId =
-    provider === 'openrouter'
-      ? OpenRouter.defaultModel
-      : provider === 'gemini'
-        ? Gemini.defaultModel
-        : provider === 'huggingface'
-          ? HuggingFace.defaultModel
-          : undefined
+  const defaultId = providers.find((p) => p.name === provider)?.defaultModel
 
   if (!defaultId) return models
 

@@ -54,8 +54,26 @@ export function buildUserPrompt(
   componentName: string,
   prompt: string
 ): string {
+  const section = intent.sections.find((s) => s.name === componentName)
+  const details = section
+    ? [
+        `Type: ${section.type}`,
+        `Description: ${section.description}`,
+        section.requiresForm
+          ? 'This component MUST contain a <form> element with a name attribute.'
+          : null,
+        section.requiresImages
+          ? 'This component should include images (use <img> with alt text).'
+          : null,
+        `Target page: ${section.page ?? 'index'}`,
+      ]
+        .filter(Boolean)
+        .join('\n')
+    : ''
+
   return `User request: ${prompt}
 Component: ${componentName}
+${details}
 Sections: ${intent.sections.map((s) => s.name).join(', ')}
 Palette: ${intent.palette}
 Audience: ${intent.audience ?? 'general'}

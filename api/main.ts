@@ -6,15 +6,16 @@ import { corsMiddleware } from './middleware/cors'
 import { rateLimitMiddleware } from './middleware/rateLimit'
 import type { AppEnv } from './lib/env'
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { log } from './lib/logger'
 import componentRoute from './routes/component'
-import dbBindRoute from './routes/db-bind'
 import deployRoute from './routes/deploy'
 import templatesRoute from './routes/templates'
 import deployStatusRoute from './routes/deploy-status'
 import exportRoute from './routes/export'
 import generateRoute from './routes/generate'
+import previewRoute from './routes/preview'
 import healthRoute from './routes/health'
 import modelsRoute from './routes/models'
 
@@ -36,20 +37,33 @@ app.onError((err, c) => {
   return c.json({ status: 'error', error: message }, 500)
 })
 
+// Read the real package version so the root listing can never drift stale.
+const apiVersion = (() => {
+  try {
+    const raw = readFileSync(
+      join(fileURLToPath(new URL('.', import.meta.url)), '..', 'package.json'),
+      'utf-8'
+    )
+    return (JSON.parse(raw) as { version?: string }).version ?? 'unknown'
+  } catch {
+    return 'unknown'
+  }
+})()
+
 app.get('/', (c) =>
   c.json({
     message: 'ForgeAI API',
-    version: '1.0.0',
+    version: apiVersion,
     endpoints: {
       health: 'GET /api/health',
       models: 'GET /api/models?provider=openrouter|gemini|huggingface',
       templates: 'GET /api/templates',
       generate: 'POST /api/generate',
       component: 'POST /api/generate/component',
+      preview: 'POST /api/preview',
       export: 'POST /api/export',
-      dbBind: 'POST /api/db/bind',
       deploy: 'POST /api/deploy',
-      deployStatus: 'GET /api/deploy/:id/status?provider=vercel|e2b',
+      deployStatus: 'GET /api/deploy/:id/status?provider=vercel',
     },
   })
 )
@@ -63,8 +77,8 @@ app.route('/api/models', modelsRoute)
 app.route('/api/templates', templatesRoute)
 app.route('/api/generate', generateRoute)
 app.route('/api/generate/component', componentRoute)
+app.route('/api/preview', previewRoute)
 app.route('/api/export', exportRoute)
-app.route('/api/db/bind', dbBindRoute)
 app.route('/api/deploy', deployRoute)
 app.route('/api/deploy', deployStatusRoute)
 

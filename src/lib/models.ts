@@ -61,8 +61,11 @@ const DEPRECATED_GEMINI_MODELS = new Set([
 
 export async function fetchGeminiModels(apiKey: string): Promise<ModelOption[]> {
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-    { headers: { 'Content-Type': 'application/json' } }
+    `https://generativelanguage.googleapis.com/v1beta/models`,
+    {
+      // x-goog-api-key keeps the key out of the URL (access logs see query).
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+    }
   )
 
   if (!res.ok) {
@@ -138,13 +141,17 @@ export async function fetchHuggingFaceModels(): Promise<ModelOption[]> {
         return a.id.localeCompare(b.id)
       })
   } catch {
-    // Fallback to a small curated list if the live fetch fails
+    // Fallback to a small curated list if the live fetch fails — these must be
+    // real models on the HF inference router (keep in sync with
+    // HuggingFace.supportedModels).
     return [
-      { id: 'deepseek-ai/DeepSeek-V4-Flash', name: 'DeepSeek V4 Flash', free: false },
-      { id: 'Qwen/Qwen3.8-27B', name: 'Qwen 3.8 27B', free: false },
+      { id: 'deepseek-ai/DeepSeek-V3-0324', name: 'DeepSeek V3', free: false },
+      { id: 'Qwen/Qwen2.5-Coder-32B-Instruct', name: 'Qwen 2.5 Coder 32B', free: false },
+      { id: 'meta-llama/Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B', free: false },
       { id: 'openai/gpt-oss-120b', name: 'GPT-OSS 120B', free: false },
-      { id: 'zai-org/GLM-5.3-Flash', name: 'GLM 5.3 Flash', free: false },
-      { id: 'meta-llama/Llama-3.1-8B-Instruct', name: 'Llama 3.1 8B', free: false },
+      { id: 'google/gemma-3-27b-it', name: 'Gemma 3 27B', free: false },
+      { id: 'moonshotai/Kimi-K2-Instruct', name: 'Kimi K2', free: false },
+      { id: 'mistralai/Mistral-Small-3.1-24B-Instruct', name: 'Mistral Small 3.1', free: false },
     ]
   }
 }

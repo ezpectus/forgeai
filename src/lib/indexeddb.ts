@@ -81,7 +81,10 @@ export async function getHistory(): Promise<Record<string, unknown>[]> {
       request.onsuccess = () => resolve(request.result as Record<string, unknown>[])
       request.onerror = () => reject(request.error)
     })
-  } catch {
+  } catch (err) {
+    // History silently unavailable — log so a "my projects vanished" report
+    // has something to diagnose.
+    console.warn('[indexeddb] loadHistory failed:', err)
     return []
   }
 }
@@ -98,8 +101,11 @@ export async function saveHistory(id: string, record: Record<string, unknown>): 
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
     })
-  } catch {
-    // IndexedDB store may not exist yet (stale DB version). Silently skip.
+  } catch (err) {
+    // IndexedDB unavailable (private mode, quota, stale DB) — the project
+    // record is lost. At least surface it in the console so the failure is
+    // diagnosable instead of a silent no-op.
+    console.warn('[indexeddb] saveHistory failed:', err)
   }
 }
 
@@ -115,7 +121,7 @@ export async function deleteHistory(id: string): Promise<void> {
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
     })
-  } catch {
-    // Silently skip if store doesn't exist.
+  } catch (err) {
+    console.warn('[indexeddb] deleteHistory failed:', err)
   }
 }

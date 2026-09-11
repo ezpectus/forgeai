@@ -4,6 +4,7 @@ import { analyzeIntent } from '@/lib/intent'
 import { generateComponent } from '@/lib/generate-component'
 import { validateComponent } from '@/lib/validate'
 import { retryComponent } from '@/lib/retry'
+import { COMPONENT_RULES } from '@/lib/validation-rules'
 import { assembleProject } from '@/lib/assemble'
 import { loadTemplateConfig } from '../lib/template-loader'
 import type { AppEnv } from '../lib/env'
@@ -82,6 +83,10 @@ app.post('/', async (c) => {
   }
 
   const encoder = new TextEncoder()
+  let cancelled = false
+  // Aborts the in-flight provider fetch on client cancel/disconnect — the
+  // section loop check alone left the current request running to completion.
+  const genAbort = new AbortController()
   const stream = new ReadableStream({
     async start(controller) {
       let closed = false
@@ -131,24 +136,15 @@ app.post('/', async (c) => {
           body.provider && body.model
             ? { provider: body.provider, model: body.model }
             : undefined
-        const intent = await analyzeIntent(body.prompt, auth, preferred)
+        const intent = await analyzeIntent(body.prompt, auth, preferred, genAbort.signal)
         send('intent', intent)
 
         let generationPreferred = preferred
 
         const components: ComponentState[] = []
-        const rules = [
-          'syntax',
-          'hasDefaultExport',
-          'noDangerousHtml',
-          'noEval',
-          'usesTailwindOnly',
-          'imagesHaveAlt',
-          'formsHaveNames',
-          'noForbiddenImports',
-        ]
 
         for (const section of intent.sections) {
+          if (cancelled) break
           const componentName = section.name
           send('component', { name: componentName, status: 'generating' })
 
@@ -158,14 +154,15 @@ app.post('/', async (c) => {
             componentName,
             auth,
             intent,
-            generationPreferred
+            generationPreferred,
+            genAbort.signal
           )
 
           if (result.status === 'ready') {
             const validation = await validateComponent(
               componentName,
               result.code,
-              rules,
+              COMPONENT_RULES,
               {
                 allowed: config.constraints?.allowedDependencies as string[],
                 forbidden: config.constraints
@@ -182,7 +179,9 @@ app.post('/', async (c) => {
                 validation.errors,
                 auth,
                 intent,
-                generationPreferred
+                generationPreferred,
+                0,
+                genAbort.signal
               )
             }
           }
@@ -206,16 +205,33 @@ app.post('/', async (c) => {
           components.push(result)
         }
 
+        if (cancelled) {
+          close()
+          return
+        }
+
         const projectId = randomUUID()
         const files = assembleProject(intent, components, projectId)
         send('done', { projectId, files })
         close()
       } catch (err) {
+        if (cancelled) {
+          // Aborted mid-intent/component — the client already left; close
+          // quietly instead of emitting a spurious 'Generation cancelled' error.
+          close()
+          return
+        }
         const message = err instanceof Error ? err.message : String(err)
         console.error('[generate] error:', err)
         send('error', { message })
         close()
       }
+    },
+    cancel() {
+      // Client disconnected or pressed Cancel — stop the section loop AND
+      // abort the in-flight provider fetch so no paid call runs to completion.
+      cancelled = true
+      genAbort.abort()
     },
   })
 

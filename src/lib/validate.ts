@@ -23,14 +23,26 @@ export async function validateComponent(
 ): Promise<ValidationResult> {
   const errors: string[] = []
 
+  // Pattern rules run on the esbuild-transformed output: comments are stripped
+  // so a `// no eval here` comment or JSDoc can't false-positive a rejection
+  // that would burn a paid regeneration attempt.
+  let transformed: string | null = null
+
   if (rules.includes('syntax')) {
     try {
-      await transform(code, { loader: 'tsx', format: 'esm' })
+      transformed = (await transform(code, { loader: 'tsx', format: 'esm' }))
+        .code
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       errors.push(`syntax: ${message}`)
     }
   }
+
+  // Identifier/statement-level patterns (eval, __proto__, dangerous props)
+  // survive the JSX→jsx() transform, so scan the transformed output where
+  // comments are stripped. Element-level patterns (<img, <form, style={{)
+  // must run on the raw source — the transform rewrites JSX syntax away.
+  const patternSource = transformed ?? code
 
   if (
     rules.includes('noForbiddenImports') ||
@@ -85,7 +97,7 @@ export async function validateComponent(
   }
 
   if (rules.includes('noDangerousHtml')) {
-    if (/dangerouslySetInnerHTML/.test(code)) {
+    if (/dangerouslySetInnerHTML/.test(patternSource)) {
       errors.push('dangerouslySetInnerHTML is forbidden')
     }
   }
@@ -97,12 +109,15 @@ export async function validateComponent(
   }
 
   if (rules.includes('noPrototypePollution')) {
-    if (/\b__proto__\b/.test(code) || /constructor\.prototype/.test(code)) {
+    if (/\b__proto__\b/.test(patternSource) || /constructor\.prototype/.test(patternSource)) {
       errors.push('prototype pollution patterns are forbidden')
     }
   }
 
   if (rules.includes('noPromptInjection')) {
+    // Deliberately scan the raw source: an injected instruction inside a
+    // comment is still shipped in the exported file and is the tell-tale
+    // payload — unlike eval, a comment mention here is itself the problem.
     if (
       /ignore\s+(all\s+)?previous\s+instructions/i.test(code) ||
       /disregard\s+(all\s+)?previous\s+instructions/i.test(code)
@@ -113,9 +128,9 @@ export async function validateComponent(
 
   if (rules.includes('noEval')) {
     if (
-      /\beval\s*\(/.test(code) ||
-      /new\s+Function\s*\(/.test(code) ||
-      /document\.write\s*\(/.test(code)
+      /\beval\s*\(/.test(patternSource) ||
+      /new\s+Function\s*\(/.test(patternSource) ||
+      /document\.write\s*\(/.test(patternSource)
     ) {
       errors.push('eval, new Function, or document.write is forbidden')
     }
