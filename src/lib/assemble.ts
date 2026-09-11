@@ -70,6 +70,9 @@ export function assembleProject(
   const sectionComponents = intent.sections
     .map((section) => {
       const name = section.name
+      // The assembled layout always renders <Nav /> — an AI-generated
+      // "Navigation"/"Navbar" section would render a second header.
+      if (/^(nav|navigation|navbar|header|topbar)$/i.test(name)) return null
       const component = components.find((c) => c.name === name)
       if (!component || component.status !== 'ready') return null
       return {
@@ -441,6 +444,9 @@ export function Nav() {
 
   files['src/app/sitemap.ts'] = `import type { MetadataRoute } from 'next'
 
+// output:'export' requires an explicit static flag on metadata routes.
+export const dynamic = 'force-static'
+
 // NEXT_PUBLIC_SITE_URL wins; on Vercel, VERCEL_URL is injected at build time
 // so deployed sites get correct absolute URLs without extra config.
 const siteUrl =
@@ -455,6 +461,8 @@ ${sitemapEntries}
 `
 
   files['src/app/robots.ts'] = `import type { MetadataRoute } from 'next'
+
+export const dynamic = 'force-static'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -499,7 +507,7 @@ export function FormHandler() {
   useEffect(() => {
     const projectId = process.env.NEXT_PUBLIC_PROJECT_ID ?? 'forgeai'
 
-    const handler = async (event: SubmitEvent) => {
+    const handler = async (event: Event) => {
       const form = event.target as HTMLFormElement
       const name = form.dataset.form ?? form.getAttribute('name')
 
@@ -537,8 +545,8 @@ export function FormHandler() {
       setTimeout(() => setMessage(null), 4000)
     }
 
-    document.addEventListener('submit', handler as EventListener)
-    return () => document.removeEventListener('submit', handler as EventListener)
+    document.addEventListener('submit', handler)
+    return () => document.removeEventListener('submit', handler)
   }, [])
 
   if (!message) return null

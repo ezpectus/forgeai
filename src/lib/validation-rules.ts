@@ -10,6 +10,7 @@ export const COMPONENT_RULES: string[] = [
   'noEval',
   'usesTailwindOnly',
   'imagesHaveAlt',
+  'noLocalImageRefs',
   'formsHaveNames',
   'noForbiddenImports',
 ]

@@ -159,6 +159,16 @@ export async function validateComponent(
     }
   }
 
+  if (rules.includes('noLocalImageRefs')) {
+    // Generated projects contain no public/ image files — a local <img src>
+    // is guaranteed to 404. External URLs or CSS/lucide icons instead.
+    if (/<img[^>]+src=["']\/[^/]/i.test(code)) {
+      errors.push(
+        'local image references are forbidden — no image files are generated; use an external URL, CSS, or a lucide icon'
+      )
+    }
+  }
+
   if (rules.includes('formsHaveNames')) {
     const forms = Array.from(code.matchAll(/<form[^>]*>/g))
     for (const [form] of forms) {

@@ -2,6 +2,7 @@ import nextEslint from 'eslint-config-next'
 
 /** @type {import('eslint').Linter.Config[]} */
 const config = [
+  { ignores: ['generated proj/**', 'generated-projects/**', 'out/**'] },
   ...nextEslint,
   {
     rules: {

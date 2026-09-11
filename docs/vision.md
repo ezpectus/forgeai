@@ -2,6 +2,12 @@
 
 > **Prompt → Live URL → Full Code. Open-source, BYOK, self-hostable.**
 
+> **Status note (v1.1):** this is the product vision — the "why". What actually
+> ships today: prompt → plan → per-section generation → validated Next.js
+> project → local preview → ZIP/Vercel. "Grow" (analytics, email, A/B) is
+> roadmap only — generated sites do not report back. Clarifying-question
+> rounds are planned, not shipped — generation is one-shot today.
+
 ForgeAI is an open-source prompt-to-live-URL generator. You type a sentence, and ForgeAI turns it into a deployed, working website or mini-app in about 15 seconds. You own the code, you bring your own API keys, and you pay only for what you use.
 
 ---
@@ -167,7 +173,7 @@ ForgeAI itself is free and open-source under MIT. Optional monetization can come
 
 | Layer            | Technology                          | Why                                 |
 | ---------------- | ----------------------------------- | ----------------------------------- |
-| Frontend         | Next.js 14 + Tailwind + shadcn/ui   | Fast, beautiful, SSR                |
+| Frontend         | Next.js 16 + Tailwind + shadcn/ui   | Fast, beautiful, SSR                |
 | API Orchestrator | Hono (Node.js)                      | 15KB, minimal, fast                 |
 | AI Intent        | OpenRouter / Gemini / HuggingFace   | Fallback chain, BYOK                |
 | AI Code Gen      | Same provider chain                 | Free tiers, open-source models      |

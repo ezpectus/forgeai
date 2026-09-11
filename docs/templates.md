@@ -18,7 +18,7 @@ Each function is defined by a JSON config in `configs/templates/`. AI does not g
 
 | Layer              | Technology                                | Forbidden Alternatives                                |
 | ------------------ | ----------------------------------------- | ----------------------------------------------------- |
-| Frontend framework | Next.js 14 App Router                     | Nuxt, SvelteKit, Remix, CRA                           |
+| Frontend framework | Next.js 16 App Router                     | Nuxt, SvelteKit, Remix, CRA                           |
 | Styling            | Tailwind CSS 3.4                          | CSS-in-JS (styled-components, emotion), inline styles |
 | Components         | React Server Components + shadcn/ui       | Vue, Angular, Svelte                                  |
 | State              | Zustand                                   | Redux, MobX, Jotai unless justified                   |
@@ -96,7 +96,7 @@ been removed from the JSONs.
 
 **Forbidden:** Complex backend APIs, WebSocket chats, video streaming, payment backend, RBAC admin panels, crypto, P2P.
 
-**Stack:** Next.js 14, Tailwind, shadcn-style markup, lucide-react, optional Supabase.
+**Stack:** Next.js 16, Tailwind, shadcn-style markup, lucide-react, optional Supabase.
 
 **Constraints:**
 
