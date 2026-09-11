@@ -1,88 +1,72 @@
 # ForgeAI
 
-> **Prompt → rendered preview → live URL → full code. Open-source, BYOK, self-hostable.**
+**Type a sentence. Get a real Next.js site — rendered in your browser, exportable as a ZIP, deployable to Vercel. No sign-up, no subscription, your own API keys.**
 
-Type a sentence, get a real Next.js project: rendered locally in your browser (no deploy needed), exportable as a ZIP, deployable to Vercel. You bring your own AI keys, you own the code, you pay fractions of a cent per generation.
+Most AI site builders charge $20–100/mo to run a model call that costs a fifth of a cent — and you never own the code. ForgeAI is the open-source version: the keys are yours, the generated project is yours, and the whole thing runs on your machine.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Made with Next.js](https://img.shields.io/badge/Made%20with-Next.js-black)](https://nextjs.org/)
+## Who it's for
 
----
+- **Anyone who needs a landing page now** — studio, café, portfolio — and wants a real project, not a locked-in editor.
+- **Developers** — skip the boilerplate: you get a typed, validated Next.js codebase you can extend.
+- **The curious** — the whole pipeline is ~40 small files and readable. It makes a decent reference for how a BYOK AI generator is put together.
 
-## What it actually does
+## What you actually get
 
-- **Intent → plan.** Your prompt becomes a structured plan (sections, pages, palette, whether forms need a DB) — visible live before code exists.
-- **Per-section generation with fallback.** Each component is generated separately through a provider chain (OpenRouter → Gemini → HuggingFace). A dead provider/model fails over; a cancel aborts in-flight calls.
-- **Validated, not trusted.** Every component is esbuild-compiled + pattern-scanned (dangerous imports, missing exports); failures auto-retry with the exact errors.
-- **Real local preview.** `POST /api/preview` bundles the generated files server-side (esbuild virtual-fs + compiled Tailwind) and renders them in a sandboxed iframe — including multi-page routing and click-to-edit. No deploy, no CDN.
-- **Own the output.** Download a full Next.js ZIP (`output:'export'` + `serve`), or deploy to Vercel. Forms wire to your own Supabase project.
-- **Honest modes.** Sidebar modes are site *types* — every mode generates a deployable Next.js site; the mode picks domain focus and section set.
+- **A plan before code** — your prompt becomes a structured intent: sections, pages, palette, whether forms need a database.
+- **Real generated components** — each section is generated separately, esbuild-compiled and pattern-scanned. Failures auto-retry with the exact errors; a dead provider fails over to the next one in your chain.
+- **A preview that renders, locally** — `/api/preview` server-bundles the project (esbuild + Tailwind) into a sandboxed iframe. Click a section in it and the edit panel regenerates just that piece.
+- **Files you own** — download the Next.js project as ZIP (`output:'export'`, ready for `serve`), or deploy to Vercel. Forms wire to your own Supabase.
+- **Honest limits** — modes are site *types*: everything produces a deployable Next.js site. Analytics/email/A-B are roadmap, not shipped.
 
 ```mermaid
 flowchart LR
-    P[Prompt] --> I[Intent analysis]
-    I --> C[Component generation<br/>per section, provider fallback]
-    C --> V[Validation<br/>esbuild + pattern rules]
-    V -->|fail| R[Retry with errors<br/>max 2]
+    P[Your sentence] --> I[Intent: sections, pages, palette]
+    I --> C[Per-section generation<br/>provider fallback chain]
+    C --> V[Validate: esbuild + pattern rules]
+    V -->|fail| R[Retry with exact errors]
     R --> C
     V -->|pass| A[Assemble Next.js project]
-    A --> PV[Local preview<br/>server-side bundle → srcdoc iframe]
+    A --> PV[Local preview: server bundle → iframe]
     A --> Z[ZIP export]
-    A --> D[Vercel deploy → live URL]
-    PV -->|click section| E[EditPanel → differential regen]
+    A --> D[Vercel → live URL]
+    PV -->|click a section| E[Edit panel → regenerate just it]
 ```
 
-## Stack
-
-Next.js 16 · React 19 · Hono API (`api/`, port 3001) · Zustand · Tailwind · esbuild (validation + preview bundling) · JSZip · Vitest + Playwright. 13 production dependencies.
-
-## Quick start
+## 60-second start
 
 ```bash
 npm install
-npm run dev:all   # API :3001 + frontend :3000
+npm run dev:all
 ```
 
-Open `http://localhost:3000`, add a key in Settings (Gemini is the easiest free start — see [docs/free-apis.md](docs/free-apis.md)), type a prompt, Generate.
+Open `localhost:3000` → Settings → paste one AI key ([free options](docs/free-apis.md)) → type a prompt → Generate. The preview renders right there; export or deploy when you like it.
 
-> `Failed to proxy ... ECONNREFUSED` → the API isn't running; use `npm run dev:all`.
+`ECONNREFUSED` on generate → the API isn't up; `dev:all` starts both.
 
 ## Commands
 
-| Command | What |
+| Command | Does |
 |---|---|
-| `npm run dev:all` | frontend + API together |
+| `npm run dev:all` | frontend :3000 + API :3001 |
 | `npm run validate` | lint + typecheck + security + unit + build |
-| `npm run e2e` | Playwright suite (spins both servers) |
-| `npx tsx scripts/pw-drive.ts` | headed live-drive session — watch the AI walk the whole flow |
-| `npx tsx scripts/smoke-assemble.ts` | assemble a project without AI keys |
+| `npm run e2e` | Playwright (spins both servers itself) |
+| `npx tsx scripts/pw-drive.ts` | headed AI-driven browser session — watch it walk the whole flow |
+| `npx tsx scripts/smoke-assemble.ts` | assemble a project with zero AI keys |
 
-## Security model (BYOK)
+## Where your keys go
 
-Keys live in your browser's IndexedDB and go straight to the provider per request — the server never stores them. Generated sites use `NEXT_PUBLIC_*` env only, CSP drops `unsafe-eval` in production, template submission is off unless `ALLOW_TEMPLATE_SUBMISSIONS=true`, rate limiting is prod-gated (`RATE_LIMIT_RPM`), and `MAX_GENERATION_COST_USD` caps per-generation spend (default $0.25).
+Nowhere near us. They live in your browser's IndexedDB and are forwarded per-request as an auth header — the server never stores them. Self-hosters can use `.env` instead. Extras: prod-gated rate limiting, `MAX_GENERATION_COST_USD` spend cap per generation (default $0.25), zip-slip/traversal validation on every file map, CSP without `unsafe-eval`.
+
+## Stack
+
+Next.js 16 · React 18 · Hono API · Zustand · Tailwind · esbuild · JSZip · Vitest + Playwright. 13 production deps, all earned.
 
 ## Status
 
-Audited to zero open findings (113 issues found and fixed — see `runtime-docs/audit-archive-113-findings.md` locally). Current roadmap tasks live in `runtime-docs/OFFICE_BOARD.md` (gitignored, local). Roadmap: plugin system, Grow layer (analytics/email/A-B — **not shipped**), voice, messaging integrations.
+Freshly audited: 113 issues found and fixed (fake analytics removed, traversal holes closed, preview made real). Example output lives in `generated proj/yoga-studio/` — a genuinely generated site that builds clean. Open roadmap: plugin registry, Grow layer, voice/messaging.
 
 ## Docs
 
-- [docs/architecture.md](docs/architecture.md) — mermaid architecture + sequence
-- [docs/templates.md](docs/templates.md) — template config format
-- [docs/template-gallery.md](docs/template-gallery.md) — gallery (51 curated templates)
-- [docs/free-apis.md](docs/free-apis.md) — free key options
-- [docs/vision.md](docs/vision.md) — why this exists
-- [CONTRIBUTING.md](CONTRIBUTING.md) — PR guidelines
-- `runtime-docs/CONTEXT.md` — quick project context (local, gitignored)
+[architecture](docs/architecture.md) (mermaid) · [templates](docs/templates.md) · [gallery](docs/template-gallery.md) · [free keys](docs/free-apis.md) · [vision](docs/vision.md) · [contributing](CONTRIBUTING.md) · [changelog](CHANGELOG.md)
 
-## FAQ
-
-**Where do I get keys?** OpenRouter [openrouter.ai/keys](https://openrouter.ai/keys) · Gemini [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) · HuggingFace [hf.co/settings/tokens](https://hf.co/settings/tokens) (fine-grained, "Make calls to Inference Providers") · Vercel [account/tokens](https://vercel.com/account/tokens) · Supabase project Settings > API.
-
-**How much does it cost?** $0 with free models (`:free` on OpenRouter, Gemini free tier, HF free credits). Paid models ~$0.002/generation.
-
-**Timeouts?** Generation takes 30–90s; the API sends keep-alive pings and providers have 120s timeouts + fallback. A real provider outage shows the exact error.
-
-**Do you store my keys?** No — IndexedDB only, discarded server-side after each request.
-
-MIT. PRs welcome.
+MIT — do what you want with it.

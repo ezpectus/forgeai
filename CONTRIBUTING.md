@@ -10,10 +10,14 @@ Thank you for your interest in contributing! This guide covers everything you ne
 git clone https://github.com/ezpectus/forgeai.git
 cd forgeai
 npm install
-npm run dev
+npm run dev:all   # frontend :3000 + API orchestrator :3001
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. The frontend alone is not enough — generation,
+preview and export all live on the API server.
+
+Before a PR: `npm run validate` (lint + typecheck + security + unit + build)
+and `npm run e2e` if you touched user flows.
 
 ---
 

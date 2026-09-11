@@ -9,20 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `PromptInput` now shows a benefit-first headline, a richer placeholder, live character count with a 2000-character limit and a minimum-length hint.
-- `ExampleChips` are now rendered as clickable mini-cards with a Sparkles icon and accessible `aria-label`.
-- `GenerationProgress` now displays the current step label (`Analyzing`, `Generating <component>`, `Assembling project`) and an elapsed timer.
-- `GenerationSuccess` now uses a card-based layout with clearer export, deploy and new-project actions.
-- `ModelSelector` now shows a health dot for each provider and `free` / `recommended` badges for models.
-- `GenerationError` now provides **Edit prompt** and **Regenerate** actions in addition to **New project**.
-- `SSEClient` now uses an `AbortController` and enforces a 60s connection timeout and a 120s read timeout. The API sends an immediate `ping` event to clear the connection timeout during long first-token waits.
-- Added explicit 120s generate / 30s health request timeouts for OpenRouter, Gemini and HuggingFace.
-- Added per-model fallback inside each provider: 429 fails fast, 503/404/deprecated models fall back to the next model, and previous 5s sleeps between attempts are removed so quota/capacity errors surface quickly.
-- Gemini now defaults to `gemini-1.5-flash` with fallback chain `1.5-flash-8b → 2.5-flash → 3.6-flash → 3.5-flash`.
-- `callWithFallback` now waits 5s before the next provider on 503 and 2s on 429, instead of a flat 1s.
-- Added screen-reader-only labels to `PromptInput` and `CustomizePanel` textareas.
-- Added E2E Playwright coverage for cancel, regenerate after error and Vercel deploy.
-- Added `internal/release-notes-v1.2.0.md` with a draft of the v1.2.0 release notes.
+- **Local preview, no deploy needed.** `POST /api/preview` server-bundles generated files (esbuild virtual-fs + compiled Tailwind) into a sandboxed `srcdoc` iframe with multi-page routing and click-to-edit.
+- **Retry failed sections.** When a stream dies mid-generation, the error screen offers "Retry N failed sections": each is regenerated via `/api/generate/component` and the project is reassembled via the new `POST /api/assemble`.
+- **Project restore.** History records persist components+intent; "Open" in My Projects brings back the preview and file browser after a refresh.
+- **Cost budget.** `MAX_GENERATION_COST_USD` (default $0.25) stops a generation with a dedicated "Cost budget reached" screen instead of silently spending.
+- **Preview device toggle.** Desktop / 768px / 390px widths over the local preview.
+- **My Projects: rename + duplicate.** Inline rename on click; duplicate makes a copy with a fresh id and no inherited deploy URL.
+- **Settings: "Test all keys"** � one-click health check across every entered AI provider.
+- **Edit cancellation.** Closing the editor aborts the in-flight regeneration (AbortSignal threaded to the provider call).
+- **AI live-drive.** `scripts/pw-drive.ts` runs a headed Playwright session through the full flow (seed key > mocked stream > real preview bundle > click-to-edit > ZIP export > gallery). `PW_HEADLESS=1` for unattended runs.
+- New e2e specs: local preview render + click-to-edit, failed-section retry, gallery open/search/customize, onboarding > Settings.
+- Route-level vitest coverage for `/api/assemble` including traversal sanitization.
+
+### Fixed
+
+- **Clipped hero on short viewports** � `justify-center` on the scrollable main cut content off at the top; switched to an auto-margin wrapper.
+- **Generated projects now `next build` clean**: FormHandler's `SubmitEvent`>`EventListener` cast removed, `sitemap.ts`/`robots.ts` get `force-static` for `output:'export'`.
+- **`/api/assemble` traversal** � client-supplied intent is re-sanitized (`toIdentifier`/`toPageSlug`) before assembly.
+- **No more phantom nav** � the assembler drops AI-generated nav/navigation/navbar/header sections since the layout always renders its own `<Nav/>`.
+- **No more 404 images** � new `noLocalImageRefs` validation rule rejects `<img src="/...">`; generated projects ship no image files.
+- Deflaked the cancel-generation e2e (wait for Generate to unlock after key save).
+- Settings dialog no longer leaves its overlay up to eat clicks after saving.
+
+### Removed
+
+- Fake Grow/analytics layer (reports dashboard that measured nothing, `lib/grow/*`), dead plugin-registry remnants; template submission behind `ALLOW_TEMPLATE_SUBMISSIONS`.
+- `internal/` planning graveyard and stale `docs/features.md` + `docs/system-design.md` (truth lives in README + `docs/architecture.md`).
+
+### Changed
+
+- README rewritten to match the code (Next.js 16, local preview, real commands, honest roadmap, mermaid pipeline). `docs/architecture.md` documents the preview bundler + sequences.
 
 ## [1.1.0] - 2026-09-09
 
