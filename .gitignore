@@ -44,6 +44,7 @@ docker-compose.override.yml
 
 # Generated projects (from export)
 generated-projects/
+generated proj/
 
 # Internal docs (not for public)
 internal/
