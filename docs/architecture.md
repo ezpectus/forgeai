@@ -22,6 +22,7 @@ flowchart TB
         GenAPI["/api/generate"]
         CompAPI["/api/generate/component"]
         PreviewAPI["/api/preview<br/>esbuild bundle + Tailwind"]
+        AssembleAPI["/api/assemble<br/>rebuild file map"]
         DeployAPI["/api/deploy"]
         ExportAPI["/api/export"]
         HealthAPI["/api/health"]
@@ -148,4 +149,11 @@ sequenceDiagram
 10. Browser can then POST files to /api/deploy → Vercel live URL
 11. (Optional) Generated project includes Supabase wiring when dbRequired
 12. User clicks component → only that component regenerates
+13. Stream died mid-generation with failed sections → the error screen's
+    "Retry N failed sections" regenerates each via /api/generate/component,
+    then POSTs intent+components to /api/assemble → fresh file map → ready.
+    The route re-sanitizes client-supplied names/pages before assembling.
+14. Spend guard: per-generation cost accumulates against
+    MAX_GENERATION_COST_USD (default $0.25); crossing it stops the stream
+    with BUDGET_EXCEEDED instead of silently spending.
 ```
