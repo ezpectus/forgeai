@@ -142,6 +142,11 @@ app.post('/', async (c) => {
         let generationPreferred = preferred
 
         const components: ComponentState[] = []
+        // Hard per-generation spend cap — a runaway loop of retries across
+        // several sections should stop instead of quietly burning the user's
+        // provider credit. Configurable via MAX_GENERATION_COST_USD.
+        const maxCost = Number(process.env.MAX_GENERATION_COST_USD ?? 0.25)
+        let spent = 0
 
         for (const section of intent.sections) {
           if (cancelled) break
@@ -203,6 +208,16 @@ app.post('/', async (c) => {
             model: result.model,
           })
           components.push(result)
+
+          spent += result.cost ?? 0
+          if (spent > maxCost) {
+            send('error', {
+              message: `Cost budget exceeded ($${spent.toFixed(4)} > $${maxCost.toFixed(2)}). Set MAX_GENERATION_COST_USD to raise it.`,
+              code: 'BUDGET_EXCEEDED',
+            })
+            close()
+            return
+          }
         }
 
         if (cancelled) {

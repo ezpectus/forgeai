@@ -1,59 +1,18 @@
 # ForgeAI Documentation
 
-Welcome to the ForgeAI docs. These documents are intended for contributors, developers, and anyone who wants to understand how ForgeAI works under the hood.
+Docs that match the current code. If a doc ever claims something the code doesn't do, the code wins — open an issue or fix the doc.
 
----
+## Index
 
-## Quick Links
+- **[../README.md](../README.md)** — quick start, features, commands, FAQ
+- **[architecture.md](architecture.md)** — mermaid architecture + generation/preview/deploy sequences
+- **[templates.md](templates.md)** — template config format (`configs/templates/*.json`)
+- **[template-gallery.md](template-gallery.md)** — the shipped gallery (`public/templates/`, ~50 curated templates; "15k+" is a community target, not reality)
+- **[free-apis.md](free-apis.md)** — free key tiers per provider
+- **[vision.md](vision.md)** — why the project exists (aspirational, marked as such)
+- **[../CONTRIBUTING.md](../CONTRIBUTING.md)** — code style + PR process
+- **[../CHANGELOG.md](../CHANGELOG.md)** — release history
 
-- **[README.md](../README.md)** — Quick start, features, cost, FAQ
-- **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute, code style, PR process
-- **[vision.md](vision.md)** — Project vision, why ForgeAI exists, target audience
-- **[features.md](features.md)** — Feature specification and roadmap
-- **[system-design.md](system-design.md)** — Architecture, API, data flow, security
-- **[architecture.md](architecture.md)** — Visual Mermaid diagrams
-- **[templates.md](templates.md)** — AI function constraints and per-template rules
-- **[template-gallery.md](template-gallery.md)** — Template gallery specification
-- **[free-apis.md](free-apis.md)** — Free API keys and BYOK setup options
+## Local working docs (gitignored)
 
----
-
-## For End Users
-
-If you just want to use ForgeAI, start with the [README](../README.md). It covers:
-
-- What ForgeAI does
-- How to install and run it
-- Where to get API keys
-- How much it costs
-- FAQ
-
----
-
-## For Contributors
-
-If you want to contribute, read:
-
-1. [vision.md](vision.md) — understand the project
-2. [system-design.md](system-design.md) — understand the architecture
-3. [CONTRIBUTING.md](../CONTRIBUTING.md) — setup, code style, PR rules
-
----
-
-## For Plugin Authors
-
-- [templates.md](templates.md) — how AI constraints work
-- [template-gallery.md](template-gallery.md) — how the template gallery works
-- [CONTRIBUTING.md](../CONTRIBUTING.md) — plugin examples
-
----
-
-## License
-
-All public documentation is released under the [MIT License](../LICENSE).
-
----
-
-## Internal Docs
-
-The `internal/` directory contains non-public documentation for core maintainers. It is listed in `.gitignore` and not committed to the repository.
+`runtime-docs/` holds the audit board, archived findings, project context and drive screenshots — local-only, regenerated per machine.

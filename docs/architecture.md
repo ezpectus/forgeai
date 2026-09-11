@@ -11,8 +11,8 @@ flowchart TB
     subgraph Browser["Browser (Next.js 16 + Tailwind)"]
         UI["Prompt Input, Settings, Template Gallery"]
         Progress["Live Progress (steps + elapsed time)"]
-        Preview["Live Preview (iframe)"]
-        Editor["Visual Editor Overlay"]
+        Preview["Local Preview<br/>sandboxed srcdoc iframe"]
+        Editor["Edit Panel (differential regen)"]
         Export["ZIP Export"]
         Keys[("API Keys<br/>IndexedDB")]
     end
@@ -21,9 +21,11 @@ flowchart TB
         CORS["CORS + Rate Limit"]
         GenAPI["/api/generate"]
         CompAPI["/api/generate/component"]
+        PreviewAPI["/api/preview<br/>esbuild bundle + Tailwind"]
         DeployAPI["/api/deploy"]
         ExportAPI["/api/export"]
         HealthAPI["/api/health"]
+        TemplatesAPI["/api/templates"]
     end
 
     subgraph AIPipeline["AI Pipeline"]
@@ -44,9 +46,11 @@ flowchart TB
     UI -->|Authorization: Bearer key| CORS
     CORS --> GenAPI
     CORS --> CompAPI
+    CORS --> PreviewAPI
     CORS --> DeployAPI
     CORS --> ExportAPI
     CORS --> HealthAPI
+    CORS --> TemplatesAPI
 
     GenAPI -->|1. analyze prompt| Intent
     Intent -->|2. generate components| ComponentGen
@@ -66,8 +70,10 @@ flowchart TB
     CompAPI -->|differential prompt| ComponentGen
     CompAPI --> Validate
 
-    Preview -->|hot reload| Assemble
-    Editor -->|click component| CompAPI
+    Preview -->|POST files| PreviewAPI
+    PreviewAPI -->|IIFE bundle + compiled CSS| Preview
+    Preview -->|select component| Editor
+    Editor -->|differential prompt| CompAPI
 
     style Browser fill:#e1f5fe
     style Orchestrator fill:#fff3e0
@@ -110,6 +116,13 @@ sequenceDiagram
     O->>O: assemble project files
     O->>U: SSE: done + files
 
+    Note right of U: Local preview needs no deploy
+    U->>O: POST /api/preview (files)
+    O->>O: esbuild bundle (virtual-fs) + Tailwind compile
+    O-->>U: {js, css}
+    U->>U: render in sandboxed srcdoc iframe
+    Note right of U: section click → postMessage → EditPanel
+
     Note right of U: Deploy is a separate user action (needs Vercel token)
     U->>O: POST /api/deploy (files)
     O->>D: deploy files
@@ -129,8 +142,10 @@ sequenceDiagram
 6. Retries failed components with exact errors (max 2 attempts)
 7. Assembles page files, package.json, tailwind config
 8. Returns all files to the browser (SSE done event)
-9. Browser can then POST files to /api/deploy → Vercel live URL
-10. (Optional) Generated project includes Supabase wiring when dbRequired
-11. Browser shows the deployed site in an iframe
+9. Browser POSTs files to /api/preview → server bundles them (esbuild
+   virtual-fs resolves @/ and relative imports into the files map, bare
+   imports against node_modules) + compiles Tailwind → sandboxed iframe
+10. Browser can then POST files to /api/deploy → Vercel live URL
+11. (Optional) Generated project includes Supabase wiring when dbRequired
 12. User clicks component → only that component regenerates
 ```

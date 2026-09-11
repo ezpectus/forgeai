@@ -139,6 +139,35 @@ async function main() {
   await page.waitForTimeout(800)
   const editorOpen = await page.getByText(/^Edit /).isVisible().catch(() => false)
   await log(`click-to-edit ${editorOpen ? 'OPENED the editor' : 'did not open (check S108 path)'}`)
+  if (editorOpen) {
+    await page.getByLabel('Close editor').click()
+  }
+
+  // Scenario: file browser lists the generated files.
+  const filesList = page.getByText('src/app/page.tsx')
+  if (await filesList.isVisible().catch(() => false)) {
+    await log('file browser lists generated files')
+  }
+
+  // Scenario: ZIP download from the file browser header.
+  const zipBtn = page.getByLabel('Download ZIP').first()
+  if (await zipBtn.isVisible().catch(() => false)) {
+    const download = page.waitForEvent('download', { timeout: 15_000 })
+    await zipBtn.click()
+    const dl = await download
+    await log(`export ZIP downloaded: ${dl.suggestedFilename()}`)
+  } else {
+    await log('ZIP download skipped — file browser download button not visible')
+  }
+
+  // Scenario: gallery opens from the sidebar Templates button.
+  await page.getByRole('button', { name: 'Templates', exact: true }).first().click()
+  await page.waitForTimeout(1200)
+  const galleryVisible = await page.getByPlaceholder('Search templates...').isVisible().catch(() => false)
+  await log(`gallery ${galleryVisible ? 'opened with search' : 'did not open'}`)
+  if (galleryVisible) {
+    await page.keyboard.press('Escape')
+  }
 
   await page.screenshot({ path: 'runtime-docs/pw-drive.png', fullPage: false })
   await log('screenshot → runtime-docs/pw-drive.png')
