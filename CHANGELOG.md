@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Generation prompts rewritten** — the component system prompt now teaches design principles (real copy, data-driven markup, layout rhythm, lucide icons) in addition to the hard rules; intent analysis no longer plans nav sections or requests images that can't exist.
 - README rewritten to match the code (Next.js 16, local preview, real commands, honest roadmap, mermaid pipeline). `docs/architecture.md` documents the preview bundler + sequences.
 
 ## [1.1.0] - 2026-09-09
