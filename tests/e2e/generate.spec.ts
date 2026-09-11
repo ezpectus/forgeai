@@ -146,10 +146,15 @@ test.describe('ForgeAI home', () => {
     })
 
     await page.getByPlaceholder(promptPlaceholder).fill('A landing page for a yoga studio')
-    await page.getByRole('button', { name: /^Generate$/ }).click()
+
+    // Key persistence to IndexedDB is async — wait for Generate to actually
+    // unlock instead of racing it (flaked under parallel workers).
+    const generateBtn = page.getByRole('button', { name: /^Generate$/ })
+    await expect(generateBtn).toBeEnabled({ timeout: 10_000 })
+    await generateBtn.click()
 
     // Wait for the progress screen
-    await expect(page.getByText('Generating...')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Generating...')).toBeVisible({ timeout: 10_000 })
 
     // Click the Cancel button inside the progress view
     await page.locator('main').getByRole('button', { name: 'Cancel' }).click()
