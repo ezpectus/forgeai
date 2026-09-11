@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { randomUUID } from 'node:crypto'
 import { assembleProject } from '@/lib/assemble'
+import { toIdentifier, toPageSlug } from '@/lib/intent'
 import type { AppEnv } from '../lib/env'
 import type { ComponentState, IntentResult } from '@/types'
 
@@ -36,8 +37,28 @@ app.post('/', async (c) => {
     return c.json({ error: 'every component needs string code', code: 'BAD_REQUEST' }, 400)
   }
 
+  // Client-supplied intent bypasses analyzeIntent's sanitizer — without this,
+  // a section name/page like "../../x" would escape into the file map.
+  const safeIntent: IntentResult = {
+    ...intent,
+    sections: intent.sections
+      .map((s) => ({
+        ...s,
+        name: toIdentifier(String(s.name ?? '')),
+        page: toPageSlug(String(s.page ?? 'index')),
+      }))
+      .filter((s) => s.name.length > 0),
+    pages: Array.isArray(intent.pages)
+      ? intent.pages.map((p) => toPageSlug(String(p)))
+      : ['index'],
+  }
+  const safeComponents = components.map((comp) => ({
+    ...comp,
+    name: toIdentifier(String(comp.name)),
+  }))
+
   const projectId = body.projectId ?? randomUUID()
-  const files = assembleProject(intent, components, projectId)
+  const files = assembleProject(safeIntent, safeComponents, projectId)
   return c.json({ projectId, files })
 })
 
