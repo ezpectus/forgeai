@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Copy, Check } from 'lucide-react'
+import { Pencil, Copy, Check, ExternalLink } from 'lucide-react'
 import { useHistory } from '@/stores/history'
+import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { useKeys } from '@/stores/keys'
 import { openUrl } from '@/lib/open-url'
@@ -219,6 +220,20 @@ export function ProjectsDialog() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 text-xs"
+                      disabled={!project.files}
+                      title={project.files ? 'Restore preview session' : 'No saved files'}
+                      onClick={() => {
+                        useProject.getState().openProject(project)
+                        closeProjects()
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Open
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

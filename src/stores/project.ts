@@ -14,6 +14,17 @@ export type ProjectStore = ProjectState & {
   setError: (error: string | null) => void
   setGenerationClient: (client: Cancellable | null) => void
   setFiles: (files: Record<string, string> | null) => void
+  /** Restore a saved record so the local preview + file browser come back. */
+  openProject: (record: {
+    id: string
+    prompt: string
+    mode: string
+    files?: Record<string, string>
+    components?: ComponentState[]
+    intent?: IntentResult
+    deployUrl?: string
+    cost?: number
+  }) => void
   reset: () => void
   regenerate: () => void
 }
@@ -67,6 +78,22 @@ export const useProject = create<ProjectStore>((set, get) => ({
   setGenerationClient: (client) => set({ generationClient: client }),
 
   setFiles: (files) => set({ files }),
+
+  openProject: (record) => {
+    get().generationClient?.disconnect()
+    set({
+      ...initialState,
+      projectId: record.id,
+      prompt: record.prompt,
+      templateId: record.mode,
+      files: record.files ?? null,
+      components: record.components ?? [],
+      intent: record.intent ?? null,
+      deployUrl: record.deployUrl ?? null,
+      cost: record.cost ?? 0,
+      status: 'ready',
+    })
+  },
 
   reset: () => {
     get().generationClient?.disconnect()

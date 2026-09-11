@@ -1,36 +1,42 @@
 import { test, expect } from '@playwright/test'
 
-test('gallery opens and shows templates', async ({ page }) => {
-  await page.route('/api/health*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ status: 'ok' }),
-    })
+test.describe('Template gallery', () => {
+  test('opens, searches, and shows template cards', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Templates' }).first().click()
+
+    const search = page.getByPlaceholder('Search templates...')
+    await expect(search).toBeVisible()
+
+    // Cards render from the real /api/templates
+    await expect(page.getByText('templates').first()).toBeVisible()
+
+    await search.fill('yoga')
+    await page.waitForTimeout(600) // client-side debounce/filter
+    await expect(page.getByText(/yoga/i).first()).toBeVisible()
   })
 
-  await page.route('/api/templates*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        data: [
-          {
-            id: 'restaurant',
-            name: 'Restaurant',
-            type: 'websites',
-            topic: 'restaurant',
-            description: 'A restaurant website template.',
-            thumbnail: '',
-          },
-        ],
-        total: 1,
-      }),
-    })
+  test('customize opens the customize panel', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Templates' }).first().click()
+    await page.getByRole('button', { name: 'Customize' }).first().click()
+    await expect(page.locator('#customize-input')).toBeVisible({ timeout: 5000 })
   })
+})
 
-  await page.goto('/')
-  await page.locator('main').getByRole('button', { name: 'Templates' }).click()
-  await expect(page.getByText('Template Gallery')).toBeVisible({ timeout: 10000 })
-  await expect(page.getByRole('heading', { name: 'Restaurant' })).toBeVisible({ timeout: 10000 })
+test.describe('Onboarding', () => {
+  test('welcome dialog opens settings', async ({ page }) => {
+    await page.goto('/')
+    // The shared storageState seeds forgeai_welcome_seen — clear it and
+    // reload to simulate a real first visit.
+    await page.evaluate(() => localStorage.removeItem('forgeai_welcome_seen'))
+    await page.reload()
+    await expect(page.getByText('Welcome to ForgeAI')).toBeVisible({ timeout: 5000 })
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Open settings' })
+      .click()
+    // Settings dialog opens with key fields
+    await expect(page.locator('#openrouter')).toBeVisible({ timeout: 5000 })
+  })
 })

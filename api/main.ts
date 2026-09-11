@@ -15,6 +15,7 @@ import templatesRoute from './routes/templates'
 import deployStatusRoute from './routes/deploy-status'
 import exportRoute from './routes/export'
 import generateRoute from './routes/generate'
+import assembleRoute from './routes/assemble'
 import previewRoute from './routes/preview'
 import healthRoute from './routes/health'
 import modelsRoute from './routes/models'
@@ -60,6 +61,7 @@ app.get('/', (c) =>
       templates: 'GET /api/templates',
       generate: 'POST /api/generate',
       component: 'POST /api/generate/component',
+      assemble: 'POST /api/assemble',
       preview: 'POST /api/preview',
       export: 'POST /api/export',
       deploy: 'POST /api/deploy',
@@ -77,6 +79,7 @@ app.route('/api/models', modelsRoute)
 app.route('/api/templates', templatesRoute)
 app.route('/api/generate', generateRoute)
 app.route('/api/generate/component', componentRoute)
+app.route('/api/assemble', assembleRoute)
 app.route('/api/preview', previewRoute)
 app.route('/api/export', exportRoute)
 app.route('/api/deploy', deployRoute)

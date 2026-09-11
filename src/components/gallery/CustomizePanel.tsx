@@ -138,6 +138,8 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
               status: 'ready',
               createdAt: new Date().toISOString(),
               files: done.files,
+              components: state.components,
+              intent: state.intent ?? undefined,
             })
           }
           setGenerationClient(null)

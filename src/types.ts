@@ -61,6 +61,9 @@ export interface ProjectRecord {
   status: ProjectStatus
   createdAt: string
   files?: Record<string, string>
+  /** Restorable generation state — lets "Open" rebuild the preview session. */
+  components?: ComponentState[]
+  intent?: IntentResult
   deployUrl?: string
 }
 
