@@ -135,14 +135,25 @@ export function MainArea({
   return (
     <main
       className={cn(
-        'flex min-h-0 flex-1 flex-col items-center justify-center overflow-auto p-6',
+        'flex min-h-0 flex-1 flex-col items-center overflow-auto p-6',
         className
       )}
     >
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {viewLabel}
       </div>
-      {children ?? content}
+      {/* my-auto centers short content AND lets tall content scroll from the
+          top — `justify-center` on a scroll container clips the top edge
+          (the clipped hero in screenshots). The ready view needs a bounded
+          height for the preview's flex-1, hence min-h-full there. */}
+      <div
+        className={cn(
+          'my-auto w-full',
+          status === 'ready' && 'flex min-h-full flex-col'
+        )}
+      >
+        {children ?? content}
+      </div>
     </main>
   )
 }
