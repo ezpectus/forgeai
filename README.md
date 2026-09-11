@@ -75,7 +75,20 @@ Next.js 16 · React 18 · Hono API · Zustand · Tailwind · esbuild · JSZip ·
 
 ## Status
 
-Freshly audited: 113 issues found and fixed — fake analytics removed, traversal holes closed, the preview made real instead of a mock. Example output lives in `generated proj/yoga-studio/` — a genuinely generated site that `next build`s clean. Open roadmap: plugin registry, Grow layer, voice/messaging.
+Freshly audited: 113 issues found and fixed — fake analytics removed, traversal holes closed, the preview made real instead of a mock. Example output lives in `generated proj/yoga-studio/` — a genuinely generated site that `next build`s clean.
+
+## Roadmap — what's not built yet
+
+Shaped by the audit, in rough priority order:
+
+- **Clarifying questions before generate** — intent is one-shot today; a Q&A round would lift output quality more than any model swap.
+- **Plugin registry** — providers/deployers are arrays in `src/plugins/`; a real registry would let people drop in their own without touching core.
+- **Grow layer** — SEO checkups, form-submission inbox, scheduled sitemap refresh. Only honest features — nothing that fakes analytics.
+- **Image generation** — generated sites currently can't ship real images; a free image provider would change that.
+- **Multi-file project history sync** — history is IndexedDB-local; optional export/import would make projects portable.
+- **Voice / messaging input** — nice-to-have, last.
+
+Not on the list by design: hosted SaaS, user accounts, telemetry, paywalls. The point of the project is that none of that is needed.
 
 ## Docs
 
