@@ -146,7 +146,7 @@ The MVP focuses on **AI Websites**. Other output types are in the roadmap.
 | Self-host        | ✅          | ❌         | ❌         | ❌         | ❌      |
 | Cost/generation  | ~$0.002     | $20+/mo    | $20+/mo    | $20+/mo    | $20+/mo |
 | Plugin system    | ✅          | ❌         | ❌         | ❌         | ❌      |
-| Template gallery | ✅ 15,000+  | ❌         | ❌         | ❌         | ✅      |
+| Template gallery | ✅ (growing) | ❌         | ❌         | ❌         | ✅      |
 | Visual editor    | ✅          | ✅         | ✅         | ❌         | ✅      |
 | Auto-database    | ✅ Supabase | ❌         | ⚠️         | ❌         | ✅      |
 | **Grow layer**       | ✅ v1.0     | ❌         | ❌         | ❌         | ✅      |
@@ -169,9 +169,9 @@ ForgeAI itself is free and open-source under MIT. Optional monetization can come
 | ---------------- | ----------------------------------- | ----------------------------------- |
 | Frontend         | Next.js 14 + Tailwind + shadcn/ui   | Fast, beautiful, SSR                |
 | API Orchestrator | Hono (Node.js)                      | 15KB, minimal, fast                 |
-| AI Intent        | OpenRouter (DeepSeek V3, Qwen)      | Cheap, multi-model                  |
-| AI Code Gen      | HuggingFace (DeepSeek Coder, GLM-4) | Free tier, open-source models       |
-| Deploy           | Vercel Build API / E2B Sandbox      | Instant live URL                    |
+| AI Intent        | OpenRouter / Gemini / HuggingFace   | Fallback chain, BYOK                |
+| AI Code Gen      | Same provider chain                 | Free tiers, open-source models      |
+| Deploy           | Vercel Build API                    | Instant live URL                    |
 | Database         | Supabase                            | Free tier, PostgreSQL, auto-binding |
 | State            | Zustand                             | 3KB, no boilerplate                 |
 | Export           | JSZip                               | ZIP archive                         |

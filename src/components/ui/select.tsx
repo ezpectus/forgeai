@@ -29,9 +29,27 @@ interface SelectProps {
 
 function Select({ value, onValueChange, children }: SelectProps) {
   const [open, setOpen] = React.useState(false)
+  const rootRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+    function onPointerDown(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
   return (
     <SelectContext.Provider value={{ value, onValueChange, open, setOpen }}>
-      <div className="relative">{children}</div>
+      <div ref={rootRef} className="relative">{children}</div>
     </SelectContext.Provider>
   )
 }
@@ -81,6 +99,7 @@ const SelectContent = React.forwardRef<
   return (
     <div
       ref={ref}
+      role="listbox"
       className={cn(
         'absolute z-50 w-full rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none',
         className
@@ -100,6 +119,8 @@ const SelectItem = React.forwardRef<
     <button
       ref={ref}
       type="button"
+      role="option"
+      aria-selected={selected === value}
       onClick={() => {
         onValueChange(value)
         setOpen(false)

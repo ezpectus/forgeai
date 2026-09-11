@@ -17,17 +17,15 @@ import { join, relative } from 'node:path'
 
 const ROOT = process.cwd()
 
-// Files and folders to skip entirely
+// Files and folders to skip entirely. docs/, internal/, .windsurf/ and tests/
+// ARE scanned — those are exactly the dirs where a leaked key could hide in a
+// config or doc. (tests/fixtures may need `security-scan:ignore` comments.)
 const SKIP_PATHS = [
   'node_modules',
   '.next',
   'out',
   'dist',
   '.git',
-  'internal',
-  'docs',
-  'tests',
-  '.windsurf',
   '.env',
   '.env.local',
   '.env.example',
@@ -37,7 +35,8 @@ const SKIP_PATHS = [
   'tsconfig.tsbuildinfo',
 ]
 
-// Only scan these extensions (case-insensitive)
+// Only scan these extensions (case-insensitive). Markdown is included —
+// a leaked key in docs is still a leak.
 const EXTENSIONS = new Set([
   '.ts',
   '.tsx',
@@ -48,6 +47,7 @@ const EXTENSIONS = new Set([
   '.json',
   '.yml',
   '.yaml',
+  '.md',
 ])
 
 // Patterns that likely indicate a leaked secret

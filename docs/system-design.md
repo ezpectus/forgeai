@@ -19,9 +19,8 @@ API Orchestrator (Hono / Node.js)
   │
   ├── /api/generate    → AI pipeline
   ├── /api/generate/component → Differential edit
-  ├── /api/deploy      → Vercel / E2B deploy
+  ├── /api/deploy      → Vercel deploy
   ├── /api/export      → ZIP assembly
-  ├── /api/db/bind     → Supabase schema gen
   ├── /api/templates   → Template gallery
   └── /api/health      → Status check
   │
@@ -31,13 +30,12 @@ External APIs (called with user keys)
   ├── Gemini          → Free-tier code gen + intent fallback
   ├── HuggingFace     → Code gen + intent fallback
   ├── Vercel Build API → Deploy
-  ├── E2B Sandbox     → Alternative deploy
-  └── Supabase        → Database schema + storage
+  └── Supabase        → Generated-project form storage
 ```
 
 ### Key principle: API keys never touch server storage
 
-User API keys are stored in browser **IndexedDB**. They are sent as `Authorization` headers per-request. The orchestrator forwards them to the provider and immediately discards them. No key is logged or persisted on the server.
+User API keys are stored in browser **IndexedDB**. For generation they travel inside the request body (`auth` map) because one request can carry several provider keys; single-key endpoints (`/api/health`, `/api/models`, `/api/deploy`) use the `Authorization: Bearer` header. The orchestrator forwards them to the provider and immediately discards them. No key is logged or persisted on the server.
 
 ---
 
@@ -169,35 +167,10 @@ Differential regeneration of a single component.
 
 ### 2.4 Database Binding
 
-#### `POST /api/db/bind`
-
-**Request:**
-
-```json
-{
-  "projectId": "proj_abc123",
-  "supabaseUrl": "https://xxx.supabase.co",
-  "supabaseKey": "sb_xxx",
-  "forms": [
-    {
-      "name": "contact-form",
-      "fields": [
-        { "name": "email", "type": "email", "required": true },
-        { "name": "message", "type": "textarea" }
-      ]
-    }
-  ]
-}
-```
-
-**Response:**
-
-```json
-{
-  "tablesCreated": ["ai_gen_contact_form"],
-  "schema": "CREATE TABLE ai_gen_contact_form (...)"
-}
-```
+No dedicated endpoint — when `dbRequired` the generated project already ships
+`supabase/migrations/001_submissions.sql` (shared `submissions` table with RLS
+and an anon-insert policy) plus a `FormHandler` that writes to it. The user
+applies the migration in their own Supabase project.
 
 ### 2.5 Template Gallery
 
@@ -276,17 +249,16 @@ data: {"projectId":"proj_xyz","slides":[...]}
 5. Browser sends POST /api/generate with Authorization header
 6. Orchestrator calls OpenRouter / Gemini / HuggingFace fallback chain for intent analysis
 7. Intent returns: type=landing, sections=[navbar, hero, features, pricing, contact-form, footer]
-8. Orchestrator loads per-component configs from configs/templates/website.json
-9. Orchestrator calls AI for each component in parallel
-10. Each component is validated (esbuild, AST, lint)
-11. Failed components are retried with the exact error message
-12. Components are assembled into page.tsx
-13. Full build/typecheck is run
-14. Project is deployed to Vercel or E2B
-15. (Optional) Supabase tables are created for detected forms
-16. Live URL is returned to the browser
-17. Browser shows live preview in a sandboxed iframe
-18. User clicks a component → only that component regenerates
+8. Orchestrator loads the template config from configs/templates/
+9. Orchestrator calls AI for each section sequentially
+10. Each component is validated (esbuild transform + pattern rules + dep whitelist)
+11. Failed components are retried with the exact error message (max 2 attempts)
+12. Components are assembled into page files
+13. All project files are returned to the browser over SSE
+14. The user can then deploy the files to Vercel (separate POST /api/deploy)
+15. (Optional) Generated project includes Supabase wiring when dbRequired
+16. Browser shows the deployed site in a sandboxed iframe
+17. User clicks a component → only that component regenerates
 ```
 
 ---
@@ -298,40 +270,23 @@ Every component is generated from a config. This is the core mechanism that keep
 ### 4.1 Config Structure
 
 ```typescript
-interface ComponentConfig {
+// Fields the engine actually reads (see src/types.ts ComponentSpec):
+interface ComponentSpec {
   id: string
-  name: string
-  scope: { allowed: string[]; forbidden: string[] }
-  stack: Record<string, string>
-  constraints: Record<string, unknown>
-  components: string[]
-  formConstraints?: Record<string, unknown>
-  generation: {
-    stages: string[]
-    planModeRequiredFor?: string[]
-    askClarifyingQuestions: boolean
-    showPlanBeforeBuild: boolean
-    parallelComponentGeneration: boolean
-    maxRetriesPerComponent: number
+  name?: string
+  description?: string
+  scope?: { allowed?: string[]; forbidden?: string[] }
+  stack?: Record<string, string>
+  constraints?: {
+    allowedDependencies?: string[]
+    forbiddenDependencies?: string[]
   }
-  validation: {
-    autoTest: string[]
-    staticAnalysisRules: string[]
-    buildCommands?: string[]
-  }
-  model: {
-    intentModel: string
-    codeModel: string
-    fallback: string[]
-  }
-  export: {
-    formats: string[]
-    includeDatabaseSchema: boolean
-    includeReadme: boolean
-  }
-  ui: { defaultPrompt: string; examplePrompts: string[] }
 }
 ```
+
+Earlier revisions documented a much larger schema (`components`, `generation`,
+`validation`, `model`, `export`, `ui`, `formConstraints`) — those fields were
+never consumed and were stripped from the JSONs.
 
 ### 4.2 Why It Works
 
@@ -348,16 +303,16 @@ interface ComponentConfig {
 
 | Problem              | Cause                                                | Mitigation                                                                      |
 | -------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Broken AI code       | Hallucinated imports, syntax errors, wrong types     | esbuild parse, AST scan, auto-retry, fallback models                            |
-| AI provider down     | Rate limit, outage, 503 capacity error               | Multi-provider fallback: OpenRouter → Gemini → HuggingFace; 429 fails fast inside every provider; 503/404 fall back to the next model without sleeps; OpenRouter falls back to `:free` models on 402; cross-provider backoff is 0s for auth/missing-model, 2s for 429/503, 1s for other server errors |
-| Deploy fails         | Vercel build error, invalid files                    | Local build/typecheck before deploy; deploy to E2B fallback                     |
-| API key leak         | Key sent to malicious code                           | Keys never stored on server; only in IndexedDB; AST scan for hard-coded secrets |
-| XSS / malicious code | AI generates `<script>` or `dangerouslySetInnerHTML` | AST scan for forbidden patterns; sandboxed iframe preview                       |
-| Database conflicts   | Table already exists                                 | Prefix `ai_gen_`; dry-run SQL; versioned migrations                             |
-| Timeouts             | Slow model, large prompt                             | 120s per-provider request timeout; 60s SSE connection timeout + 120s read timeout; fallback retries |
-| High costs           | Using expensive model                                | Default to cheap models; cost estimate shown before generation                  |
-| Browser memory       | Large generated project                              | Component streaming; lazy load preview; ZIP export on server                    |
-| Concurrent edits     | Multiple edits at once                               | Component-level locking; version numbers                                        |
+| Broken AI code       | Hallucinated imports, syntax errors, wrong types     | esbuild transform, pattern scan, auto-retry, fallback models                            |
+| AI provider down     | Rate limit, outage, 503 capacity error               | Multi-provider fallback: OpenRouter → Gemini → HuggingFace; 429 fails fast inside every provider; 503/404 fall back to the next model; OpenRouter falls back to `:free` models on 402; cross-provider backoff is exponential |
+| Deploy fails         | Vercel build error, invalid files                    | Error surfaced to the UI; user can export the ZIP and build locally                   |
+| API key leak         | Key sent to malicious code                           | Keys never stored on server; only in IndexedDB; pattern scan for hard-coded secrets   |
+| XSS / malicious code | AI generates `<script>` or `dangerouslySetInnerHTML` | Pattern scan for forbidden patterns; sandboxed iframe preview                         | <!-- security-scan:ignore documentation of forbidden patterns -->
+| Database conflicts   | Table already exists                                 | `CREATE TABLE IF NOT EXISTS`; RLS policy; SQL is applied manually by the user         |
+| Timeouts             | Slow model, large prompt                             | 120s per-provider request timeout; SSE heartbeat pings keep the stream alive          |
+| High costs           | Using expensive model                                | Default to free/cheap models; cost estimate shown before generation                   |
+| Browser memory       | Large generated project                              | Component streaming; ZIP export on server                                             |
+| Concurrent edits     | Multiple edits at once                               | Sequential regeneration per component; localStorage version history                   |
 
 ---
 
@@ -551,11 +506,11 @@ async function validateComponent(
 - [x] Keys not logged on the server
 - [x] Strict CORS (only allowed origins)
 - [x] Sandboxed iframe for preview
-- [x] AST scan for dangerous patterns
-- [x] CSP headers on deployed sites
-- [x] Supabase RLS policies by default
-- [x] Table prefix `ai_gen_` for auto-generated tables
-- [x] Dry-run SQL before execution
+- [x] Pattern scan for dangerous code (esbuild output + regex rules)
+- [x] CSP meta tag in generated sites
+- [x] Supabase RLS policy in the generated schema
+- [x] Shared `submissions` table — no per-form tables, no auto-execution
+- [x] Schema SQL ships inside the generated project (migration file)
 - [x] Rate limiting on orchestrator
 - [x] Prompt injection protection
 - [x] Stateless orchestrator (no key persistence)

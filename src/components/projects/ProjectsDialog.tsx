@@ -26,19 +26,32 @@ export function ProjectsDialog() {
 
   async function handleDownload(project: ProjectRecord) {
     if (!project.files) return
-    const res = await fetch('/api/export', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files: project.files }),
-    })
-    if (!res.ok) return
-    const blob = await res.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `forgeai-${project.id.slice(0, 8)}.zip`
-    a.click()
-    window.URL.revokeObjectURL(url)
+    setRedeployError(null)
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: project.files }),
+      })
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string
+        } | null
+        throw new Error(data?.error ?? `Export failed (HTTP ${res.status})`)
+      }
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `forgeai-${project.id.slice(0, 8)}.zip`
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      setRedeployError({
+        id: project.id,
+        message: err instanceof Error ? err.message : 'Export failed',
+      })
+    }
   }
 
   async function handleRedeploy(project: ProjectRecord) {
@@ -54,9 +67,9 @@ export function ProjectsDialog() {
           Authorization: `Bearer ${vercel}`,
         },
         body: JSON.stringify({
-          projectId: project.id,
           provider: 'vercel',
           files: project.files,
+          projectId: project.id,
         }),
       })
       const data = (await res.json()) as { url?: string; error?: string }

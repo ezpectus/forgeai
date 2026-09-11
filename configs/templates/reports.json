@@ -2,11 +2,6 @@
   "id": "reports",
   "name": "AI Reports",
   "description": "Generate research-grade reports with citations, charts, and structured analysis.",
-  "version": "1.0.0",
-  "category": "create",
-  "icon": "FileText",
-  "order": 6,
-
   "scope": {
     "allowed": [
       "research-report",
@@ -22,19 +17,12 @@
       "unsourced-claims"
     ]
   },
-
   "stack": {
     "framework": "nextjs-14",
     "styling": "tailwind",
     "components": "shadcn",
-    "state": "zustand",
-    "markdown": "react-markdown",
-    "pdf": ["html2canvas", "jsPDF"],
-    "search": "tavily",
-    "database": "supabase",
     "icons": "lucide-react"
   },
-
   "constraints": {
     "maxPages": 50,
     "maxSections": 12,
@@ -61,72 +49,13 @@
       "react-dom",
       "next",
       "lucide-react",
-      "react-markdown",
-      "html2canvas",
-      "jspdf",
-      "zustand",
-      "tailwindcss",
       "@supabase/supabase-js"
     ],
-    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
-  },
-
-  "components": [
-    "ReportEditor",
-    "ReportPreview",
-    "SourcesPanel",
-    "ChartEmbed",
-    "ExportPdf"
-  ],
-
-  "formConstraints": {},
-
-  "generation": {
-    "stages": ["intent", "plan", "research", "component", "validate"],
-    "planModeRequiredFor": ["competitive-analysis", "market-sizing"],
-    "askClarifyingQuestions": true,
-    "showPlanBeforeBuild": true,
-    "parallelComponentGeneration": false,
-    "maxRetriesPerComponent": 2
-  },
-
-  "validation": {
-    "autoTest": ["typecheck", "eslint", "ast-scan"],
-    "staticAnalysisRules": [
-      "hasCitations",
-      "validMarkdown",
-      "maxPages",
-      "noForbiddenImports",
-      "noUnusedImports",
-      "noDangerousHtml"
-    ],
-    "buildCommands": ["tsc --noEmit"]
-  },
-
-  "model": {
-    "intentModel": "openrouter:deepseek/deepseek-chat",
-    "codeModel": "huggingface:deepseek-coder-7b",
-    "researchModel": "openrouter:deepseek/deepseek-chat",
-    "fallback": [
-      "openrouter:Qwen/Qwen2.5-Coder",
-      "openrouter:meta-llama/llama-3.1-70b-instruct"
-    ]
-  },
-
-  "export": {
-    "formats": ["zip", "pdf", "md"],
-    "includeDatabaseSchema": false,
-    "includeReadme": true,
-    "includeEnvExample": false
-  },
-
-  "ui": {
-    "defaultPrompt": "Write a competitive analysis of meal-kit services in Brazil",
-    "examplePrompts": [
-      "Research report on AI adoption in healthcare",
-      "Executive summary of the EV market in Europe",
-      "SWOT analysis for a new coffee brand",
-      "Market sizing for online education in India"
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment"
     ]
   }
 }

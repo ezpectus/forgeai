@@ -1,10 +1,7 @@
 import { VercelDeployer } from './vercel'
-import { E2BDeployer } from './e2b'
-import { registry } from '../registry'
 
-export const deployers = [VercelDeployer, E2BDeployer]
-
-export function registerDeployers() {
-  registry.registerDeployer('vercel', VercelDeployer)
-  registry.registerDeployer('e2b', E2BDeployer)
-}
+/**
+ * The deployer list is the single source of truth — API routes build their
+ * lookup maps from this array, so adding a deployer is one import + one entry.
+ */
+export const deployers = [VercelDeployer]

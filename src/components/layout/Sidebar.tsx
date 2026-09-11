@@ -104,7 +104,7 @@ export function Sidebar({ className }: { className?: string }) {
         const Icon = item.icon
         const isActive =
           item.id === 'home'
-            ? !isInGallery && !projectsOpen && activeMode !== 'reports'
+            ? !isInGallery && !projectsOpen
             : item.id === 'projects'
               ? projectsOpen
               : isInGallery
@@ -117,9 +117,6 @@ export function Sidebar({ className }: { className?: string }) {
                 closeGallery()
                 closeCustomize()
                 closeProjects()
-                if (activeMode === 'reports') {
-                  setActiveMode('website')
-                }
               } else if (item.id === 'projects') {
                 openProjects()
               } else {
@@ -146,7 +143,11 @@ export function Sidebar({ className }: { className?: string }) {
   const list = (
     <nav className="flex flex-col gap-1 overflow-y-auto p-3">
       <p className="px-3 py-1 text-xs font-semibold uppercase text-muted-foreground">
-        Mode
+        Site type
+      </p>
+      <p className="px-3 pb-1 text-[11px] leading-snug text-muted-foreground/80">
+        Every mode generates a deployable Next.js site — the mode picks the
+        domain focus and section set.
       </p>
       {functions.map((item) => {
         const Icon = item.icon

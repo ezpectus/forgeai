@@ -26,9 +26,29 @@ interface DropdownMenuProps {
 }
 
 function DropdownMenu({ open, onOpenChange, children }: DropdownMenuProps) {
+  const rootRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+    function onPointerDown(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) onOpenChange(false)
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onOpenChange(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open, onOpenChange])
+
   return (
     <DropdownMenuContext.Provider value={{ open, onOpenChange }}>
-      <div className="relative inline-block text-left">{children}</div>
+      <div ref={rootRef} className="relative inline-block text-left">
+        {children}
+      </div>
     </DropdownMenuContext.Provider>
   )
 }
@@ -71,6 +91,7 @@ const DropdownMenuContent = React.forwardRef<
   return (
     <div
       ref={ref}
+      role="menu"
       className={cn(
         'absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none',
         className
@@ -84,16 +105,24 @@ DropdownMenuContent.displayName = 'DropdownMenuContent'
 const DropdownMenuItem = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={cn(
-      'relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, onClick, ...props }, ref) => {
+  const { onOpenChange } = useDropdownMenu()
+  return (
+    <button
+      ref={ref}
+      role="menuitem"
+      onClick={(e) => {
+        onClick?.(e)
+        onOpenChange(false)
+      }}
+      className={cn(
+        'relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+        className
+      )}
+      {...props}
+    />
+  )
+})
 DropdownMenuItem.displayName = 'DropdownMenuItem'
 
 const DropdownMenuLabel = React.forwardRef<

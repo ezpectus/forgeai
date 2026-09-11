@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getHistory, rollbackTo, saveSnapshot } from '@/lib/version-history'
 import { Button } from '@/components/ui/button'
 
@@ -24,17 +24,23 @@ export function VersionHistory({
   onRestore: (code: string) => void
 }) {
   const [showAll, setShowAll] = useState(false)
-  const history = getHistory(componentName)
+  const [history, setHistory] = useState<ReturnType<typeof getHistory>>([])
+
+  useEffect(() => {
+    setHistory(getHistory(componentName))
+  }, [componentName])
 
   function handleRestore(id: string) {
     const snapshot = rollbackTo(componentName, id)
     if (snapshot) {
       onRestore(snapshot.code)
+      setHistory(getHistory(componentName))
     }
   }
 
   function handleSave() {
     saveSnapshot(componentName, currentCode)
+    setHistory(getHistory(componentName))
   }
 
   const visible = showAll ? history : history.slice(-3)

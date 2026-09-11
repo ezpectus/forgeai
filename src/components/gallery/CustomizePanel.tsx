@@ -80,6 +80,8 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
 
     const client = new SSEClient()
     setGenerationClient(client)
+    // Stream-end without `done` is a truncated generation, not success.
+    let gotDone = false
     await client.connect(
       `/api/templates/${templateId}/customize`,
       {
@@ -113,6 +115,7 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         }
 
         if (event === 'done') {
+          gotDone = true
           setStatus('ready')
           setLoading(false)
           const done = data as { projectId?: string; files?: Record<string, string> }
@@ -149,14 +152,22 @@ export function CustomizePanel({ templateId }: { templateId: string }) {
         }
       },
       (err) => {
+        // User-initiated cancel is not an error — return to idle.
+        if (err.message === 'Generation cancelled') {
+          setStatus('idle')
+          setLoading(false)
+          setGenerationClient(null)
+          return
+        }
         setStatus('error')
         setError(err.message)
         setLoading(false)
         setGenerationClient(null)
       },
       () => {
-        if (useProject.getState().status === 'generating') {
-          setStatus('ready')
+        if (useProject.getState().status === 'generating' && !gotDone) {
+          setStatus('error')
+          setError('Generation stream ended before the project was assembled.')
         }
         setLoading(false)
         setGenerationClient(null)

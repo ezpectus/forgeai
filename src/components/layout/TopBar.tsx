@@ -18,6 +18,7 @@ import { useProject } from '@/stores/project'
 import { useUI } from '@/stores/ui'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ export function DeployButton() {
   const { status, components, files, setDeployUrl, deployUrl, setError, projectId } = useProject()
   const { deployStatus, setDeployStatus } = useUI()
   const { vercel } = useKeys()
+  const { toast } = useToast()
   const [copied, setCopied] = useState(false)
 
   const canDeploy =
@@ -49,15 +51,16 @@ export function DeployButton() {
           Authorization: `Bearer ${vercel}`,
         },
         body: JSON.stringify({
-          projectId: projectId ?? 'forgeai',
           provider: 'vercel',
           files: deployFiles,
+          projectId,
         }),
       })
 
       const data = (await res.json()) as {
         url?: string
         deployId?: string
+        pending?: boolean
         error?: string
       }
 
@@ -67,9 +70,43 @@ export function DeployButton() {
 
       setDeployUrl(data.url)
       setDeployStatus('deployed')
+      if (data.pending && data.deployId) {
+        toast({
+          title: 'Deployment still building',
+          description:
+            'Vercel returned a URL but the build is not confirmed ready yet — the site may take a minute to go live.',
+        })
+        void pollDeployStatus(data.deployId)
+      }
     } catch (err) {
       setDeployStatus('failed')
       setError(err instanceof Error ? err.message : 'Deploy failed')
+    }
+  }
+
+  // Follow a pending deployment via the real status endpoint so a failed
+  // Vercel build is surfaced instead of leaving the UI on "deployed".
+  async function pollDeployStatus(deployId: string) {
+    for (let i = 0; i < 24; i++) {
+      await new Promise((r) => setTimeout(r, 5000))
+      try {
+        const res = await fetch(
+          `/api/deploy/${deployId}/status?provider=vercel`,
+          { headers: { Authorization: `Bearer ${vercel}` } }
+        )
+        const data = (await res.json()) as { status?: string; error?: string }
+        if (data.status === 'ready') {
+          toast({ title: 'Deployment is live' })
+          return
+        }
+        if (data.status === 'error') {
+          setDeployStatus('failed')
+          setError(data.error ?? 'Vercel deployment failed')
+          return
+        }
+      } catch {
+        // transient poll failure — keep polling
+      }
     }
   }
 
@@ -119,48 +156,66 @@ export function DeployButton() {
 export function ExportMenu() {
   const { components, files, projectId } = useProject()
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const hasComponents = components.length > 0
 
   async function handleDownload() {
+    setError(null)
     const exportFiles = files ?? {}
 
-    const res = await fetch('/api/export', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files: exportFiles, projectId }),
-    })
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: exportFiles, projectId }),
+      })
 
-    if (!res.ok) return
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string
+        } | null
+        throw new Error(data?.error ?? `Export failed (HTTP ${res.status})`)
+      }
 
-    const blob = await res.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'forgeai-project.zip'
-    a.click()
-    window.URL.revokeObjectURL(url)
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'forgeai-project.zip'
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Export failed')
+    }
   }
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          disabled={!hasComponents}
-          title={hasComponents ? 'Export project' : 'Generate a project first'}
-        >
-          <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Export</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={handleDownload}>
-          Download ZIP
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={!hasComponents}
+            title={hasComponents ? 'Export project' : 'Generate a project first'}
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Export</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={handleDownload}>
+            Download ZIP
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {error && (
+        <span className="max-w-40 truncate text-xs text-destructive" title={error}>
+          {error}
+        </span>
+      )}
+    </>
   )
 }
 

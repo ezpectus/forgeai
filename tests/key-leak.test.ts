@@ -37,13 +37,16 @@ describe('security and key leak scan', () => {
   it('detects leaked keys and dangerous patterns in a fixture', () => {
     const tempDir = mkdtempSync(resolve(tmpdir(), 'forgeai-security-'))
 
+    // Build the fake secrets dynamically — the scanner now scans tests/ too,
+    // and literal key strings in the source would be flagged here. The temp
+    // file still receives the real patterns, so the positive detection stays.
     const fixture = `
 export default function Evil() {
-  const key = 'sk-or-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-  const hf = 'hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-  const vercel = 'vercel_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-  eval("document.location = 'https://evil.com'")
-  return <div><script>alert(1)</script></div>
+  const key = '${'sk-or-'}${'x'.repeat(32)}'
+  const hf = '${'hf_'}${'x'.repeat(36)}'
+  const vercel = '${'vercel_'}${'x'.repeat(32)}'
+  ${'ev'}al("document.location = 'https://evil.com'")
+  return <div><scr${'ipt'}>alert(1)</scr${'ipt'}></div>
 }
 `
     writeFileSync(resolve(tempDir, 'insecure.tsx'), fixture)
@@ -54,8 +57,8 @@ export default function Evil() {
       expect(output).toContain('OpenRouter API key')
       expect(output).toContain('HuggingFace token')
       expect(output).toContain('Vercel token')
-      expect(output).toContain('eval()')
-      expect(output).toContain('inline <script> tag')
+      expect(output).toContain('eval()') // security-scan:ignore test assertion
+      expect(output).toContain('inline <script> tag') // security-scan:ignore test assertion
     } finally {
       rmSync(tempDir, { recursive: true, force: true })
     }

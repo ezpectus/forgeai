@@ -7,8 +7,10 @@ describe('API security headers', () => {
 
   beforeAll(async () => {
     // Force a fixed rate-limit ceiling for the tests so the middleware is not
-    // disabled in the dev (NODE_ENV != 'production') default.
+    // disabled in the dev (NODE_ENV != 'production') default. TRUST_PROXY lets
+    // the test exercise per-IP keys via x-forwarded-for.
     process.env.RATE_LIMIT_RPM = '10'
+    process.env.TRUST_PROXY = 'true'
     app = (await import('../../api/main')).default
   })
 
@@ -48,12 +50,12 @@ describe('API security headers', () => {
 
     // Exhaust the rate limit
     for (let i = 0; i < limit; i++) {
-      const res = await app.fetch(new Request(url, { headers }))
+      const res = await app.fetch(new Request(url, { headers })) // security-scan:ignore test request, not user-controlled
       expect(res.status).toBe(200)
     }
 
     // Next request should be rate limited
-    const res = await app.fetch(new Request(url, { headers }))
+    const res = await app.fetch(new Request(url, { headers })) // security-scan:ignore test request, not user-controlled
     expect(res.status).toBe(429)
     const body = await res.json()
     expect(body.code).toBe('RATE_LIMIT')

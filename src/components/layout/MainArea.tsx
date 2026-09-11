@@ -44,9 +44,14 @@ const LivePreview = dynamic(
     import('@/components/preview/LivePreview').then((mod) => mod.LivePreview),
   { ssr: false, loading }
 )
-const ReportsView = dynamic(
+const ProjectFiles = dynamic(
   () =>
-    import('@/components/reports/ReportsView').then((mod) => mod.ReportsView),
+    import('@/components/preview/ProjectFiles').then((m) => m.ProjectFiles),
+  { ssr: false, loading }
+)
+const LocalPreview = dynamic(
+  () =>
+    import('@/components/preview/LocalPreview').then((m) => m.LocalPreview),
   { ssr: false, loading }
 )
 const EditorOverlay = dynamic(
@@ -65,7 +70,7 @@ export function MainArea({
   className?: string
 }) {
   const { status, deployUrl, error } = useProject()
-  const { deployStatus, galleryOpen, customizeTemplateId, openCustomize, activeMode } =
+  const { deployStatus, galleryOpen, customizeTemplateId, openCustomize } =
     useUI()
 
   const previewStatus =
@@ -82,8 +87,6 @@ export function MainArea({
     content = <CustomizePanel templateId={customizeTemplateId} />
   } else if (galleryOpen) {
     content = <GalleryView onSelect={(id) => openCustomize(id)} />
-  } else if (activeMode === 'reports') {
-    content = <ReportsView />
   } else if (status === 'generating') {
     content = <GenerationProgress />
   } else if (status === 'ready' && deployUrl) {
@@ -99,7 +102,19 @@ export function MainArea({
   } else if (status === 'error') {
     content = <GenerationError />
   } else if (status === 'ready') {
-    content = <GenerationSuccess />
+    // No deployed URL — render the project locally (server-side bundle +
+    // compiled Tailwind in a sandboxed iframe) plus a file browser (S22).
+    content = (
+      <EditorOverlay>
+        <div className="flex h-full w-full flex-col gap-4">
+          <div className="min-h-0 flex-1">
+            <LocalPreview />
+          </div>
+          <GenerationSuccess />
+          <ProjectFiles />
+        </div>
+      </EditorOverlay>
+    )
   }
 
   let viewLabel = 'Prompt input'
@@ -107,8 +122,6 @@ export function MainArea({
     viewLabel = 'Customizing template'
   } else if (galleryOpen) {
     viewLabel = 'Template gallery'
-  } else if (activeMode === 'reports') {
-    viewLabel = 'Growth dashboard'
   } else if (status === 'generating') {
     viewLabel = 'Generating project'
   } else if (status === 'error') {

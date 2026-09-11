@@ -2,11 +2,6 @@
   "id": "website",
   "name": "AI Website Builder",
   "description": "Build and deploy full-stack websites with database, forms, and optional payments.",
-  "version": "1.0.0",
-  "category": "build",
-  "icon": "Globe",
-  "order": 1,
-
   "scope": {
     "allowed": [
       "landing",
@@ -27,18 +22,13 @@
       "p2p"
     ]
   },
-
   "stack": {
     "framework": "nextjs-14",
     "styling": "tailwind",
     "components": "shadcn",
-    "state": "zustand",
-    "database": "supabase",
-    "payments": "stripe-checkout-links",
     "icons": "lucide-react",
     "animation": "css"
   },
-
   "constraints": {
     "maxSectionsPerPage": 10,
     "maxFormsPerPage": 5,
@@ -49,7 +39,9 @@
     "allowClientEnv": false,
     "allowDangerousHtml": false,
     "allowEval": false,
-    "requiredComponentExports": ["default"],
+    "requiredComponentExports": [
+      "default"
+    ],
     "componentStyle": "functional",
     "typescriptStrict": true,
     "mobileFirst": true,
@@ -59,13 +51,7 @@
       "react-dom",
       "next",
       "lucide-react",
-      "@supabase/supabase-js",
-      "stripe",
-      "zustand",
-      "tailwindcss",
-      "class-variance-authority",
-      "clsx",
-      "tailwind-merge"
+      "@supabase/supabase-js"
     ],
     "forbiddenDependencies": [
       "jquery",
@@ -75,105 +61,6 @@
       "styled-components",
       "@emotion/react",
       "gsap"
-    ]
-  },
-
-  "components": [
-    "Navbar",
-    "Hero",
-    "Features",
-    "Pricing",
-    "ContactForm",
-    "NewsletterForm",
-    "Footer",
-    "Gallery",
-    "Testimonial",
-    "CTA",
-    "Stats",
-    "FAQ",
-    "Team",
-    "BlogList",
-    "LoginForm",
-    "SignupForm"
-  ],
-
-  "formConstraints": {
-    "allowedTypes": [
-      "text",
-      "email",
-      "tel",
-      "textarea",
-      "select",
-      "checkbox",
-      "radio",
-      "number",
-      "date"
-    ],
-    "maxFieldsPerForm": 12,
-    "requiredAttributes": ["name", "type"],
-    "submitHandling": "supabase-client",
-    "clientOnly": true,
-    "rlsRequired": true
-  },
-
-  "generation": {
-    "stages": ["intent", "plan", "component", "validate", "assemble", "deploy"],
-    "planModeRequiredFor": ["multi-page", "dashboard", "auth", "payments"],
-    "askClarifyingQuestions": true,
-    "showPlanBeforeBuild": true,
-    "parallelComponentGeneration": true,
-    "maxRetriesPerComponent": 2
-  },
-
-  "validation": {
-    "autoTest": [
-      "build",
-      "typecheck",
-      "eslint",
-      "ast-scan",
-      "a11y-scan",
-      "dead-code-scan"
-    ],
-    "staticAnalysisRules": [
-      "hasDefaultExport",
-      "noForbiddenImports",
-      "noServerSecrets",
-      "noDangerousHtml",
-      "noEval",
-      "usesTailwindOnly",
-      "hasTitleAndMeta",
-      "formsHaveNames",
-      "imagesHaveAlt",
-      "buttonsHaveType",
-      "noUnusedImports"
-    ],
-    "buildCommands": ["tsc --noEmit", "next build"]
-  },
-
-  "model": {
-    "intentModel": "openrouter:openrouter/free",
-    "codeModel": "huggingface:deepseek-ai/DeepSeek-V4-Flash",
-    "fallback": [
-      "openrouter:openrouter/free",
-      "openrouter:poolside/laguna-s-2.1:free",
-      "openrouter:cohere/north-mini-code:free"
-    ]
-  },
-
-  "export": {
-    "formats": ["zip"],
-    "includeDatabaseSchema": true,
-    "includeReadme": true,
-    "includeEnvExample": true
-  },
-
-  "ui": {
-    "defaultPrompt": "Build a landing page for a small business",
-    "examplePrompts": [
-      "Landing for yoga studio with booking form",
-      "Portfolio for a freelance photographer",
-      "Pricing page for a SaaS product",
-      "Contact page with lead capture form"
     ]
   }
 }

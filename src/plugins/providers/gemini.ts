@@ -1,3 +1,4 @@
+import { timeoutSignal } from '@/lib/abort'
 import {
   ProviderError,
   type AIProvider,
@@ -91,7 +92,7 @@ export const Gemini: AIProvider = {
 
     for (const model of candidates) {
       try {
-        const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`
+        const url = `${API_BASE}/models/${model}:generateContent`
 
         const parts = [{ text: prompt }]
         const contents = []
@@ -111,8 +112,13 @@ export const Gemini: AIProvider = {
 
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
+          // x-goog-api-key keeps the key out of the URL — query params end up
+          // in proxy/CDN access logs, headers don't.
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
+          signal: timeoutSignal(GENERATE_TIMEOUT_MS, config.signal),
           body: JSON.stringify({
             contents,
             generationConfig: {
@@ -230,8 +236,11 @@ export const Gemini: AIProvider = {
   },
 
   async health(apiKey: string): Promise<HealthResult> {
-    const res = await fetch(`${API_BASE}/models?key=${apiKey}`, {
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(`${API_BASE}/models`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
       signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
     })
 
@@ -265,11 +274,15 @@ export const Gemini: AIProvider = {
     return { ok: true }
   },
 
-  estimateCost(tokensIn: number, tokensOut: number, model: string): number {
-    // Fall back to the default model's price if a newer/unknown model is used
-    // so the UI does not silently show zero cost.
-    const price = PRICES[model] ?? PRICES[this.defaultModel] ?? null
-    if (!price) return 0
+  estimateCost(
+    tokensIn: number,
+    tokensOut: number,
+    model: string
+  ): number | undefined {
+    // Unknown model — return undefined rather than reporting the default
+    // model's price as if it were real; the UI omits the cost badge.
+    const price = PRICES[model]
+    if (!price) return undefined
     return (tokensIn * price.in + tokensOut * price.out) / 1_000_000
   },
 }

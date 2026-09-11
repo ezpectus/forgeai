@@ -3,11 +3,11 @@
 import { useProject } from '@/stores/project'
 
 export function StatusBar() {
-  const { status, components, cost } = useProject((state) => ({
-    status: state.status,
-    components: state.components,
-    cost: state.cost,
-  }))
+  // Three single-value selectors — an object selector without `useShallow`
+  // returns a new snapshot every call and loops React's useSyncExternalStore.
+  const status = useProject((state) => state.status)
+  const components = useProject((state) => state.components)
+  const cost = useProject((state) => state.cost)
 
   const readyCount = components.filter((c) => c.status === 'ready').length
 

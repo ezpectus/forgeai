@@ -23,23 +23,21 @@ flowchart TB
         CompAPI["/api/generate/component"]
         DeployAPI["/api/deploy"]
         ExportAPI["/api/export"]
-        DbAPI["/api/db/bind"]
         HealthAPI["/api/health"]
     end
 
     subgraph AIPipeline["AI Pipeline"]
         Intent["Intent Analysis"]
-        ComponentGen["Component Generation<br/>parallel per config"]
-        Validate["Validation<br/>esbuild + AST"]
+        ComponentGen["Component Generation<br/>sequential per config"]
+        Validate["Validation<br/>esbuild + pattern rules"]
         Assemble["Assemble page.tsx"]
     end
 
     subgraph Providers["External APIs (BYOK)"]
-        OpenRouter["OpenRouter<br/>DeepSeek / Qwen / 200+"]
-        Gemini["Gemini<br/>1.5 / 2.5 / 3.x Flash"]
-        HuggingFace["HuggingFace<br/>DeepSeek Coder / GLM-4"]
+        OpenRouter["OpenRouter<br/>free :free models"]
+        Gemini["Gemini<br/>3.x Flash"]
+        HuggingFace["HuggingFace<br/>router inference"]
         Vercel["Vercel Build API"]
-        E2B["E2B Sandbox"]
         Supabase["Supabase<br/>PostgreSQL"]
     end
 
@@ -48,7 +46,6 @@ flowchart TB
     CORS --> CompAPI
     CORS --> DeployAPI
     CORS --> ExportAPI
-    CORS --> DbAPI
     CORS --> HealthAPI
 
     GenAPI -->|1. analyze prompt| Intent
@@ -57,9 +54,7 @@ flowchart TB
     Validate -->|4. assemble| Assemble
     Assemble -->|5. deploy| DeployAPI
     DeployAPI --> Vercel
-    DeployAPI --> E2B
     ExportAPI --> Export
-    DbAPI --> Supabase
 
     GenAPI -->|fallback| OpenRouter
     GenAPI -->|fallback| Gemini
@@ -112,17 +107,13 @@ sequenceDiagram
         O->>U: SSE: component ready
     end
 
-    O->>O: assemble page.tsx
-    O->>V: build + typecheck
-    V-->>O: pass
+    O->>O: assemble project files
+    O->>U: SSE: done + files
 
-    alt dbRequired
-        O->>S: create tables
-    end
-
+    Note right of U: Deploy is a separate user action (needs Vercel token)
+    U->>O: POST /api/deploy (files)
     O->>D: deploy files
     D-->>O: live URL
-    O->>U: SSE: done + url
 ```
 
 ---
@@ -130,17 +121,16 @@ sequenceDiagram
 ## Data Flow
 
 ```
-1. Browser sends prompt + Authorization header (user API key)
-2. Orchestrator forwards to OpenRouter / Gemini / HuggingFace fallback chain
-3. Based on intent, loads per-component config from configs/
-4. Calls AI for each component in parallel
-5. Validates each component (esbuild, AST, lint)
-6. Retries failed components with exact error
-7. Assembles page.tsx, package.json, tailwind.config
-8. Runs build/typecheck on assembled project
-9. Deploys to Vercel or E2B
-10. (Optional) Creates Supabase tables and binds forms
-11. Returns live URL to browser
-12. Browser shows live preview in iframe
-13. User clicks component → only that component regenerates
+1. Browser sends prompt + API keys in the request body (BYOK)
+2. Orchestrator analyzes intent via OpenRouter / Gemini / HuggingFace fallback chain
+3. Loads the template config for the selected mode (configs/templates/)
+4. Calls AI for each section sequentially (deterministic order)
+5. Validates each component (esbuild transform + pattern rules + dep allowlist)
+6. Retries failed components with exact errors (max 2 attempts)
+7. Assembles page files, package.json, tailwind config
+8. Returns all files to the browser (SSE done event)
+9. Browser can then POST files to /api/deploy → Vercel live URL
+10. (Optional) Generated project includes Supabase wiring when dbRequired
+11. Browser shows the deployed site in an iframe
+12. User clicks component → only that component regenerates
 ```

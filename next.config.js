@@ -4,7 +4,9 @@ const API_URL = process.env.API_URL ?? 'http://localhost:3001'
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  // unsafe-eval is only needed by webpack's dev-mode module loader — drop it
+  // from the production CSP so deployed builds run a stricter policy.
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self'",

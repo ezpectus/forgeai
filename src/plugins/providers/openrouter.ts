@@ -1,4 +1,5 @@
 import { fetchOpenRouterModels } from '@/lib/models'
+import { timeoutSignal } from '@/lib/abort'
 import {
   ProviderError,
   type AIProvider,
@@ -146,7 +147,7 @@ export const OpenRouter: AIProvider = {
               process.env.OPENROUTER_REFERER ?? 'http://localhost:3000',
             'X-OpenRouter-Title': process.env.OPENROUTER_TITLE ?? 'ForgeAI',
           },
-          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
+          signal: timeoutSignal(GENERATE_TIMEOUT_MS, config.signal),
           body: JSON.stringify({
             model,
             messages,
@@ -278,13 +279,17 @@ export const OpenRouter: AIProvider = {
     return { ok: true }
   },
 
-  estimateCost(tokensIn: number, tokensOut: number, model: string): number {
+  estimateCost(
+    tokensIn: number,
+    tokensOut: number,
+    model: string
+  ): number | undefined {
     // Free models (including openrouter/free auto-router) cost $0.
     if (isFreeModel(model)) return 0
-    // Use the default model's price for unknown models so the UI never
-    // silently shows zero cost.
-    const price = PRICES[model] ?? PRICES[this.defaultModel] ?? null
-    if (!price) return 0
+    // Unknown model — return undefined rather than silently reporting the
+    // wrong price; the UI omits the cost badge when cost is undefined.
+    const price = PRICES[model]
+    if (!price) return undefined
     return (tokensIn * price.in + tokensOut * price.out) / 1_000_000
   },
 }

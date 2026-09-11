@@ -5,49 +5,59 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
+/**
+ * Template submission = "download the JSON and open a PR". The server-side
+ * write endpoint only exists on self-hosted deployments
+ * (ALLOW_TEMPLATE_SUBMISSIONS=true); on shared/serverless hosts the file
+ * would never persist, so pretending to "submit" it would be fake.
+ */
 export function SubmitTemplate({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [type, setType] = useState('websites')
   const [topic, setTopic] = useState('')
   const [description, setDescription] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit() {
+  function handleExport() {
     if (!name.trim() || !description.trim()) return
 
-    setLoading(true)
-    setError(null)
+    const id = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
 
-    try {
-      const res = await fetch('/api/templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: name.toLowerCase().replace(/\s+/g, '-'),
-          name,
-          type,
-          topic,
-          description,
-        }),
-      })
-
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string }
-        throw new Error(data.error ?? 'Submit failed')
-      }
-
-      onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submit failed')
-    } finally {
-      setLoading(false)
+    const indexEntry = {
+      id,
+      name: name.trim(),
+      type,
+      topic: topic.trim() || id,
+      description: description.trim(),
+      thumbnail: `/templates/thumbnails/${id}.png`,
+      path: `/templates/${type}/${id}.json`,
     }
+
+    const blob = new Blob(
+      [JSON.stringify(indexEntry, null, 2)],
+      { type: 'application/json' }
+    )
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${id}.json`
+    a.click()
+    window.URL.revokeObjectURL(url)
+    onClose()
   }
 
   return (
     <div className="flex w-full max-w-md flex-col gap-3 rounded border bg-background p-4 shadow-lg">
       <h3 className="text-lg font-semibold">Submit Template</h3>
+      <p className="text-xs text-muted-foreground">
+        Downloads a template JSON. Add it under{' '}
+        <code>public/templates/&lt;type&gt;/</code> and register it in{' '}
+        <code>index.json</code> via a pull request — submissions only persist
+        on self-hosted deployments.
+      </p>
       <Input
         placeholder="Template name"
         value={name}
@@ -75,8 +85,12 @@ export function SubmitTemplate({ onClose }: { onClose: () => void }) {
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="flex gap-2">
-        <Button onClick={handleSubmit} disabled={loading} className="flex-1">
-          Submit
+        <Button
+          onClick={handleExport}
+          disabled={!name.trim() || !description.trim()}
+          className="flex-1"
+        >
+          Download JSON
         </Button>
         <Button variant="outline" onClick={onClose} className="flex-1">
           Cancel

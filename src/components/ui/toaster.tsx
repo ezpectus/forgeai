@@ -1,10 +1,13 @@
 'use client'
 
 import { Toast, ToastProvider, useToast } from '@/components/ui/toast'
+import { ToastContext } from '@/components/ui/toast'
+import { useContext } from 'react'
 import { cn } from '@/lib/utils'
 
 function Toaster({ className }: { className?: string }) {
   const { toasts } = useToast()
+  const ctx = useContext(ToastContext)
   return (
     <div
       className={cn(
@@ -17,7 +20,7 @@ function Toaster({ className }: { className?: string }) {
           key={t.id}
           title={t.title}
           description={t.description}
-          onClose={() => undefined}
+          onClose={() => ctx?.removeToast(t.id)}
         />
       ))}
     </div>

@@ -1,3 +1,4 @@
+import { timeoutSignal } from '@/lib/abort'
 import {
   ProviderError,
   type AIProvider,
@@ -27,16 +28,16 @@ export const HuggingFace: AIProvider = {
   // 135 models total, these are the best for code generation.
   // Free tier: $0.10/month credits. API: router.huggingface.co/v1
   supportedModels: [
-    'deepseek-ai/DeepSeek-V4-Flash',
-    'Qwen/Qwen3.8-27B',
+    'deepseek-ai/DeepSeek-V3-0324',
+    'Qwen/Qwen2.5-Coder-32B-Instruct',
+    'meta-llama/Llama-3.3-70B-Instruct',
     'openai/gpt-oss-120b',
-    'zai-org/GLM-5.3-Flash',
-    'moonshotai/Kimi-K3',
-    'google/gemma-4-31B-it',
-    'meta-llama/Llama-3.1-8B-Instruct',
-    'thinkingmachines/Inkling',
+    'google/gemma-3-27b-it',
+    'moonshotai/Kimi-K2-Instruct',
+    'mistralai/Mistral-Small-3.1-24B-Instruct',
+    'HuggingFaceTB/SmolLM3-3B',
   ],
-  defaultModel: 'deepseek-ai/DeepSeek-V4-Flash',
+  defaultModel: 'Qwen/Qwen2.5-Coder-32B-Instruct',
 
   async generate(
     prompt: string,
@@ -71,7 +72,7 @@ export const HuggingFace: AIProvider = {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
-          signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
+          signal: timeoutSignal(GENERATE_TIMEOUT_MS, config.signal),
           body: JSON.stringify({
             model,
             messages,
@@ -120,7 +121,9 @@ export const HuggingFace: AIProvider = {
           provider: 'huggingface',
           tokensIn,
           tokensOut,
-          cost: 0,
+          // HF router pricing is per-provider metered — not honestly
+          // computable here; omit the cost rather than report $0.
+          cost: undefined,
         }
       } catch (err) {
         let status = err instanceof ProviderError ? err.status : 500
@@ -190,7 +193,9 @@ export const HuggingFace: AIProvider = {
     return { ok: true }
   },
 
-  estimateCost(): number {
-    return 0
+  // HF Inference Providers billing is per-upstream-provider and metered —
+  // no honest fixed price exists, so report "unknown" instead of "free".
+  estimateCost(): number | undefined {
+    return undefined
   },
 }

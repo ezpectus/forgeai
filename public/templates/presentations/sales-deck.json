@@ -1,4 +1,7 @@
 {
+  "id": "sales-deck",
+  "name": "Sales Deck",
+  "description": "A sales deck presentation template.",
   "scope": {
     "allowed": [
       "landing",
@@ -39,70 +42,5 @@
     ],
     "maxComponents": 6,
     "maxLengthPerComponent": 500
-  },
-  "components": [
-    "Hero",
-    "Features",
-    "Pricing",
-    "ContactForm",
-    "Footer"
-  ],
-  "generation": {
-    "stages": [
-      "intent",
-      "components",
-      "validate",
-      "assemble"
-    ],
-    "askClarifyingQuestions": false,
-    "showPlanBeforeBuild": false,
-    "parallelComponentGeneration": true,
-    "maxRetriesPerComponent": 2
-  },
-  "validation": {
-    "autoTest": [
-      "render",
-      "build"
-    ],
-    "staticAnalysisRules": [
-      "syntax",
-      "hasDefaultExport",
-      "noDangerousHtml",
-      "noEval",
-      "usesTailwindOnly",
-      "imagesHaveAlt",
-      "formsHaveNames",
-      "noForbiddenImports"
-    ],
-    "buildCommands": [
-      "npm run build"
-    ]
-  },
-  "model": {
-    "intentModel": "openrouter/deepseek-v3",
-    "codeModel": "huggingface/deepseek-coder",
-    "fallback": [
-      "openrouter/qwen-coder",
-      "openrouter/llama-3.1-405b"
-    ]
-  },
-  "export": {
-    "formats": [
-      "zip",
-      "vercel",
-      "e2b"
-    ],
-    "includeDatabaseSchema": true,
-    "includeReadme": true,
-    "includeEnvExample": true
-  },
-  "ui": {
-    "defaultPrompt": "Create a sales deck presentation with modern design and clear sections",
-    "examplePrompts": [
-      "A sales deck with testimonials and a contact form"
-    ]
-  },
-  "id": "sales-deck",
-  "name": "Sales Deck",
-  "description": "A sales deck presentation template."
+  }
 }

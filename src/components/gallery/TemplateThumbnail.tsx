@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 function hashCode(str: string): number {
@@ -19,14 +20,18 @@ function pseudoRandom(seed: number, index: number): number {
 interface TemplateThumbnailProps {
   name: string
   topic: string
+  /** Real PNG from /public/templates/thumbnails/ — falls back to the SVG when missing. */
+  src?: string
   className?: string
 }
 
 export function TemplateThumbnail({
   name,
   topic,
+  src,
   className,
 }: TemplateThumbnailProps) {
+  const [imgFailed, setImgFailed] = useState(false)
   const seed = hashCode(name + topic)
   const hue1 = seed % 360
   const hue2 = (seed * 13) % 360
@@ -43,6 +48,19 @@ export function TemplateThumbnail({
   })
 
   const gradientId = `thumb-gradient-${seed}`
+
+  if (src && !imgFailed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- dynamic gallery asset
+      <img
+        src={src}
+        alt={`${name} preview`}
+        className={cn('h-full w-full object-cover', className)}
+        onError={() => setImgFailed(true)}
+        loading="lazy"
+      />
+    )
+  }
 
   return (
     <svg

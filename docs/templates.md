@@ -34,8 +34,8 @@ Each function is defined by a JSON config in `configs/templates/`. AI does not g
 ### 2.2 Forbidden Patterns (Global)
 
 - `dangerouslySetInnerHTML`
-- `eval()` / `new Function()` / `setTimeout(string)`
-- Inline `<script>` with dynamic content
+- `eval()` / `new Function()` / `setTimeout(string)` <!-- security-scan:ignore documentation of forbidden patterns -->
+- Inline `<script>` with dynamic content <!-- security-scan:ignore documentation of forbidden patterns -->
 - `document.write`
 - Hard-coded API keys in generated code
 - Native `alert()` / `confirm()`
@@ -60,41 +60,33 @@ Each function is defined by a JSON config in `configs/templates/`. AI does not g
 
 ### 2.4 Validation Pipeline
 
-Every generated artifact runs through:
+Every generated component runs through `validateComponent` (`src/lib/validate.ts`):
 
-1. `tsc --noEmit` — TypeScript check
-2. `next build` — production build
-3. `eslint` — lint rules
-4. `prettier --check` — formatting
-5. `esbuild transform` — syntax validation
-6. AST scan — forbidden patterns
-7. Dependency check — whitelist only
-8. Accessibility scan — labels, alts, roles
-9. Dead code check — unused imports/vars
+1. `esbuild transform` — syntax check (output also scanned for code-level patterns)
+2. Pattern rules — `hasDefaultExport`, `noDangerousHtml`, `noEval`, `noScript`, `noPromptInjection`, `noPrototypePollution`, `noForbiddenImports`, `noServerSecrets`, `usesTailwindOnly`, `imagesHaveAlt`, `formsHaveNames`, `hasTitleAndMeta`
+3. Dependency check — `constraints.allowedDependencies` whitelist
 
-If any step fails, the component is retried with the exact error (max 2 retries).
+If validation fails, the component is retried with the exact errors (max 2 attempts). There is no `tsc`, `next build`, `eslint`, or `prettier` step inside the pipeline — those run on the host repo, not on generated output.
 
 ---
 
 ## 3. Per-Function Configs
 
-All function configs live in `configs/templates/`. Each config contains:
+All function configs live in `configs/templates/`. The fields the engine actually reads:
 
-| Field             | Purpose                              |
-| ----------------- | ------------------------------------ |
-| `id`              | Unique function identifier           |
-| `name`            | Display name                         |
-| `scope.allowed`   | What the AI can generate             |
-| `scope.forbidden` | What the AI must not generate        |
-| `stack`           | Technologies to use                  |
-| `constraints`     | Limits and rules                     |
-| `components`      | Allowed component names              |
-| `formConstraints` | Form rules (if applicable)           |
-| `generation`      | Pipeline settings                    |
-| `validation`      | Auto-tests and static analysis rules |
-| `model`           | Models and fallback chain            |
-| `export`          | Output formats                       |
-| `ui`              | Default and example prompts          |
+| Field             | Purpose                                                            |
+| ----------------- | ------------------------------------------------------------------ |
+| `id`              | Unique function identifier (matches the sidebar mode id)           |
+| `name`            | Display name — fed into the intent prompt for gallery customize    |
+| `description`     | Same — describes the template to the intent model                  |
+| `scope.allowed`   | What the AI can generate (system prompt)                           |
+| `scope.forbidden` | What the AI must not generate (system prompt)                      |
+| `stack`           | Technologies to use (system prompt blob)                           |
+| `constraints`     | `allowedDependencies`/`forbiddenDependencies` drive dep validation |
+
+Earlier revisions listed more fields (`components`, `generation`, `validation`,
+`model`, `export`, `ui`, `formConstraints`) — they were never consumed and have
+been removed from the JSONs.
 
 ### 3.1 AI Website Builder
 
@@ -104,7 +96,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Complex backend APIs, WebSocket chats, video streaming, payment backend, RBAC admin panels, crypto, P2P.
 
-**Stack:** Next.js 14, Tailwind, shadcn/ui, Supabase, Stripe checkout links, Lucide React.
+**Stack:** Next.js 14, Tailwind, shadcn-style markup, lucide-react, optional Supabase.
 
 **Constraints:**
 
@@ -136,7 +128,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Games, interactive apps, real-time collaboration, video.
 
-**Stack:** Next.js, Tailwind, shadcn/ui, Recharts, html2canvas, jsPDF, pptxgenjs.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react.
 
 **Constraints:**
 
@@ -153,7 +145,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** NSFW, deepfakes, face swap without consent, bulk web scraping.
 
-**Stack:** Next.js API route, HTML5 Canvas, Replicate / HuggingFace.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react.
 
 **Constraints:**
 
@@ -170,7 +162,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Long-form > 60s, live streaming, complex video editor, bulk processing.
 
-**Stack:** Next.js API route, HTML5 `<video>`, Replicate / Kling / Luma.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react, HTML5 `<video>`.
 
 **Constraints:**
 
@@ -186,11 +178,10 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Local shell access, file system access, infinite autonomous loops, unauthorized commands.
 
-**Stack:** Next.js, Hono, OpenRouter, E2B sandbox, Supabase.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react (chat UI is rendered statically; a real bot needs a backend not in scope).
 
 **Constraints:**
 
-- Code runs only in E2B sandbox
 - Max 10 attachments, 25MB each
 - Tool calls visible to user
 - Chat history persisted to Supabase
@@ -203,7 +194,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Plagiarism, fabricated citations, reports > 50 pages.
 
-**Stack:** Next.js, Tailwind, react-markdown, html2canvas, jsPDF, Tavily search, Supabase.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react.
 
 **Constraints:**
 
@@ -219,7 +210,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Copyright infringement, auto public share, > 50 layers.
 
-**Stack:** Next.js, Tailwind, Fabric.js, Supabase Storage, Replicate.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react, HTML5 Canvas.
 
 **Constraints:**
 
@@ -235,7 +226,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Animated carousels, video in carousels, > 15 slides.
 
-**Stack:** Next.js, Tailwind, HTML5 Canvas/SVG, html2canvas.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react, HTML5 Canvas/SVG.
 
 **Constraints:**
 
@@ -252,7 +243,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** Voice cloning without consent, NSFW audio, live streaming.
 
-**Stack:** Next.js API route, HTML5 `<audio>`, ElevenLabs / Replicate.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react.
 
 **Constraints:**
 
@@ -268,7 +259,7 @@ All function configs live in `configs/templates/`. Each config contains:
 
 **Forbidden:** SQL queries, macros/VBA, real-time collab > 2 users.
 
-**Stack:** Next.js, Tailwind, xlsx library, Recharts, Zustand.
+**Stack:** Next.js, Tailwind, shadcn-style markup, lucide-react.
 
 **Constraints:**
 
@@ -281,64 +272,27 @@ All function configs live in `configs/templates/`. Each config contains:
 
 ## 4. Config Schema Example
 
+The real `configs/templates/website.json` (all fields above are optional except `id`):
+
 ```json
 {
   "id": "website",
   "name": "AI Website Builder",
-  "version": "1.0.0",
-  "category": "build",
-
+  "description": "Generates a multi-section marketing or product site.",
   "scope": {
     "allowed": ["landing", "multi-page", "portfolio", "forms"],
     "forbidden": ["backend-api", "websocket-chat", "video-streaming"]
   },
-
   "stack": {
     "framework": "nextjs-14",
     "styling": "tailwind",
-    "components": "shadcn",
-    "state": "zustand",
-    "database": "supabase",
-    "payments": "stripe-checkout-links"
+    "components": "react",
+    "icons": "lucide-react",
+    "database": "supabase (optional, when dbRequired)"
   },
-
   "constraints": {
-    "maxSectionsPerPage": 10,
-    "maxFormsPerPage": 5,
-    "allowInlineStyles": false,
-    "allowedDependencies": ["react", "next", "lucide-react", "zustand"],
+    "allowedDependencies": ["react", "react-dom", "next", "lucide-react", "@supabase/supabase-js"],
     "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
-  },
-
-  "components": [
-    "Navbar",
-    "Hero",
-    "Features",
-    "Pricing",
-    "ContactForm",
-    "Footer"
-  ],
-
-  "validation": {
-    "autoTest": ["build", "typecheck", "eslint", "ast-scan"],
-    "staticAnalysisRules": [
-      "hasDefaultExport",
-      "noForbiddenImports",
-      "noServerSecrets",
-      "usesTailwindOnly",
-      "hasTitleAndMeta",
-      "formsHaveNames",
-      "imagesHaveAlt"
-    ]
-  },
-
-  "model": {
-    "intentModel": "openrouter:deepseek/deepseek-chat",
-    "codeModel": "huggingface:deepseek-coder-7b",
-    "fallback": [
-      "openrouter:deepseek/deepseek-chat",
-      "openrouter:Qwen/Qwen2.5-Coder"
-    ]
   }
 }
 ```
@@ -347,37 +301,25 @@ All function configs live in `configs/templates/`. Each config contains:
 
 ## 5. Plan Mode
 
-For complex functions (multi-page sites, dashboards, auth, payments), Plan Mode is enabled:
-
-1. **Ask** — AI asks 3-5 clarifying questions
-2. **Plan** — AI shows structure (sections, pages, DB tables)
-3. **Approve** — User edits or approves
-4. **Build** — Generation starts only after approval
-
-This prevents rework and reduces token usage.
+Not implemented — the UI generates immediately from the prompt. Listed here as a design goal only.
 
 ---
 
 ## 6. Validation & Static Analysis
 
-```
-tsc --noEmit       → TypeScript check
-next build         → production build
-eslint             → lint
-prettier --check   → format
-esbuild transform  → syntax
-ast scan           → forbidden patterns
-dependency check   → whitelist
-a11y check         → accessibility
-dead code check    → unused imports
-```
+Actual pipeline (`src/lib/validate.ts`):
 
-If any step fails, the component is retried with the exact error message.
+```
+esbuild transform        → syntax + provides the code scanned by pattern rules
+pattern rules            → forbidden patterns, a11y basics, default export
+dependency check         → constraints.allowedDependencies whitelist
+retry with errors        → max 2 attempts
+```
 
 ---
 
 ## 7. For Plugin Authors
 
-You can add a new function by creating a config in `configs/templates/{name}.json` and registering it in `configs/templates/index.json`.
+Add a new function by creating a config in `configs/templates/{name}.json` and adding a sidebar entry in `src/components/layout/Sidebar.tsx` (`functions` array) — there is no `index.json` registry.
 
 For AI provider or deployer plugins, see [CONTRIBUTING.md](../CONTRIBUTING.md).

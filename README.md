@@ -39,7 +39,7 @@ The agent follows a three-phase workflow:
 
 **2. Build** — The agent generates each component separately using config-driven specs (not one giant blob of code), validates every component with esbuild, and assembles a complete Next.js project. You get:
 
-- Live URL (deployed via Vercel or E2B sandbox, when you have a Vercel token)
+- Live URL (deployed via Vercel, when you have a Vercel token)
 - Full React + Tailwind code, downloadable as ZIP
 - Auto-generated database schema (Supabase) if your site has forms
 - Inline visual editor — click any block, describe a change, it re-generates that single component
@@ -73,11 +73,11 @@ The agent follows a three-phase workflow:
 | ZIP export                  | ✅ v1.0    | Download the full Next.js project as a ZIP                                                       |
 | Auto-database binding       | ✅ v1.0    | Detects forms and generates Supabase SQL schema                                                  |
 | Template library            | ✅ v1.0    | Template gallery with search, filter and customization panel                                     |
-| Security & validation       | ✅ v1.0    | esbuild parse, AST scan, prompt-injection tests, CSP, rate limiting                              |
+| Security & validation       | ✅ v1.0    | esbuild compile check + pattern scan (no AST), prompt-injection tests, CSP, rate limiting        |
 | Unit + E2E tests            | ✅ v1.0    | Vitest + Playwright with mocked API                                                              |
 | Multi-page generation       | ✅ Done    | Home, About, Contact, Blog with navigation and shared `Nav` component                            |
 | Plugin system            | 🔄 Roadmap | Add custom AI models, deployers, templates (interface exists, sample in README)               |
-| Grow layer               | ✅ Done    | SEO, analytics, email automation, A/B testing after deployment (via Reports dashboard)         |
+| Grow layer               | 🔄 Roadmap | SEO meta/sitemap ship in generated projects; analytics/email/A-B dashboard is unimplemented — generated sites do not report back |
 | AI voice agent           | 🔄 Future  | Add a voice agent to any deployed site                                                        |
 | Messaging integration    | 🔄 Future  | Run the agent from Telegram, Slack, Discord                                                   |
 
@@ -90,7 +90,7 @@ Step 1: Intent Analysis
   → AI parses: type=landing, sections=[navbar, hero, features, pricing, contact-form, footer]
   → palette=calm-green, dbRequired=true, dbForms=[contact-form]
 
-Step 2: Component Generation (parallel, each from its own config spec)
+Step 2: Component Generation (sequential, each from its own config spec)
   → navbar.config.ts  → AI generates Navbar.tsx
   → hero.config.ts    → AI generates Hero.tsx
   → features.config.ts → AI generates Features.tsx
@@ -107,7 +107,7 @@ Step 4: Live Progress
 
 Step 5: Assembly & Deploy
   → All components → page.tsx, package.json, tailwind.config, tsconfig, globals.css
-  → Vercel Build API or E2B sandbox → live URL
+  → Vercel Build API → live URL
   → If any component fails → auto-retry with the exact error message
 
 Step 6: DB Binding (if forms detected)
@@ -144,14 +144,13 @@ flowchart TB
         CompAPI["/api/generate/component"]
         DeployAPI["/api/deploy"]
         ExportAPI["/api/export"]
-        DbAPI["/api/db/bind"]
         HealthAPI["/api/health"]
     end
 
     subgraph AIPipeline["AI Pipeline"]
         Intent["Intent Analysis"]
-        ComponentGen["Component Generation<br/>parallel per config"]
-        Validate["Validation<br/>esbuild + AST"]
+        ComponentGen["Component Generation<br/>sequential per config"]
+        Validate["Validation<br/>esbuild + pattern rules"]
         Assemble["Assemble page.tsx"]
     end
 
@@ -160,7 +159,6 @@ flowchart TB
         HuggingFace["HuggingFace<br/>135+ models, $0.10/mo"]
         Gemini["Gemini<br/>3 flash models, free tier"]
         Vercel["Vercel Build API"]
-        E2B["E2B Sandbox"]
         Supabase["Supabase<br/>PostgreSQL"]
     end
 
@@ -169,7 +167,6 @@ flowchart TB
     CORS --> CompAPI
     CORS --> DeployAPI
     CORS --> ExportAPI
-    CORS --> DbAPI
     CORS --> HealthAPI
 
     GenAPI -->|1. analyze prompt| Intent
@@ -178,16 +175,14 @@ flowchart TB
     Validate -->|4. assemble| Assemble
     Assemble -->|5. deploy| DeployAPI
     DeployAPI --> Vercel
-    DeployAPI --> E2B
-    ExportAPI --> Export
-    DbAPI --> Supabase
+        ExportAPI --> Export
 
     GenAPI -->|fallback| OpenRouter
     GenAPI -->|fallback| Gemini
-    GenAPI -->|primary| HuggingFace
+    GenAPI -->|fallback| HuggingFace
     ComponentGen -->|fallback| OpenRouter
     ComponentGen -->|fallback| Gemini
-    ComponentGen -->|primary| HuggingFace
+    ComponentGen -->|fallback| HuggingFace
 
     CompAPI -->|differential prompt| ComponentGen
     CompAPI --> Validate
@@ -221,7 +216,7 @@ Run the app, generate a project, then add your own PNGs to `public/screenshots/`
 | AI Intent        | OpenRouter / Gemini / HuggingFace   | Cheap + free-tier options           |
 | AI Code Gen      | OpenRouter / Gemini / HuggingFace   | Auto-fallback between providers     |
 |                  | with model-level retries            | 120s timeout + fallback resilience  |
-| Deploy           | Vercel Build API / E2B Sandbox      | Instant live URL                    |
+| Deploy           | Vercel Build API      | Instant live URL                    |
 | Database         | Supabase                            | Free tier, PostgreSQL, auto-binding |
 | State            | Zustand                             | 3KB, no boilerplate                 |
 | Export           | JSZip                               | ZIP archive                         |
@@ -495,7 +490,7 @@ Those are closed SaaS. You don't own the code, can't choose models, can't self-h
 ai, ai-agent, prompt-to-website, code-generation, nextjs, react, tailwindcss,
 shadcn-ui, open-source, byok, self-hosted, supabase, openrouter, huggingface,
 deepseek, text-to-code, low-code, no-code, landing-page-generator, website-builder,
-template-engine, config-driven, plugin-architecture, vercel, e2b, typescript
+template-engine, config-driven, plugin-architecture, vercel, typescript
 ```
 
 ---

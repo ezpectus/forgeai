@@ -28,6 +28,7 @@ export function TemplateCard({
         <TemplateThumbnail
           name={template.name}
           topic={template.topic}
+          src={template.thumbnail}
           className="object-cover"
         />
       </div>

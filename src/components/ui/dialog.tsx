@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 interface DialogContextValue {
   open: boolean
   onOpenChange: (open: boolean) => void
+  titleId: string
 }
 
 const DialogContext = React.createContext<DialogContextValue | null>(null)
@@ -23,8 +24,9 @@ interface DialogProps {
 }
 
 function Dialog({ open, onOpenChange, children }: DialogProps) {
+  const titleId = React.useId()
   return (
-    <DialogContext.Provider value={{ open, onOpenChange }}>
+    <DialogContext.Provider value={{ open, onOpenChange, titleId }}>
       {children}
     </DialogContext.Provider>
   )
@@ -61,7 +63,19 @@ const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { open, onOpenChange } = useDialog()
+  const { open, onOpenChange, titleId } = useDialog()
+  const innerRef = React.useRef<HTMLDivElement | null>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onOpenChange(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    innerRef.current?.focus()
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open, onOpenChange])
+
   if (!open) return null
   return (
     <div
@@ -69,11 +83,17 @@ const DialogContent = React.forwardRef<
       onClick={() => onOpenChange(false)}
     >
       <div
-        ref={ref}
+        ref={(node) => {
+          innerRef.current = node
+          if (typeof ref === 'function') ref(node)
+          else if (ref) ref.current = node
+        }}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className={cn(
-          'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg',
+          'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg outline-none duration-200 sm:rounded-lg',
           className
         )}
         onClick={(e) => e.stopPropagation()}
@@ -117,16 +137,20 @@ DialogFooter.displayName = 'DialogFooter'
 const DialogTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h2
-    ref={ref}
-    className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, id, ...props }, ref) => {
+  const { titleId } = useDialog()
+  return (
+    <h2
+      ref={ref}
+      id={id ?? titleId}
+      className={cn(
+        'text-lg font-semibold leading-none tracking-tight',
+        className
+      )}
+      {...props}
+    />
+  )
+})
 DialogTitle.displayName = 'DialogTitle'
 
 const DialogDescription = React.forwardRef<

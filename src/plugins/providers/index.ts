@@ -1,12 +1,9 @@
 import { OpenRouter } from './openrouter'
-import { HuggingFace } from './huggingface'
 import { Gemini } from './gemini'
-import { registry } from '../registry'
+import { HuggingFace } from './huggingface'
 
-export const providers = [OpenRouter, HuggingFace, Gemini]
-
-export function registerProviders() {
-  registry.registerProvider('openrouter', OpenRouter)
-  registry.registerProvider('huggingface', HuggingFace)
-  registry.registerProvider('gemini', Gemini)
-}
+/**
+ * Fallback order: OpenRouter first, then Gemini, HuggingFace last (slowest).
+ * `buildProviderChain` consumes this array directly.
+ */
+export const providers = [OpenRouter, Gemini, HuggingFace]

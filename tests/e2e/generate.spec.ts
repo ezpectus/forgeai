@@ -4,7 +4,7 @@ const sseStream = [
   'event: intent\ndata: {"name":"yoga","type":"landing","palette":"calm","tone":"friendly","style":"modern","sections":[{"name":"Hero"},{"name":"Features"}]}',
   'event: component\ndata: {"name":"Hero","code":"export default function Hero() { return <section>Hero</section> }","status":"ready","version":1}',
   'event: component\ndata: {"name":"Features","code":"export default function Features() { return <section>Features</section> }","status":"ready","version":1}',
-  'event: done\ndata: {"projectId":"test-project"}',
+  'event: done\ndata: {"projectId":"test-project","files":{"package.json":"{}"}}',
 ].join('\n\n') + '\n\n'
 
 const sseError = [
@@ -154,8 +154,8 @@ test.describe('ForgeAI home', () => {
     // Click the Cancel button inside the progress view
     await page.locator('main').getByRole('button', { name: 'Cancel' }).click()
 
-    // The error screen should explain the cancellation
-    await expect(page.locator('main').getByText('Generation cancelled')).toBeVisible({ timeout: 5000 })
+    // Cancel is not an error — the UI returns to the prompt input
+    await expect(page.getByPlaceholder(promptPlaceholder)).toBeVisible({ timeout: 5000 })
   })
 
   test('regenerates after a generation error', async ({ page }) => {

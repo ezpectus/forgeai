@@ -1,5 +1,8 @@
 version: '3.8'
 
+# Single service: the image runs both the Next.js frontend (:3000) and the
+# Hono API (:3001). No database container — ForgeAI is BYOK and talks to the
+# user's own Supabase project over HTTPS when dbRequired is set.
 services:
   app:
     build:
@@ -7,22 +10,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3000:3000'
+      - '3001:3001'
     env_file:
       - .env
     restart: unless-stopped
-    depends_on:
-      - db
-
-  db:
-    image: supabase/postgres:15.6.1.142
-    ports:
-      - '5432:5432'
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: forgeai
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
-
-volumes:
-  pgdata:

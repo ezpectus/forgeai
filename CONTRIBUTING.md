@@ -75,20 +75,16 @@ export const MyProvider: AIProvider = {
 }
 ```
 
-Register in `src/plugins/providers/index.ts`:
+Register in `src/plugins/providers/index.ts` — the `providers` array is the
+fallback order, so put your provider where it belongs in the chain:
 
 ```typescript
 import { MyProvider } from './my-provider'
 
-export const providers = [OpenRouter, HuggingFace, Gemini, MyProvider]
-
-export function registerProviders() {
-  registry.registerProvider('openrouter', OpenRouter)
-  registry.registerProvider('huggingface', HuggingFace)
-  registry.registerProvider('gemini', Gemini)
-  registry.registerProvider('my-provider', MyProvider)
-}
+export const providers = [OpenRouter, Gemini, HuggingFace, MyProvider]
 ```
+
+API routes build their lookup maps from this array — no other wiring needed.
 
 #### Deployer Plugin
 

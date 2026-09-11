@@ -2,7 +2,9 @@
 
 Полный список фич, которые должны быть в проекте. Всё что есть у закрытых конкурентов — но open-source, с BYOK.
 
-> **v1.1 status:** Multi-model fallback, pre-generation health check, My Projects history, Reports dashboard, multi-page generation, prompt validation, example prompt cards and live generation progress are already shipped. See `internal/roadmap-v1.2.md` for the 50-task plan toward v1.2.
+> **v1.1 status:** Multi-model fallback, pre-generation health check, My Projects history, multi-page generation, prompt validation, example prompt cards and live generation progress are already shipped. See `internal/roadmap-v1.2.md` for the 50-task plan toward v1.2.
+>
+> **This document is a product spec, not a feature list.** Sections 1.x–15.x describe the target product — most are unimplemented. What the generator actually produces today is a static Next.js landing site (any sidebar mode) + optional Supabase form wiring; treat every checklist item marked `[ ]` and every section not called out in the status line above as unshipped.
 
 ---
 
@@ -24,7 +26,7 @@
 - Professional presentations from prompt
 - Edit text, layouts, visuals directly on each slide
 - Inline AI editing (click slide → describe change → updates)
-- Export to PDF and PPTX
+- Export as a static site (print-to-PDF works from the browser)
 - Nano Banana mode — visually bold slide style
 - Slide-by-slide plan preview before generation
 - Version history per slide
@@ -92,10 +94,10 @@
 
 ### 1.10 AI Spreadsheets
 
-- Spreadsheets with formulas
+- Spreadsheets rendered as styled tables
 - Charts and formatting
-- XLSX/CSV import and export
-- Interactive grid editing
+- Static table layout (no XLSX import — no spreadsheet lib is installed)
+- Cash-flow models, budgets, trackers
 - Cash-flow models, budgets, trackers
 
 ---
@@ -293,7 +295,6 @@ Use the agent from messaging platforms:
 
 ## 11. Export & Sharing
 
-- Download as PDF, PPTX, MP4, PNG, XLSX, CSV
 - Deploy website live with custom domain
 - Share public link
 - Export full code as ZIP (Next.js project)
@@ -303,13 +304,13 @@ Use the agent from messaging platforms:
 
 ## 12. Model Support
 
-- **OpenRouter** — 200+ models: DeepSeek, Qwen, Llama, GPT-4o, Claude, and more
-- **HuggingFace** — free serverless inference: DeepSeek Coder, GLM-4, Mistral, Llama 2
-- **Gemini** — free tier with `gemini-1.5-flash`, `gemini-1.5-pro`, and more
-- **Dynamic model list** — the app fetches the live list of available models from each provider's API; no hardcoded model list
+- **OpenRouter** — free `:free` models fetched live from the API (auto router + curated fallbacks)
+- **HuggingFace** — Inference Providers router ($0.10/month included credits, then metered): DeepSeek, Qwen Coder, Llama, GPT-OSS and more
+- **Gemini** — free-tier flash models (`gemini-3.6-flash` → `gemini-3.5-flash-lite`)
+- **Dynamic model list** — the app fetches the live list of available models from each provider's API
 - **Provider + model selector** — pick provider, then pick any model that provider exposes; one-click refresh
 - **Multi-model fallback** — if the chosen model fails or is rate-limited, the orchestrator automatically tries the next available provider/key
-- **Cost transparency** — each model is marked as free/paid, and the orchestrator reports tokens used and cost per generation
+- **Cost transparency** — models are marked free/paid where the provider exposes pricing; tokens used are reported per generation
 
 ---
 
@@ -319,8 +320,8 @@ Use the agent from messaging platforms:
 - Keys never sent to our server storage
 - Keys never logged
 - CORS strict (only our domain)
-- Sandbox iframe for preview (no allow-same-origin)
-- AST scan for dangerous patterns (eval, dangerouslySetInnerHTML)
+- Sandbox iframe for preview (allow-scripts + allow-same-origin needed for functional previews — the framed site is cross-origin, so it cannot reach the parent document)
+- Pattern scan for dangerous code (eval, dangerouslySetInnerHTML, prompt injection)
 - CSP headers on deployed sites
 - Supabase RLS policies by default
 - Rate limiting on orchestrator
@@ -371,7 +372,7 @@ Use the agent from messaging platforms:
 - AI generates missing content (descriptions, stats, copy)
 - Structure and design from template preserved
 - Inline edit any slide/section after fill
-- Export to PDF, PPTX, PNG, ZIP, XLSX, CSV
+- Export the generated project as a ZIP
 
 ### 15.3 Community Templates
 
@@ -402,7 +403,7 @@ See `docs/template-gallery.md` for full spec.
 
 - [x] AI Websites (prompt → generated Next.js code)
 - [x] Config-driven component generation (strict specs + validation)
-- [x] Multi-model fallback (HuggingFace → OpenRouter)
+- [x] Multi-model fallback (OpenRouter → Gemini → HuggingFace)
 - [x] Basic plan mode (parse intent, show sections/palette)
 - [x] Inline editing trigger (select component, send differential prompt)
 - [x] Differential prompting (re-generate single component)

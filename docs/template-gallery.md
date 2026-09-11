@@ -1,6 +1,6 @@
 # ForgeAI — Template Gallery
 
-> **15,000+ ready-made templates.** Search by keyword, pick a category, and customize any template with a prompt.
+> **Spec doc — aspirational scale.** The shipped gallery currently contains ~50 curated templates (`public/templates/`); "15,000+" is the target after community submissions, not the current count. Search by keyword, pick a category, and customize any template with a prompt.
 
 ---
 
@@ -260,7 +260,7 @@ public/templates/
 ```
 ┌────────────────────────────────────────────────────────────┐
 │  Start from a template that already works.                │
-│  15,000+ of them.                                          │
+│  (UI mock — no count shown; see note at top)               │
 │                                                            │
 │  [Search by keyword...]                                    │
 │                                                            │

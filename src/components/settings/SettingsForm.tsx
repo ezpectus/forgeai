@@ -98,15 +98,15 @@ export function SettingsForm() {
     vercel: keys.vercel ?? '',
   })
 
-  const [tests, setTests] = useState<Record<Provider, TestState>>({
+  // Only AI providers have a working Test button (gated by AI_PROVIDERS).
+  const [tests, setTests] = useState<Partial<Record<Provider, TestState>>>({
     openrouter: { status: 'idle' },
     huggingface: { status: 'idle' },
     gemini: { status: 'idle' },
-    supabase: { status: 'idle' },
-    vercel: { status: 'idle' },
   })
 
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   async function handleTest(provider: Provider) {
     setTests((prev) => ({ ...prev, [provider]: { status: 'testing' } }))
@@ -144,14 +144,24 @@ export function SettingsForm() {
     setSaving(true)
     const entries = Object.entries(values) as [keyof typeof values, string][]
 
-    await Promise.all(
-      entries.map(([key, value]) =>
-        value ? keys.setKey(key, value) : keys.deleteKey(key)
+    try {
+      await Promise.all(
+        entries.map(([key, value]) =>
+          value ? keys.setKey(key, value) : keys.deleteKey(key)
+        )
       )
-    )
-
-    setSaving(false)
-    closeSettings()
+      closeSettings()
+    } catch (err) {
+      // IndexedDB unavailable/failed — keep the dialog open so the user can
+      // retry; the keys are only in-memory at this point.
+      setSaveError(
+        err instanceof Error
+          ? `Could not persist keys: ${err.message}`
+          : 'Could not persist keys (browser storage unavailable)'
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
   function handleCancel() {
@@ -207,16 +217,16 @@ export function SettingsForm() {
                 type="button"
                 variant="outline"
                 size="sm"
-                disabled={tests[provider].status === 'testing'}
+                disabled={tests[provider]?.status === 'testing'}
                 onClick={() => handleTest(provider)}
               >
-                {tests[provider].status === 'testing' && (
+                {tests[provider]?.status === 'testing' && (
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                 )}
-                {tests[provider].status === 'ok' && (
+                {tests[provider]?.status === 'ok' && (
                   <Check className="mr-1 h-4 w-4 text-success" />
                 )}
-                {tests[provider].status === 'error' && (
+                {tests[provider]?.status === 'error' && (
                   <X className="mr-1 h-4 w-4 text-destructive" />
                 )}
                 Test
@@ -240,11 +250,13 @@ export function SettingsForm() {
 
           {tests[provider as Provider]?.status === 'error' && (
             <p className="text-xs text-destructive">
-              {tests[provider as Provider].message}
+              {tests[provider as Provider]?.message}
             </p>
           )}
         </div>
       ))}
+
+      {saveError && <p className="text-sm text-destructive">{saveError}</p>}
 
       <div className="flex justify-end gap-2 pt-2">
         <Button variant="outline" onClick={handleCancel}>

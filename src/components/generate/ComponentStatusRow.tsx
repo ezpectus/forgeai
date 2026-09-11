@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useProject } from '@/stores/project'
 import { useKeys } from '@/stores/keys'
+import { getLastGenerationPrefs } from '@/lib/prefs'
 import type { ComponentState } from '@/types'
 
 const statusIcons = {
@@ -67,12 +68,15 @@ export function ComponentStatusRow({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId,
           componentName: component.name,
           currentCode: component.code,
           instruction,
           templateId: templateId || 'website',
           auth: { openrouter, huggingface, gemini },
+          ...(() => {
+            const { provider, model } = getLastGenerationPrefs()
+            return provider && model ? { provider, model } : {}
+          })(),
         }),
       })
 

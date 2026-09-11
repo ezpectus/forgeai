@@ -2,11 +2,6 @@
   "id": "audio",
   "name": "AI Audio",
   "description": "Text-to-speech, music generation, voice cloning, sound effects, dubbing, and transcription.",
-  "version": "1.0.0",
-  "category": "create",
-  "icon": "Music",
-  "order": 9,
-
   "scope": {
     "allowed": [
       "text-to-speech",
@@ -22,25 +17,22 @@
       "live-streaming-podcast"
     ]
   },
-
   "stack": {
     "framework": "nextjs-14",
-    "api": "hono",
     "styling": "tailwind",
     "components": "shadcn",
-    "state": "zustand",
-    "audioPlayer": "html5-audio",
-    "audioApi": ["elevenlabs", "replicate"],
     "icons": "lucide-react"
   },
-
   "constraints": {
     "maxAudioDurationSeconds": 600,
     "maxTTSDurationSeconds": 600,
     "maxMusicDurationSeconds": 300,
     "maxTranscriptionFileSizeMb": 100,
     "voiceCloningRequiresConsent": true,
-    "allowedFormats": ["mp3", "wav"],
+    "allowedFormats": [
+      "mp3",
+      "wav"
+    ],
     "allowInlineStyles": false,
     "allowClientEnv": false,
     "componentStyle": "functional",
@@ -50,67 +42,13 @@
       "react-dom",
       "next",
       "lucide-react",
-      "zustand",
-      "tailwindcss",
-      "hono"
+      "@supabase/supabase-js"
     ],
-    "forbiddenDependencies": ["jquery", "axios", "lodash", "moment"]
-  },
-
-  "components": [
-    "AudioGenerator",
-    "AudioPlayer",
-    "VoiceCloner",
-    "TranscriptionUploader",
-    "AudioExporter"
-  ],
-
-  "formConstraints": {},
-
-  "generation": {
-    "stages": ["intent", "component"],
-    "planModeRequiredFor": [],
-    "askClarifyingQuestions": false,
-    "showPlanBeforeBuild": false,
-    "parallelComponentGeneration": false,
-    "maxRetriesPerComponent": 2
-  },
-
-  "validation": {
-    "autoTest": ["typecheck", "eslint", "ast-scan"],
-    "staticAnalysisRules": [
-      "noClientApiKey",
-      "maxAudioDuration",
-      "hasAudioPlayer",
-      "noForbiddenImports",
-      "noUnusedImports"
-    ],
-    "buildCommands": ["tsc --noEmit"]
-  },
-
-  "model": {
-    "intentModel": "openrouter:deepseek/deepseek-chat",
-    "codeModel": "huggingface:deepseek-coder-7b",
-    "fallback": [
-      "openrouter:deepseek/deepseek-chat",
-      "openrouter:Qwen/Qwen2.5-Coder"
-    ]
-  },
-
-  "export": {
-    "formats": ["zip"],
-    "includeDatabaseSchema": false,
-    "includeReadme": true,
-    "includeEnvExample": true
-  },
-
-  "ui": {
-    "defaultPrompt": "Generate a 30-second background music track for a product video",
-    "examplePrompts": [
-      "Text-to-speech of this script in a calm voice",
-      "Clone my voice from this sample",
-      "Create a notification sound effect",
-      "Dub this English video into Spanish"
+    "forbiddenDependencies": [
+      "jquery",
+      "axios",
+      "lodash",
+      "moment"
     ]
   }
 }

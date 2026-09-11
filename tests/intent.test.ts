@@ -35,7 +35,7 @@ describe('analyzeIntent', () => {
 
     const result = await analyzeIntent('yoga studio landing', { openrouter: 'fake-key' })
     expect(result.type).toBe('landing')
-    expect(result.sections[0].name).toBe('hero')
+    expect(result.sections[0].name).toBe('Hero')
     expect(fetch).toHaveBeenCalled()
 
     vi.unstubAllGlobals()
@@ -54,6 +54,36 @@ describe('analyzeIntent', () => {
     expect(result.sections.length).toBeGreaterThan(0)
     expect(result.warning).toContain('All providers failed')
     expect(result.warning).toContain('Unauthorized')
+
+    vi.unstubAllGlobals()
+  })
+
+  it('rethrows cancellation (499) instead of returning DEFAULT_INTENT', async () => {
+    // S100 regression: an aborted signal must propagate — the broad catch used
+    // to convert the 499 into a fake parsed plan + warning.
+    const controller = new AbortController()
+    const fetch = vi.fn().mockImplementation((_url: string, init?: RequestInit) => {
+      // Simulate the provider honoring the abort signal mid-request.
+      if (init?.signal?.aborted) {
+        return Promise.reject(new DOMException('Aborted', 'AbortError'))
+      }
+      return new Promise((_, reject) => {
+        init?.signal?.addEventListener('abort', () =>
+          reject(new DOMException('Aborted', 'AbortError'))
+        )
+      })
+    })
+    vi.stubGlobal('fetch', fetch)
+    controller.abort()
+
+    await expect(
+      analyzeIntent(
+        'yoga studio landing',
+        { openrouter: 'fake-key' },
+        undefined,
+        controller.signal
+      )
+    ).rejects.toMatchObject({ status: 499 })
 
     vi.unstubAllGlobals()
   })

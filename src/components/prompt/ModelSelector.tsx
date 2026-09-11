@@ -109,31 +109,25 @@ export function ModelSelector({ provider, model, onChange }: ModelSelectorProps)
   useEffect(() => {
     let cancelled = false
     async function checkAll() {
+      const keyFor = (id: string) =>
+        id === 'openrouter' ? openrouter : id === 'gemini' ? gemini : id === 'huggingface' ? huggingface : ''
+
       const next: Record<string, 'ok' | 'error' | 'checking'> = {}
-      for (const p of providers) {
-        if (p.id === 'auto') continue
-        const key =
-          p.id === 'openrouter'
-            ? openrouter
-            : p.id === 'gemini'
-              ? gemini
-              : p.id === 'huggingface'
-                ? huggingface
-                : ''
-        if (!key) {
-          next[p.id] = 'error'
-          continue
-        }
-        next[p.id] = 'checking'
-        const result = await checkProviderHealth(p.id, {
-          openrouter,
-          gemini,
-          huggingface,
-        })
-        if (!cancelled) {
-          next[p.id] = result.ok ? 'ok' : 'error'
-        }
-      }
+      const keys = { openrouter, gemini, huggingface }
+      // Check providers in parallel — a hung provider must not delay the
+      // health dots of the others.
+      await Promise.all(
+        providers
+          .filter((p) => p.id !== 'auto')
+          .map(async (p) => {
+            if (!keyFor(p.id)) {
+              next[p.id] = 'error'
+              return
+            }
+            const result = await checkProviderHealth(p.id, keys)
+            next[p.id] = result.ok ? 'ok' : 'error'
+          })
+      )
       if (!cancelled) setHealth(next)
     }
     checkAll()

@@ -27,6 +27,29 @@ export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
   const [ratings, setRatings] = useState<Record<string, number>>({})
   const limit = 12
 
+  // Ratings are local-only (there is no backend for them) — persist in
+  // localStorage so they survive unmount/reload.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('forgeai_template_ratings')
+      if (raw) setRatings(JSON.parse(raw) as Record<string, number>)
+    } catch {
+      // corrupted — start empty
+    }
+  }, [])
+
+  function rate(templateId: string, value: number) {
+    setRatings((prev) => {
+      const next = { ...prev, [templateId]: value }
+      try {
+        localStorage.setItem('forgeai_template_ratings', JSON.stringify(next))
+      } catch {
+        // storage unavailable — rating still applies for the session
+      }
+      return next
+    })
+  }
+
   async function fetchTemplates() {
     setLoading(true)
     setError(null)
@@ -133,9 +156,7 @@ export function GalleryView({ onSelect }: { onSelect?: (id: string) => void }) {
                 template={template}
                 onSelect={onSelect ?? (() => undefined)}
                 rating={ratings[template.id] ?? 0}
-                onRate={(value) =>
-                  setRatings((prev) => ({ ...prev, [template.id]: value }))
-                }
+                onRate={(value) => rate(template.id, value)}
               />
             ))}
           </div>

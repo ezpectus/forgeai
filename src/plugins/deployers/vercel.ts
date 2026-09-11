@@ -17,7 +17,11 @@ function filesToVercelPayload(files: DeployFiles) {
 export const VercelDeployer: Deployer = {
   name: 'vercel',
 
-  async deploy(files: DeployFiles, apiKey: string): Promise<DeployResult> {
+  async deploy(
+    files: DeployFiles,
+    apiKey: string,
+    env?: Record<string, string>
+  ): Promise<DeployResult> {
     const res = await fetch(`${API_BASE}/v13/deployments`, {
       method: 'POST',
       headers: {
@@ -28,10 +32,14 @@ export const VercelDeployer: Deployer = {
         name: 'forgeai-project',
         target: 'production',
         files: filesToVercelPayload(files),
+        // Build-time env for the generated project (e.g. NEXT_PUBLIC_PROJECT_ID
+        // groups form submissions per deployment).
+        ...(env && Object.keys(env).length ? { env } : {}),
         projectSettings: {
           framework: 'nextjs',
           buildCommand: 'npm run build',
-          outputDirectory: 'dist',
+          // output:'export' emits the static site to out/ — not dist.
+          outputDirectory: 'out',
           installCommand: 'npm install',
           devCommand: 'npm run dev',
         },
@@ -57,12 +65,23 @@ export const VercelDeployer: Deployer = {
       throw new Error('Vercel returned invalid deploy response')
     }
 
+    // Poll until the deployment finishes — previously the loop broke on
+    // 'error' but still returned the URL, so the UI reported a successful
+    // deploy for a failed Vercel build.
+    let last: DeployStatus | null = null
     for (let i = 0; i < 30; i++) {
-      const status = await this.status(deployId, apiKey)
-      if (status.status === 'ready' || status.status === 'error') {
-        break
-      }
+      last = await this.status(deployId, apiKey)
+      if (last.status === 'ready' || last.status === 'error') break
       await sleep(2000)
+    }
+
+    if (last?.status === 'error') {
+      throw new Error(last.error || 'Vercel deployment failed')
+    }
+    if (last?.status !== 'ready') {
+      // Timed out waiting — the deployment may still finish, so return the
+      // URL but be explicit it isn't confirmed ready yet.
+      return { url, deployId, pending: true }
     }
 
     return { url, deployId }

@@ -123,6 +123,9 @@ export function PromptInput() {
 
     const client = new SSEClient()
     setGenerationClient(client)
+    // Tracks whether the server actually sent `done` — a stream that just ends
+    // (server crash, quiet cancel) must not masquerade as a finished build.
+    let gotDone = false
     await client.connect(
       '/api/generate',
       {
@@ -157,6 +160,7 @@ export function PromptInput() {
         }
 
         if (event === 'done') {
+          gotDone = true
           setStatus('ready')
           const done = data as { projectId?: string; files?: Record<string, string> }
           if (done.projectId) {
@@ -193,14 +197,24 @@ export function PromptInput() {
         }
       },
       (err) => {
+        // User-initiated cancel is not an error — return to the idle prompt.
+        if (err.message === 'Generation cancelled') {
+          setStatus('idle')
+          setChecking(false)
+          setGenerationClient(null)
+          return
+        }
         setStatus('error')
         setError(err.message)
         setChecking(false)
         setGenerationClient(null)
       },
       () => {
-        if (useProject.getState().status === 'generating') {
-          setStatus('ready')
+        if (useProject.getState().status === 'generating' && !gotDone) {
+          // Stream closed without a `done` event — that's a truncated
+          // generation, not a success.
+          setStatus('error')
+          setError('Generation stream ended before the project was assembled.')
         }
         setChecking(false)
         setGenerationClient(null)
